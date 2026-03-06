@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earnings Calendar — Research Hub</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-icon">📊</div>
+      <span>Research Hub</span>
+    </div>
+    <nav style="display: flex; gap: 8px;">
+      <a href="index.html" class="nav-link">Dashboard</a>
+      <a href="screener.html" class="nav-link">Screener</a>
+      <a href="macro.html" class="nav-link">Macro</a>
+      <a href="news.html" class="nav-link">News</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <a href="index.html" style="color: var(--accent); text-decoration: none; margin-bottom: 20px; display: inline-block;">← Back to Dashboard</a>
+    
+    <h1>📅 Earnings Calendar</h1>
+    <p style="color: var(--muted); margin-bottom: 30px;">Upcoming earnings dates, analyst expectations, and historical beat rates</p>
+
+    <div style="display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap;">
+      <button class="primary" style="padding: 8px 16px; border: none; background: var(--accent); cursor: pointer; border-radius: 4px; color: white;">This Week</button>
+      <button class="primary" style="padding: 8px 16px; border: 1px solid var(--accent); background: transparent; cursor: pointer; border-radius: 4px; color: var(--accent);">Next Week</button>
+      <button class="primary" style="padding: 8px 16px; border: 1px solid var(--accent); background: transparent; cursor: pointer; border-radius: 4px; color: var(--accent);">This Month</button>
+      <button class="primary" style="padding: 8px 16px; border: 1px solid var(--accent); background: transparent; cursor: pointer; border-radius: 4px; color: var(--accent);">All Upcoming</button>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead style="background: var(--surface); border-bottom: 2px solid var(--accent);">
+          <tr>
+            <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--accent);">Date</th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--accent);">Ticker</th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--accent);">Company</th>
+            <th style="padding: 12px; text-align: left; font-weight: 600; color: var(--accent);">Sector</th>
+            <th style="padding: 12px; text-align: center; font-weight: 600; color: var(--accent);">EPS Est.</th>
+            <th style="padding: 12px; text-align: center; font-weight: 600; color: var(--accent);">Revenue Est.</th>
+            <th style="padding: 12px; text-align: center; font-weight: 600; color: var(--accent);">Beat Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--surface); hover: background: var(--surface);">
+            <td style="padding: 12px;">Mar 10</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">JPM</td>
+            <td style="padding: 12px;">JPMorgan</td>
+            <td style="padding: 12px;"><span class="tag">Financials</span></td>
+            <td style="padding: 12px; text-align: center;">$4.52</td>
+            <td style="padding: 12px; text-align: center;">$32.1B</td>
+            <td style="padding: 12px; text-align: center; color: var(--green); font-weight: 600;">86%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--surface);">
+            <td style="padding: 12px;">Mar 12</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">BAC</td>
+            <td style="padding: 12px;">Bank of America</td>
+            <td style="padding: 12px;"><span class="tag">Financials</span></td>
+            <td style="padding: 12px; text-align: center;">$2.35</td>
+            <td style="padding: 12px; text-align: center;">$18.9B</td>
+            <td style="padding: 12px; text-align: center; color: var(--green); font-weight: 600;">82%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--surface);">
+            <td style="padding: 12px;">Mar 14</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">LLY</td>
+            <td style="padding: 12px;">Eli Lilly</td>
+            <td style="padding: 12px;"><span class="tag">Healthcare</span></td>
+            <td style="padding: 12px; text-align: center;">$0.98</td>
+            <td style="padding: 12px; text-align: center;">$6.8B</td>
+            <td style="padding: 12px; text-align: center; color: var(--green); font-weight: 600;">88%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--surface);">
+            <td style="padding: 12px;">Mar 16</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">NVDA</td>
+            <td style="padding: 12px;">NVIDIA</td>
+            <td style="padding: 12px;"><span class="tag">Technology</span></td>
+            <td style="padding: 12px; text-align: center;">$5.67</td>
+            <td style="padding: 12px; text-align: center;">$28.2B</td>
+            <td style="padding: 12px; text-align: center; color: var(--green); font-weight: 600;">92%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--surface);">
+            <td style="padding: 12px;">Mar 18</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">MSFT</td>
+            <td style="padding: 12px;">Microsoft</td>
+            <td style="padding: 12px;"><span class="tag">Technology</span></td>
+            <td style="padding: 12px; text-align: center;">$3.12</td>
+            <td style="padding: 12px; text-align: center;">$61.5B</td>
+            <td style="padding: 12px; text-align: center; color: var(--green); font-weight: 600;">88%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--surface);">
+            <td style="padding: 12px;">Mar 20</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">AAPL</td>
+            <td style="padding: 12px;">Apple</td>
+            <td style="padding: 12px;"><span class="tag">Technology</span></td>
+            <td style="padding: 12px; text-align: center;">$2.18</td>
+            <td style="padding: 12px; text-align: center;">$89.3B</td>
+            <td style="padding: 12px; text-align: center; color: var(--yellow); font-weight: 600;">81%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--surface);">
+            <td style="padding: 12px;">Mar 22</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">AMZN</td>
+            <td style="padding: 12px;">Amazon</td>
+            <td style="padding: 12px;"><span class="tag">Consumer Discretionary</span></td>
+            <td style="padding: 12px; text-align: center;">$0.77</td>
+            <td style="padding: 12px; text-align: center;">$141.2B</td>
+            <td style="padding: 12px; text-align: center; color: var(--green); font-weight: 600;">87%</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--surface);">
+            <td style="padding: 12px;">Mar 24</td>
+            <td style="padding: 12px; color: var(--accent); font-weight: 600;">META</td>
+            <td style="padding: 12px;">Meta</td>
+            <td style="padding: 12px;"><span class="tag">Communication Services</span></td>
+            <td style="padding: 12px; text-align: center;">$5.23</td>
+            <td style="padding: 12px; text-align: center;">$36.1B</td>
+            <td style="padding: 12px; text-align: center; color: var(--green); font-weight: 600;">90%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Earnings Surprises -->
+    <div class="section" style="margin-top: 40px;">
+      <h2 style="margin-bottom: 24px;">Recent Earnings Surprises</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+        
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--accent); font-weight: 600;">COST</span>
+            <span style="color: var(--green); font-weight: 600;">+8.2%</span>
+          </div>
+          <p style="font-size: 12px; color: var(--muted);">Beat EPS by 12%. Revenue growth 8%. Membership upgrade strong.</p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--accent); font-weight: 600;">LLY</span>
+            <span style="color: var(--green); font-weight: 600;">+15.4%</span>
+          </div>
+          <p style="font-size: 12px; color: var(--muted);">Mounjaro (tirzepatide) sales accelerating. Guidance raised 18%.</p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--accent); font-weight: 600;">NVDA</span>
+            <span style="color: var(--green); font-weight: 600;">+6.7%</span>
+          </div>
+          <p style="font-size: 12px; color: var(--muted);">Blackwell adoption acceleration. Data center revenue +122%.</p>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="color: var(--accent); font-weight: 600;">KR</span>
+            <span style="color: var(--red); font-weight: 600;">-8.3%</span>
+          </div>
+          <p style="font-size: 12px; color: var(--muted);">Margin pressure from Amazon competition. Guidance cut 5%.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer style="text-align: center; padding: 20px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--surface); margin-top: 60px;">
+    <p>Research Hub v1.0 • Data as of March 6, 2026</p>
+  </footer>
+</body>
+</html>
