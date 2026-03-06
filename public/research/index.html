@@ -381,6 +381,41 @@ table.inv-tbl td { padding: 10px 14px; font-size: 13px; vertical-align: middle; 
 // Overall = 40% Upside + 30% Health + 30% Presence
 // Source: Q4 2024 / Q1 2025 verified fundamental data
 // ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+// UNIVERSE — popular tickers loaded live on startup
+// ═══════════════════════════════════════════════════════════════════════════
+const UNIVERSE = [
+  // Mega-cap tech
+  'TSLA','ORCL','CRM','NFLX','ADBE','INTC','QCOM','TXN','CSCO','IBM','DELL','PANW','CRWD','SNOW','ZS','NET','MDB','TEAM','OKTA','WDAY','VEEV','INTU','ADSK','CDNS','SNPS','FTNT','CHKP','HPQ','HPE','WDC','STX','ANET','KEYS','GDDY',
+  // Finance
+  'BRK-B','WFC','BAC','C','MS','GS','BLK','AXP','SCHW','COF','USB','TFC','PNC','CME','ICE','SPGI','MCO','MSCI','BX','APO','KKR','CG','ARES','TROW','IVZ','PFG','LNC','GL','RJF','FNF',
+  // Healthcare
+  'JNJ','PFE','MRK','BMY','AMGN','GILD','BIIB','REGN','VRTX','MRNA','BNTX','ABT','MDT','SYK','BSX','ISRG','BDX','DHR','TMO','A','IQV','IDXX','DXCM','EW','ZBH','BAX','HOLX','EXAS','CI','HUM','CVS','MCK','CAH','ABC','MOH','CNC','ELV',
+  // Consumer
+  'PG','JNJ','KO','PEP','MO','PM','MDLZ','GIS','CPB','HRL','CAG','MKC','CLX','CL','EL','ULTA','NKE','TGT','HD','LOW','DG','DLTR','KR','SYY','MCD','SBUX','YUM','CMG','DRI','MAR','HLT','H','ABNB','UBER','LYFT','DASH','RBLX','TTWO','EA','SPOT','DIS','CMCSA','T','VZ','TMUS',
+  // Energy
+  'CVX','COP','OXY','SLB','HAL','BKR','PSX','VLO','MPC','EOG','DVN','FANG','APA','MRO','HES',
+  // Industrials
+  'GE','HON','MMM','EMR','ETN','PH','ITW','AME','CARR','OTIS','DE','CMI','TT','URI','GWW','FAST','PCAR','GD','BA','NOC','HWM','TDG','AXON','PWR','ROP','FTV','VRSK','IR','GNRC',
+  // Materials
+  'LIN','APD','SHW','PPG','ECL','NEM','FCX','GOLD','NUE','AA','ALB','MP','CTVA','CF','MOS','FMC','IFF',
+  // Utilities
+  'DUK','SO','D','EXC','AEP','ED','XEL','WEC','PPL','ETR','FE','AES','CMS','NRG',
+  // REITs
+  'AMT','PLD','CCI','EQIX','DLR','WY','WELL','O','VICI','PSA','EXR','MAA','CPT','UDR','AVB','EQR','REG','KIM','SPG','NNN','STAG','CUBE','REXR',
+  // ETFs
+  'IWM','SMH','SOXX','GDX','GDXJ','SLV','IAU','TLT','IEF','SHY','HYG','LQD','AGG','BND','EEM','EFA','VEA','VWO','VGK','EWJ','FXI','KWEB','XLF','XLE','XLK','XLV','XLI','XLY','XLP','XLC','XLRE','XLU','XLB','SCHD','VNQ','VIG','VYM','IBB','XBI','ARKK','KRE','DIA','IVV','VOO','TQQQ','SQQQ',
+  // Crypto
+  'BTC-USD','ETH-USD','SOL-USD','XRP-USD','BNB-USD','DOGE-USD','ADA-USD','AVAX-USD','LINK-USD','DOT-USD','MATIC-USD','LTC-USD','BCH-USD','ATOM-USD',
+  // Crypto equities
+  'COIN','MARA','RIOT','CLSK','HUT','CIFR','BTBT',
+  // International ADRs
+  'BABA','JD','PDD','BIDU','NIO','LI','XPEV','TCOM','NTES','BILI','SE','GRAB','SHOP','RY','TD','BMO','BNS','CM','ENB','CNQ','SU','TRP','CP','CNI','WPM','AEM','BHP','RIO','VALE','SCCO','MT','SAP','AZN','NVS','SNY','GSK','ABB','SONY','TM','HMC',
+  // Additional growth / popular
+  'ARM','SMCI','CEG','VST','GEHC','GEV','APP','CELH','DKNG','HOOD','SOFI','AFRM','UPST','F','GM','RIVN','STLA','LCID','PARA','WBD','FOX','NTES','INTL','ACGL','AON','MMC','AJG','BRO',
+];
+console.log('UNIVERSE size:', UNIVERSE.length);
+
 const DB = [
   {
     ticker:'NVDA', name:'NVIDIA Corporation', sector:'Technology', type:'Stock',
@@ -915,6 +950,40 @@ async function triggerLiveSearch(q) {
   }, 700);
 }
 
+async function loadUniverse() {
+  const batchSize = 100;
+  const toFetch = UNIVERSE.filter(s => !DB.find(d => d.ticker === s));
+  for (let i = 0; i < toFetch.length; i += batchSize) {
+    const batch = toFetch.slice(i, i + batchSize);
+    try {
+      const res = await fetch('/api/quote?symbols=' + encodeURIComponent(batch.join(',')));
+      const data = await res.json();
+      const result = (data.quoteResponse && data.quoteResponse.result) || [];
+      result.forEach(r => {
+        if (liveResults.find(l => l.ticker === r.symbol)) return;
+        liveResults.push({
+          ticker: r.symbol,
+          name: r.shortName || r.longName || r.symbol,
+          sector: r.sector || r.quoteType || '',
+          type: r.quoteType || 'EQUITY',
+          cap: r.marketCap ? parseFloat((r.marketCap / 1e9).toFixed(2)) : null,
+          fwdPE: r.forwardPE ? parseFloat(r.forwardPE.toFixed(1)) : 0,
+          revGrowth: r.revenueGrowth ? parseFloat((r.revenueGrowth * 100).toFixed(1)) : 0,
+          dividend: r.trailingAnnualDividendYield ? parseFloat((r.trailingAnnualDividendYield * 100).toFixed(2)) : 0,
+          upside: null, health: null, presence: null,
+          moat: 'N/A', tags: [], desc: '', catalysts: [], risks: [],
+          fcfMargin: 0, epsGrowth: 0,
+          live: true,
+          price: r.regularMarketPrice || null,
+          change: r.regularMarketChangePercent || null,
+        });
+      });
+      renderTable();
+    } catch(e) {}
+  }
+}
+
+
 // ═══════════════════════════════════════════════════════════════════════════
 // PAGE NAV
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1110,6 +1179,7 @@ function renderNews() {
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
 sortBy('overall');
+loadUniverse();
 renderMacro();
 renderNews();
 </script>
