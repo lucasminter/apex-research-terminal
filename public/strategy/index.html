@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investment Strategy Builder</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d1117; --surface: #161b22; --surface2: #1f2937;
+  --border: #30363d; --accent: #58a6ff; --accent-soft: rgba(88,166,255,0.08);
+  --text: #e6edf3; --muted: #7d8590; --green: #3fb950; --red: #f85149;
+}
+body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px; min-height: 100vh; display: flex; flex-direction: column;
+}
+header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 20px; height: 52px; display: flex; align-items: center;
+  justify-content: space-between; flex-shrink: 0; z-index: 10;
+}
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+.logo-icon {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: linear-gradient(135deg, #58a6ff, #bc8cff);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.header-right { display: flex; align-items: center; gap: 10px; }
+.run-info { font-size: 12px; color: var(--muted); }
+.btn {
+  padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer;
+  font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); color: #0d1117; }
+.btn-primary:hover { background: #79c0ff; }
+.btn-primary:active { transform: scale(0.97); }
+
+.main { display: flex; flex: 1; min-height: 0; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 320px; min-width: 320px; background: var(--surface);
+  border-right: 1px solid var(--border); overflow-y: auto;
+  padding: 16px; display: flex; flex-direction: column; gap: 20px;
+  position: sticky; top: 0; height: calc(100vh - 52px); align-self: flex-start;
+}
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.sec-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px;
+}
+.presets { display: flex; flex-wrap: wrap; gap: 5px; }
+.preset-btn {
+  padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer; font-size: 12px;
+  transition: all 0.15s;
+}
+.preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.preset-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+.alloc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.alloc-total { font-size: 12px; font-weight: 600; }
+.alloc-total.ok { color: var(--green); }
+.alloc-total.warn { color: #d29922; }
+
+.asset-row { margin-bottom: 12px; }
+.asset-header { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.asset-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.asset-name { flex: 1; font-size: 13px; }
+.asset-pct {
+  width: 50px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-size: 12px; padding: 2px 6px;
+  text-align: right;
+}
+.asset-pct:focus { outline: none; border-color: var(--accent); }
+
+input[type=range] {
+  width: 100%; height: 4px; appearance: none; -webkit-appearance: none;
+  background: var(--surface2); border-radius: 2px; outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 4px; background: var(--surface2); border-radius: 2px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+  background: var(--slider-color, var(--accent)); cursor: pointer;
+  transition: transform 0.1s; margin-top: -4.5px;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+
+.form-row {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px;
+}
+.form-label { color: var(--muted); font-size: 13px; }
+.form-input {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); font-size: 12px; padding: 4px 8px; width: 110px;
+}
+.form-input:focus { outline: none; border-color: var(--accent); }
+select.form-input { cursor: pointer; }
+.checkbox-row { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+.checkbox-row input { cursor: pointer; accent-color: var(--accent); }
+
+.alloc-preview { height: 150px; position: relative; }
+
+/* CONTENT */
+.content { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.content::-webkit-scrollbar { width: 5px; }
+.content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.metrics-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.metric-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 13px 14px;
+}
+.metric-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+.info-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); font-size: 9px; font-weight: 700;
+  cursor: pointer; position: relative; flex-shrink: 0;
+  text-transform: none; letter-spacing: 0;
+}
+.info-icon:hover { border-color: var(--accent); color: var(--accent); }
+.info-icon .tooltip {
+  display: none; position: absolute; bottom: calc(100% + 7px); left: 50%;
+  transform: translateX(-50%); background: #0d1117; border: 1px solid var(--border);
+  border-radius: 7px; padding: 9px 11px; width: 220px;
+  font-size: 12px; color: var(--text); font-weight: 400;
+  line-height: 1.5; text-transform: none; letter-spacing: 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 100; pointer-events: none;
+}
+.info-icon .tooltip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: var(--border);
+}
+.info-icon:hover .tooltip { display: block; }
+.info-icon .tooltip.tooltip-right { left: 0; transform: none; }
+.info-icon .tooltip.tooltip-right::after { left: 12px; transform: none; }
+
+/* INFO PAGE */
+.info-page { flex: 1; overflow-y: auto; padding: 32px 40px; }
+.info-page::-webkit-scrollbar { width: 5px; }
+.info-page::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.info-page-inner { max-width: 820px; margin: 0 auto; }
+.info-category-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--muted); margin: 36px 0 14px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.info-category-label:first-child { margin-top: 0; }
+.info-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px 22px; margin-bottom: 12px; scroll-margin-top: 16px;
+}
+.info-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.info-card-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.info-card-title { font-size: 15px; font-weight: 700; flex: 1; }
+.info-card-badge {
+  font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+}
+.info-card-body { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.info-card-body strong { color: var(--text); }
+.info-holdings {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--muted); line-height: 1.5;
+}
+.info-holdings strong { color: var(--text); font-size: 11px; }
+.metric-val { font-size: 20px; font-weight: 700; line-height: 1; }
+.metric-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.pos { color: var(--green); } .neg { color: var(--red); } .neu { color: var(--text); }
+
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+.chart-tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 14px; }
+.chart-tab {
+  padding: 10px 13px; border: none; background: transparent; color: var(--muted);
+  font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 0.15s; font-weight: 500;
+}
+.chart-tab:hover { color: var(--text); }
+.chart-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.chart-toolbar {
+  display: flex; align-items: center; gap: 12px; padding: 8px 16px;
+  border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.15);
+}
+.chart-toolbar label { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.chart-toolbar input[type=checkbox] { accent-color: var(--accent); }
+.chart-toolbar select { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 11px; padding: 3px 6px; border-radius: 4px; cursor: pointer; }
+
+.chart-wrap { padding: 16px; height: 340px; position: relative; }
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; color: var(--muted); gap: 10px; text-align: center;
+}
+.empty-icon { font-size: 36px; opacity: 0.35; }
+.empty-text { font-size: 14px; font-weight: 500; }
+.empty-hint { font-size: 12px; }
+
+.returns-table { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.returns-table .table-scroll { overflow-y: visible; }
+.returns-table .table-scroll::-webkit-scrollbar { width: 5px; }
+.returns-table .table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.returns-table table { width: 100%; border-collapse: collapse; }
+.returns-table thead th { position: sticky; top: 0; background: #111827; z-index: 1; }
+.returns-table th, .returns-table td { padding: 9px 13px; text-align: right; font-size: 12px; border-bottom: 1px solid var(--border); }
+.returns-table th { color: var(--muted); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(0,0,0,0.2); }
+.returns-table td:first-child, .returns-table th:first-child { text-align: left; }
+.returns-table tr:last-child td { border-bottom: none; }
+.returns-table tr:hover td { background: rgba(255,255,255,0.02); }
+.tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.tag-g { background: rgba(63,185,80,0.15); color: var(--green); }
+.tag-r { background: rgba(248,81,73,0.15); color: var(--red); }
+
+@media (max-width: 1300px) { .metrics-row { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 850px) { .sidebar { width: 280px; min-width: 280px; } }
+
+/* QUIZ MODAL */
+.quiz-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 200; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.quiz-overlay.open { display: flex; }
+.quiz-modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  width: 540px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+  padding: 32px; position: relative; box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.quiz-modal::-webkit-scrollbar { width: 5px; }
+.quiz-modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.quiz-close {
+  position: absolute; top: 16px; right: 16px; background: transparent;
+  border: none; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1;
+  padding: 4px 8px; border-radius: 4px; transition: color 0.15s;
+}
+.quiz-close:hover { color: var(--text); }
+.quiz-progress-bar {
+  height: 3px; background: var(--surface2); border-radius: 2px; margin-bottom: 28px; overflow: hidden;
+}
+.quiz-progress-fill {
+  height: 100%; background: linear-gradient(90deg, #58a6ff, #bc8cff);
+  border-radius: 2px; transition: width 0.4s ease;
+}
+.quiz-step-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.quiz-question { font-size: 20px; font-weight: 700; line-height: 1.35; margin-bottom: 6px; }
+.quiz-hint { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+.quiz-options { display: flex; flex-direction: column; gap: 10px; }
+.quiz-option {
+  padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface2); cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.quiz-option:hover { border-color: var(--accent); background: var(--accent-soft); }
+.quiz-option.selected { border-color: var(--accent); background: var(--accent-soft); }
+.quiz-option-letter {
+  width: 24px; height: 24px; border-radius: 6px; background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  transition: all 0.15s;
+}
+.quiz-option.selected .quiz-option-letter { background: var(--accent); color: #0d1117; }
+.quiz-option-text { flex: 1; }
+.quiz-option-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.quiz-option-desc { font-size: 12px; color: var(--muted); }
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+.btn-ghost {
+  padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer; font-size: 13px;
+  font-weight: 500; transition: all 0.15s;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+.btn-ghost:disabled { opacity: 0.3; cursor: default; }
+
+/* Quiz result */
+.quiz-result { text-align: center; }
+.result-badge {
+  display: inline-block; padding: 8px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.04em;
+  background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent);
+  margin-bottom: 16px;
+}
+.result-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+.result-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; max-width: 420px; margin-left: auto; margin-right: auto; }
+.result-alloc {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; text-align: left;
+}
+.result-alloc-item {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px;
+}
+.result-alloc-name { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.result-alloc-pct { font-size: 18px; font-weight: 700; }
+.result-traits { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 24px; }
+.trait-tag {
+  padding: 4px 10px; border-radius: 20px; font-size: 12px;
+  background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+}
+
+/* PROJECTION */
+.proj-note { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+.proj-summary-panel {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px;
+}
+.proj-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.proj-header-title { font-size: 13px; font-weight: 600; }
+.proj-header-sub { font-size: 12px; color: var(--muted); }
+.proj-cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 12px; }
+@media (max-width: 1300px) { .proj-cards { grid-template-columns: repeat(3, 1fr); } }
+.proj-card { border-radius: 8px; padding: 11px 12px; border: 1px solid var(--border); background: var(--surface2); }
+.proj-card.pessimistic { border-color: rgba(248,81,73,0.3); }
+.proj-card.conservative { border-color: rgba(248,81,73,0.15); }
+.proj-card.median       { border-color: rgba(88,166,255,0.4); background: rgba(88,166,255,0.06); }
+.proj-card.optimistic   { border-color: rgba(63,185,80,0.15); }
+.proj-card.best         { border-color: rgba(63,185,80,0.35); }
+.proj-card.expected     { border-color: rgba(188,140,255,0.35); background: rgba(188,140,255,0.05); }
+.proj-card-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+.proj-card-val { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.proj-card.pessimistic .proj-card-val { color: var(--red); }
+.proj-card.conservative .proj-card-val { color: #f97316; }
+.proj-card.median .proj-card-val       { color: var(--accent); }
+.proj-card.optimistic .proj-card-val   { color: #6ee7b7; }
+.proj-card.best .proj-card-val         { color: var(--green); }
+.proj-card.expected .proj-card-val     { color: #bc8cff; }
+.proj-card-sub { font-size: 11px; color: var(--muted); }
+.proj-disclaimer { font-size: 11px; color: var(--muted); line-height: 1.5; padding-top: 10px; border-top: 1px solid var(--border); }
+
+/* PAGE NAV */
+.page { display: none; flex: 1; flex-direction: column; min-height: 0; }
+.page.active { display: flex; }
+.nav-tabs { display: flex; gap: 2px; }
+.nav-tab {
+  padding: 6px 16px; border-radius: 6px; border: none; background: transparent;
+  color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 500;
+  transition: all 0.15s;
+}
+.nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-tab.active { color: var(--accent); background: var(--accent-soft); }
+
+/* ASSET PROJECTIONS PAGE */
+.ap-sidebar {
+  width: 300px; min-width: 300px; background: var(--surface);
+  border-right: 1px solid var(--border); overflow-y: auto;
+  padding: 16px; display: flex; flex-direction: column; gap: 16px;
+  position: sticky; top: 0; height: calc(100vh - 52px); align-self: flex-start;
+}
+.ap-sidebar::-webkit-scrollbar { width: 5px; }
+.ap-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.ap-content { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+.template-btns { display: flex; flex-wrap: wrap; gap: 5px; }
+.template-btn {
+  padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer; font-size: 11px;
+  transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+}
+.template-btn:hover { border-color: var(--accent); color: var(--accent); }
+.template-btn .tb-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.asset-item {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 11px; position: relative;
+}
+.asset-item-header { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+.asset-item-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.asset-item-name { flex: 1; font-size: 13px; font-weight: 500; }
+.asset-item-remove {
+  background: transparent; border: none; color: var(--muted); cursor: pointer;
+  font-size: 15px; line-height: 1; padding: 2px 4px; border-radius: 3px;
+}
+.asset-item-remove:hover { color: var(--red); }
+.asset-item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.asset-item-field label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.asset-item-field input, .asset-item-field select {
+  width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); font-size: 11px; padding: 3px 6px;
+}
+.asset-item-field input:focus, .asset-item-field select:focus { outline: none; border-color: var(--accent); }
+
+.custom-asset-form { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 11px; }
+.custom-asset-form .form-row { margin-bottom: 6px; }
+.custom-asset-form .form-label { font-size: 11px; }
+.custom-asset-form .form-input { width: 110px; font-size: 11px; padding: 3px 7px; }
+
+/* ASSET RESULTS */
+.ap-comparison { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.ap-comparison-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; }
+.ap-comparison-wrap { padding: 16px; height: 320px; position: relative; }
+.ap-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 13px; flex-direction: column; gap: 8px; }
+
+.ap-results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 1200px) { .ap-results-grid { grid-template-columns: repeat(2, 1fr); } }
+.ap-result-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 15px;
+}
+.ap-result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.ap-result-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.ap-result-name { font-size: 13px; font-weight: 600; flex: 1; }
+.ap-result-horizon { font-size: 11px; color: var(--muted); }
+.ap-result-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ap-result-row { background: var(--surface2); border-radius: 6px; padding: 7px 9px; }
+.ap-result-row-label { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+.ap-result-row-val { font-size: 16px; font-weight: 700; }
+.ap-result-sub { font-size: 10px; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">📈</div>
+    Investment Strategy Builder
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="nav-builder" onclick="switchPage('builder')">Strategy Builder</button>
+    <button class="nav-tab" id="nav-assets" onclick="switchPage('assets')">Asset Projections</button>
+    <button class="nav-tab" id="nav-info" onclick="switchPage('info')">Information</button>
+  </div>
+  <div class="header-right">
+    <span class="run-info" id="runInfo"></span>
+    <button class="btn btn-primary" id="headerActionBtn" onclick="runBacktest()">▶ Run Backtest</button>
+  </div>
+</header>
+
+<div id="page-builder" class="page active"><div class="main">
+  <div class="sidebar">
+
+    <!-- Presets -->
+    <div>
+      <div class="sec-label">Strategy Presets</div>
+      <div class="presets">
+        <button class="preset-btn" onclick="applyPreset('conservative')">Conservative</button>
+        <button class="preset-btn active" onclick="applyPreset('balanced')">Balanced</button>
+        <button class="preset-btn" onclick="applyPreset('growth')">Growth</button>
+        <button class="preset-btn" onclick="applyPreset('aggressive')">Aggressive</button>
+        <button class="preset-btn" onclick="applyPreset('allStocks')">All Stocks</button>
+        <button class="preset-btn" onclick="applyPreset('crypto')">Crypto Tilt</button>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px;justify-content:center" onclick="openQuiz()">
+        🎯 Find My Strategy
+      </button>
+    </div>
+
+    <!-- Allocation sliders -->
+    <div>
+      <div class="alloc-header">
+        <div class="sec-label" style="margin:0">Asset Allocation</div>
+        <div class="alloc-total ok" id="allocTotal">Total: 100%</div>
+      </div>
+      <div id="assetSliders"></div>
+    </div>
+
+    <!-- Settings -->
+    <div>
+      <div class="sec-label">Backtest Settings</div>
+      <div class="form-row">
+        <span class="form-label">Start Year</span>
+        <select class="form-input" id="startYear"></select>
+      </div>
+      <div class="form-row">
+        <span class="form-label">End Year</span>
+        <select class="form-input" id="endYear"></select>
+      </div>
+      <div class="form-row">
+        <span class="form-label">Initial Investment</span>
+        <input class="form-input" type="text" id="initInv" value="$10,000">
+      </div>
+      <div class="form-row">
+        <span class="form-label">Contribution</span>
+        <input class="form-input" type="text" id="recurAmt" value="$0" placeholder="$0">
+      </div>
+      <div class="form-row">
+        <span class="form-label">Frequency</span>
+        <select class="form-input" id="recurFreq">
+          <option value="none">None</option>
+          <option value="monthly" selected>Monthly</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="annually">Annually</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <span class="form-label">Rebalancing</span>
+        <select class="form-input" id="rebalance">
+          <option value="annual">Annual</option>
+          <option value="quarterly">Quarterly</option>
+          <option value="none">None (Drift)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <span class="form-label">Benchmarks</span>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          <label class="checkbox-row"><input type="checkbox" id="showSP" checked> S&amp;P 500</label>
+          <label class="checkbox-row"><input type="checkbox" id="show6040" checked> 60/40 Blend</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Future Projection -->
+    <div>
+      <div class="sec-label">Future Projection</div>
+      <div class="form-row">
+        <span class="form-label">Years forward</span>
+        <select class="form-input" id="projYears">
+          <option value="5">5 years</option>
+          <option value="10" selected>10 years</option>
+          <option value="20">20 years</option>
+          <option value="30">30 years</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <span class="form-label">Simulations</span>
+        <select class="form-input" id="projSims">
+          <option value="300">300 (fast)</option>
+          <option value="600" selected>600</option>
+          <option value="1200">1,200</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <span class="form-label">Exp. Return %/yr
+          <span class="info-icon" onclick="goToInfo('info-projcagr')" title="Learn more">?</span>
+        </span>
+        <input class="form-input" id="projCagr" type="number" step="0.1" value="10" min="0" max="100" style="width:70px">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="rerunProjection()">↻ Re-run Simulation</button>
+      <div class="proj-note">Run backtest first, then switch to the Projection tab. Adjust Exp. Return to override historical CAGR.</div>
+    </div>
+
+    <!-- Allocation preview -->
+    <div>
+      <div class="sec-label">Allocation Preview</div>
+      <div class="alloc-preview">
+        <canvas id="allocCanvas"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main content -->
+  <div class="content">
+
+    <!-- Metrics -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-label">CAGR
+          <span class="info-icon" onclick="goToInfo('info-cagr')" title="Learn more">?</span>
+        </div>
+        <div class="metric-val neu" id="m-cagr">—</div>
+        <div class="metric-sub" id="m-cagr-sub">Annualized return</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Volatility
+          <span class="info-icon" onclick="goToInfo('info-vol')" title="Learn more">?</span>
+        </div>
+        <div class="metric-val neu" id="m-vol">—</div>
+        <div class="metric-sub">Annual std deviation</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Sharpe Ratio
+          <span class="info-icon" onclick="goToInfo('info-sharpe')" title="Learn more">?</span>
+        </div>
+        <div class="metric-val neu" id="m-sharpe">—</div>
+        <div class="metric-sub">Risk-adjusted return</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Max Drawdown
+          <span class="info-icon" onclick="goToInfo('info-dd')" title="Learn more">?</span>
+        </div>
+        <div class="metric-val neu" id="m-dd">—</div>
+        <div class="metric-sub" id="m-dd-sub">Peak-to-trough</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Best / Worst Year
+          <span class="info-icon" onclick="goToInfo('info-bw')" title="Learn more">?</span>
+        </div>
+        <div class="metric-val neu" id="m-bw">— / —</div>
+        <div class="metric-sub" id="m-bw-sub">Annual returns</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Invested
+          <span class="info-icon" onclick="goToInfo('info-invested')" title="Learn more">?</span>
+        </div>
+        <div class="metric-val neu" id="m-invested">—</div>
+        <div class="metric-sub" id="m-growth-sub">Net gain / loss</div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <div class="chart-tabs">
+        <button class="chart-tab active" data-tab="growth" onclick="switchTab('growth')">Portfolio Growth</button>
+        <button class="chart-tab" data-tab="annual" onclick="switchTab('annual')">Annual Returns</button>
+        <button class="chart-tab" data-tab="drawdown" onclick="switchTab('drawdown')">Drawdown</button>
+        <button class="chart-tab" data-tab="alloc" onclick="switchTab('alloc')">Allocation</button>
+        <button class="chart-tab" data-tab="projection" onclick="switchTab('projection')" style="color:#bc8cff">Future Projection</button>
+      </div>
+      <div class="chart-toolbar" id="chartToolbar">
+        <label><input type="checkbox" id="cbSP" checked onchange="rerenderChart()"> S&amp;P 500</label>
+        <label><input type="checkbox" id="cb6040" checked onchange="rerenderChart()"> 60/40</label>
+        <label style="margin-left:auto">Scale:
+          <select id="scaleMode" onchange="rerenderChart()">
+            <option value="linear">Linear</option>
+            <option value="log">Logarithmic</option>
+          </select>
+        </label>
+      </div>
+      <div class="chart-wrap">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">📊</div>
+          <div class="empty-text">No results yet</div>
+          <div class="empty-hint">Configure your portfolio above and click "Run Backtest"</div>
+        </div>
+        <canvas id="mainCanvas" style="display:none"></canvas>
+      </div>
+    </div>
+
+    <!-- Projection summary -->
+    <div class="proj-summary-panel" id="projSummary" style="display:none">
+      <div class="proj-header">
+        <span class="proj-header-title">Monte Carlo Simulation Results</span>
+        <span class="proj-header-sub" id="projSummaryLabel"></span>
+      </div>
+      <div class="proj-cards">
+        <div class="proj-card pessimistic">
+          <div class="proj-card-label">Pessimistic (10th %ile)</div>
+          <div class="proj-card-val" id="projP10">—</div>
+          <div class="proj-card-sub">Worst-case scenario</div>
+        </div>
+        <div class="proj-card conservative">
+          <div class="proj-card-label">Conservative (25th %ile)</div>
+          <div class="proj-card-val" id="projP25">—</div>
+          <div class="proj-card-sub">Below-average outcome</div>
+        </div>
+        <div class="proj-card median">
+          <div class="proj-card-label">Median (50th %ile)</div>
+          <div class="proj-card-val" id="projP50">—</div>
+          <div class="proj-card-sub">Most likely outcome</div>
+        </div>
+        <div class="proj-card optimistic">
+          <div class="proj-card-label">Optimistic (75th %ile)</div>
+          <div class="proj-card-val" id="projP75">—</div>
+          <div class="proj-card-sub">Above-average outcome</div>
+        </div>
+        <div class="proj-card best">
+          <div class="proj-card-label">Best Case (90th %ile)</div>
+          <div class="proj-card-val" id="projP90">—</div>
+          <div class="proj-card-sub">Strong bull scenario</div>
+        </div>
+        <div class="proj-card expected">
+          <div class="proj-card-label">Expected Value</div>
+          <div class="proj-card-val" id="projExpected">—</div>
+          <div class="proj-card-sub">Analytical formula</div>
+        </div>
+      </div>
+      <div class="proj-disclaimer">Based on historical CAGR &amp; volatility. Past performance does not guarantee future results. Monte Carlo simulations model uncertainty, not certainty.</div>
+    </div>
+
+    <!-- Annual returns table -->
+    <div class="returns-table" id="returnsTable" style="display:none">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Portfolio</th>
+              <th>S&amp;P 500</th>
+              <th>60/40 Blend</th>
+              <th>Contributed</th>
+              <th>Portfolio Value</th>
+            </tr>
+          </thead>
+          <tbody id="returnsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div></div><!-- /page-builder -->
+
+<!-- DATA SOURCES FOOTER -->
+<div style="background:var(--surface);border-top:1px solid var(--border);padding:8px 20px;font-size:10px;color:var(--muted);display:flex;flex-wrap:wrap;gap:12px;align-items:center;flex-shrink:0">
+  <span style="font-weight:600;color:#7d8590;letter-spacing:0.05em;text-transform:uppercase">Data Sources (1993–2024)</span>
+  <span>US Stocks: <strong>S&amp;P 500 TR</strong> (S&amp;P Global)</span>
+  <span>·</span>
+  <span>Intl Stocks: <strong>MSCI EAFE TR</strong> (MSCI)</span>
+  <span>·</span>
+  <span>Bonds: <strong>Bloomberg US Aggregate</strong> (Bloomberg/ICE)</span>
+  <span>·</span>
+  <span>REITs: <strong>FTSE NAREIT All Equity TR</strong> (NAREIT)</span>
+  <span>·</span>
+  <span>Cash: <strong>ICE BofA 3-Mo T-Bill</strong> (FRED)</span>
+  <span>·</span>
+  <span>Crypto: <strong>BTC-USD close prices</strong> (CoinGecko)</span>
+  <span style="margin-left:auto;font-style:italic">Past performance does not guarantee future results.</span>
+</div>
+
+<!-- ASSET PROJECTIONS PAGE -->
+<div id="page-assets" class="page">
+  <div class="main">
+    <div class="ap-sidebar">
+
+      <!-- Quick-add templates -->
+      <div>
+        <div class="sec-label">Quick Add Asset</div>
+        <div class="template-btns" id="templateBtns"></div>
+      </div>
+
+      <!-- Custom asset form -->
+      <div class="custom-asset-form">
+        <div class="sec-label" style="margin-bottom:8px">Custom Asset</div>
+        <div class="form-row">
+          <span class="form-label" style="font-size:11px">Name</span>
+          <input class="form-input" id="customName" type="text" placeholder="e.g. Tesla" style="width:110px;font-size:11px;padding:3px 7px">
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="font-size:11px">Expected Return %/yr</span>
+          <input class="form-input" id="customCagr" type="number" value="10" min="0" max="200" style="width:70px;font-size:11px;padding:3px 7px">
+        </div>
+        <div class="form-row">
+          <span class="form-label" style="font-size:11px">Volatility %/yr</span>
+          <input class="form-input" id="customVol" type="number" value="25" min="1" max="200" style="width:70px;font-size:11px;padding:3px 7px">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;font-size:12px" onclick="addCustomAsset()">+ Add Custom</button>
+      </div>
+
+      <!-- Asset list -->
+      <div>
+        <div class="sec-label">Assets to Project</div>
+        <div id="assetItemList" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div id="assetListEmpty" style="font-size:12px;color:var(--muted);margin-top:4px">No assets added yet. Use Quick Add above.</div>
+      </div>
+
+      <!-- Projection settings -->
+      <div>
+        <div class="sec-label">Settings</div>
+        <div class="form-row">
+          <span class="form-label">Time Horizon</span>
+          <select class="form-input" id="apProjYears">
+            <option value="5">5 years</option>
+            <option value="10" selected>10 years</option>
+            <option value="20">20 years</option>
+            <option value="30">30 years</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <span class="form-label">Simulations</span>
+          <select class="form-input" id="apProjSims">
+            <option value="300">300 (fast)</option>
+            <option value="600" selected>600</option>
+            <option value="1000">1,000</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="runAssetProjections()">▶ Run Projections</button>
+      </div>
+
+    </div>
+
+    <!-- Main content -->
+    <div class="ap-content">
+      <div class="ap-comparison">
+        <div class="ap-comparison-header">Median Projection Comparison</div>
+        <div class="ap-comparison-wrap">
+          <div class="ap-empty" id="apEmpty">
+            <div style="font-size:32px;opacity:0.3">📈</div>
+            <div>Add assets and click Run Projections</div>
+          </div>
+          <canvas id="apCanvas" style="display:none"></canvas>
+        </div>
+      </div>
+      <div class="ap-results-grid" id="apResultsGrid"></div>
+    </div>
+  </div>
+</div><!-- /page-assets -->
+
+<!-- INFORMATION PAGE -->
+<div id="page-info" class="page">
+  <div class="info-page">
+    <div class="info-page-inner">
+
+      <div class="info-category-label">Portfolio Metrics — Definitions</div>
+
+      <div class="info-card" id="info-cagr">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#58a6ff"></div>
+          <span class="info-card-title">CAGR — Compound Annual Growth Rate</span>
+          <span class="info-card-badge">Return Metric</span>
+        </div>
+        <div class="info-card-body">
+          <strong>CAGR</strong> is the single steady annual rate at which your portfolio would have grown to reach its final value, assuming returns compounded each year. It smooths out the year-to-year volatility into one representative number.<br><br>
+          <strong>Formula:</strong> CAGR = (Final Value ÷ Initial Value)<sup>1/years</sup> − 1<br><br>
+          A portfolio that grew from $10,000 to $32,000 over 12 years has a CAGR of approximately 10.1%, even if individual years ranged from −30% to +40%. CAGR is the gold standard for comparing long-term investment returns because it accounts for the compounding effect.
+        </div>
+      </div>
+
+      <div class="info-card" id="info-vol">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#f59e0b"></div>
+          <span class="info-card-title">Volatility — Annual Standard Deviation</span>
+          <span class="info-card-badge">Risk Metric</span>
+        </div>
+        <div class="info-card-body">
+          <strong>Volatility</strong> measures how widely annual returns are spread around the average. It is computed as the standard deviation of calendar-year returns across the backtest period.<br><br>
+          A portfolio with 15% volatility and a 10% average return will, in a typical year, land somewhere between −5% and +25% (roughly ±1 standard deviation, ~68% of years). Roughly 95% of years fall within ±2 standard deviations (−20% to +40%).<br><br>
+          Higher volatility is not inherently bad — it is the price of higher expected returns. The key is whether the extra risk is compensated with enough return (see: Sharpe Ratio).
+        </div>
+      </div>
+
+      <div class="info-card" id="info-sharpe">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#3fb950"></div>
+          <span class="info-card-title">Sharpe Ratio — Risk-Adjusted Return</span>
+          <span class="info-card-badge">Efficiency Metric</span>
+        </div>
+        <div class="info-card-body">
+          <strong>Formula:</strong> (CAGR − Risk-Free Rate) ÷ Volatility &nbsp;·&nbsp; Risk-free rate assumed: <strong>3%</strong><br><br>
+          The Sharpe Ratio tells you how much return you are earning <em>per unit of risk</em>. Two portfolios can have identical CAGRs but very different Sharpe Ratios if one took twice the volatility to get there.<br><br>
+          <strong>Interpretation:</strong><br>
+          &lt; 0.5 — Poor · 0.5–1.0 — Acceptable · 1.0–2.0 — Good · &gt; 2.0 — Excellent<br><br>
+          A Sharpe of 1.0 means that for every 1% of annual volatility you accepted, you earned 1% of excess return above the risk-free rate. The S&amp;P 500 has historically averaged a Sharpe of ~0.5–0.7 over long periods.
+        </div>
+      </div>
+
+      <div class="info-card" id="info-dd">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#f85149"></div>
+          <span class="info-card-title">Max Drawdown — Worst Peak-to-Trough Decline</span>
+          <span class="info-card-badge">Risk Metric</span>
+        </div>
+        <div class="info-card-body">
+          <strong>Max Drawdown</strong> is the largest percentage decline from a portfolio peak to a subsequent trough, measured on a monthly basis throughout the backtest. It represents the worst-case loss an investor would have experienced if they bought at the top and held through the bottom.<br><br>
+          For example, a −50% drawdown means the portfolio fell by half from its peak before recovering. The S&amp;P 500 experienced a −51% drawdown in the 2008–2009 Global Financial Crisis and a −34% drawdown in the 2020 COVID crash.<br><br>
+          <strong>Why it matters:</strong> Many investors panic-sell during drawdowns. A strategy you can stomach through its worst decline is often more valuable than one with a marginally higher CAGR that causes you to exit at the bottom.
+        </div>
+      </div>
+
+      <div class="info-card" id="info-bw">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#bc8cff"></div>
+          <span class="info-card-title">Best Year / Worst Year</span>
+          <span class="info-card-badge">Return Range</span>
+        </div>
+        <div class="info-card-body">
+          The single calendar year in which your portfolio earned its highest (Best Year) and lowest (Worst Year) return. This shows the full range of annual outcomes you would have experienced historically and gives a gut-check on what extremes to expect.<br><br>
+          For a portfolio heavily weighted toward equities, the worst year is often 2008 (Global Financial Crisis) or 2022 (inflation/rate shock). The best year for aggressive portfolios is often 2009 (recovery rally) or 2019–2021.
+        </div>
+      </div>
+
+      <div class="info-card" id="info-invested">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#6b7280"></div>
+          <span class="info-card-title">Total Invested &amp; Net Gain</span>
+          <span class="info-card-badge">Capital Metric</span>
+        </div>
+        <div class="info-card-body">
+          <strong>Total Invested</strong> is the sum of all cash you deployed: your initial lump-sum investment plus every recurring contribution over the backtest period. It represents your actual out-of-pocket cost.<br><br>
+          <strong>Net Gain</strong> is the final portfolio value minus total invested — the portion of your ending wealth that the market generated on top of your contributions. This is the wealth created purely through compound growth, dividends, and reinvestment.
+        </div>
+      </div>
+
+      <div class="info-card" id="info-projcagr">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#bc8cff"></div>
+          <span class="info-card-title">Expected Return %/yr — Projection Override</span>
+          <span class="info-card-badge">Projection Setting</span>
+        </div>
+        <div class="info-card-body">
+          When running the Monte Carlo future projection, the simulator needs a forward-looking expected annual return. By default it uses your backtested CAGR, but this is automatically capped at <strong>25%/yr</strong> to avoid extrapolating extreme historical periods (e.g., a portfolio with 30% Bitcoin may show a 60%+ historical CAGR).<br><br>
+          You can manually lower this value for a more conservative projection. Long-run consensus estimates for US equities are typically <strong>7–10% nominal</strong>, with international stocks slightly lower. Bonds are typically <strong>4–5%</strong>, and cash/T-bills track the Fed Funds Rate.
+        </div>
+      </div>
+
+      <div class="info-category-label">Asset Classes — Data &amp; Benchmarks</div>
+
+      <div class="info-card" id="info-us">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#3b82f6"></div>
+          <span class="info-card-title">US Stocks</span>
+          <span class="info-card-badge">S&amp;P 500 Total Return Index · 1993–2024</span>
+        </div>
+        <div class="info-card-body">
+          Tracks 500 of the largest US-listed public companies, weighted by market capitalization. The S&amp;P 500 Total Return Index reinvests all dividends, making it the standard benchmark for US large-cap equity performance. It covers approximately 80% of available US market capitalization across all 11 GICS sectors.<br><br>
+          <strong>Data source:</strong> S&amp;P Global / Slickcharts — verified calendar-year total returns 1993–2024.
+          <div class="info-holdings">
+            <strong>Top 10 Holdings (by weight, ~2025):</strong><br>
+            Apple (AAPL) · Microsoft (MSFT) · NVIDIA (NVDA) · Amazon (AMZN) · Meta (META) · Alphabet (GOOGL) · Berkshire Hathaway (BRK.B) · Tesla (TSLA) · JPMorgan Chase (JPM) · UnitedHealth Group (UNH)
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" id="info-intl">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#8b5cf6"></div>
+          <span class="info-card-title">International Stocks</span>
+          <span class="info-card-badge">MSCI EAFE TR Index (USD) · 1993–2024</span>
+        </div>
+        <div class="info-card-body">
+          Tracks developed-market equities in <strong>Europe, Australasia, and the Far East</strong> (EAFE), excluding the US and Canada. This index is the primary benchmark for international developed-market equity exposure. Returns are quoted in USD, so they incorporate currency fluctuations relative to the US dollar. Covers ~21 countries and ~800+ large/mid-cap stocks.<br><br>
+          <strong>Data source:</strong> MSCI official fact sheets — verified calendar-year total returns 1993–2024.
+          <div class="info-holdings">
+            <strong>Top 10 Holdings (by weight, ~2025):</strong><br>
+            ASML (Netherlands) · Nestlé (Switzerland) · Novartis (Switzerland) · LVMH (France) · Toyota (Japan) · Shell (UK) · Samsung Electronics (South Korea) · AstraZeneca (UK) · Novo Nordisk (Denmark) · HSBC Holdings (UK)
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" id="info-bond">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#10b981"></div>
+          <span class="info-card-title">Bonds</span>
+          <span class="info-card-badge">Bloomberg US Aggregate Bond Index · 1993–2024</span>
+        </div>
+        <div class="info-card-body">
+          The Bloomberg US Aggregate Bond Index ("the Agg") is the standard benchmark for the broad US investment-grade bond market. It includes US Treasuries, government agency bonds, mortgage-backed securities (MBS), and investment-grade corporate bonds — over 10,000 securities with maturities &gt;1 year.<br><br>
+          <strong>Composition (approximate):</strong> US Treasuries ~42% · Agency MBS ~26% · Investment-Grade Corporates ~25% · Other (CMBS, agency debentures) ~7%<br><br>
+          <strong>Data source:</strong> Bloomberg / ICE BofA — verified calendar-year total returns 1993–2024.
+          <div class="info-holdings">
+            <strong>Key Issuers (Investment-Grade Corporate segment):</strong><br>
+            US Treasury Notes &amp; Bonds · Fannie Mae / Freddie Mac (Agency MBS) · Apple · Microsoft · JPMorgan Chase · Bank of America · Verizon · AT&amp;T · Goldman Sachs · Wells Fargo
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" id="info-reit">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#f59e0b"></div>
+          <span class="info-card-title">Real Estate (REITs)</span>
+          <span class="info-card-badge">FTSE NAREIT All Equity REITs TR Index · 1993–2024</span>
+        </div>
+        <div class="info-card-body">
+          Real Estate Investment Trusts (REITs) are publicly traded companies that own income-producing real estate. They are required by law to distribute at least 90% of taxable income as dividends, making them a significant source of income in addition to price appreciation. The FTSE NAREIT All Equity REITs Total Return Index covers all US-listed equity REITs across all property sectors.<br><br>
+          <strong>Data source:</strong> NAREIT (reit.com) — verified calendar-year total returns 1993–2024.
+          <div class="info-holdings">
+            <strong>Top 10 Holdings (by market cap, ~2025):</strong><br>
+            Prologis (Industrial/Logistics) · American Tower (Cell Towers) · Equinix (Data Centers) · Crown Castle (Wireless Towers) · Public Storage (Self-Storage) · Welltower (Healthcare) · Digital Realty (Data Centers) · Simon Property Group (Retail Malls) · Realty Income (Net Lease) · SBA Communications (Towers)
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" id="info-cash">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#6b7280"></div>
+          <span class="info-card-title">Cash &amp; Equivalents</span>
+          <span class="info-card-badge">ICE BofA US 3-Month T-Bill Index · 1993–2024</span>
+        </div>
+        <div class="info-card-body">
+          Represents the risk-free rate of return via US Treasury Bills maturing in 90 days or less. T-bills are backed by the full faith and credit of the US government and are considered the nearest proxy to a risk-free asset in finance theory.<br><br>
+          The rate moves closely with the Federal Reserve's Federal Funds Rate target. During near-zero rate eras (2009–2015, 2020–2022), cash returned essentially 0%. During tightening cycles (2022–2024), 3-month T-bills yielded 5%+.<br><br>
+          <strong>Data source:</strong> FRED (Federal Reserve Economic Data) / ICE Data Services — verified calendar-year returns 1993–2024.
+          <div class="info-holdings">
+            <strong>Real-world equivalents:</strong><br>
+            3-Month US Treasury Bills (direct purchase via TreasuryDirect) · Fidelity Government Money Market (SPAXX) · Vanguard Federal Money Market (VMFXX) · High-Yield Savings Accounts · Short-Term Treasury ETFs (BIL, SGOV)
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card" id="info-btc">
+        <div class="info-card-header">
+          <div class="info-card-dot" style="background:#f97316"></div>
+          <span class="info-card-title">Crypto (Bitcoin)</span>
+          <span class="info-card-badge">BTC-USD Calendar-Year Returns · 2011–2024</span>
+        </div>
+        <div class="info-card-body">
+          Returns represent Bitcoin (BTC) close-to-close price change for each calendar year in USD, sourced from CoinGecko / CoinMarketCap. Pre-2011 returns are set to 0% — Bitcoin's Genesis Block was mined January 3, 2009, but there was no meaningful liquid market before 2011.<br><br>
+          <strong>Volatility:</strong> Bitcoin's realized annual volatility is approximately <strong>82%</strong> — roughly 5× that of the S&amp;P 500. A small allocation (1–5%) can meaningfully impact portfolio skew due to its uncorrelated, high-return profile. Returns are highly leptokurtic (fat-tailed).<br><br>
+          <strong>Data source:</strong> CoinGecko / CoinMarketCap — verified calendar-year close-to-close returns.
+          <div class="info-holdings">
+            <strong>Bitcoin network metrics (~2025):</strong><br>
+            Market Cap: ~$1.8 trillion · Dominance: ~55% of total crypto market cap<br><br>
+            <strong>Related public equities for Bitcoin exposure:</strong><br>
+            MicroStrategy (MSTR) · Coinbase Global (COIN) · Marathon Digital (MARA) · Riot Platforms (RIOT) · CleanSpark (CLSK) · Spot Bitcoin ETFs: iShares Bitcoin Trust (IBIT), Fidelity Wise Origin (FBTC)
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div><!-- /page-info -->
+
+<!-- QUIZ MODAL -->
+<div class="quiz-overlay" id="quizOverlay" onclick="overlayClick(event)">
+  <div class="quiz-modal" id="quizModal">
+    <button class="quiz-close" onclick="closeQuiz()">✕</button>
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizProgress" style="width:0%"></div>
+    </div>
+    <div id="quizContent"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+// Year range: 1993–2024 (32 years)
+const YEARS = [
+  1993,1994,1995,1996,1997,1998,1999,
+  2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,
+  2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,
+  2020,2021,2022,2023,2024
+];
+
+// ─── VERIFIED ANNUAL TOTAL RETURNS ───────────────────────────────────────────
+// Each array has 32 values corresponding to YEARS[0..31] (1993–2024).
+//
+// US Stocks  — S&P 500 Total Return Index (price + dividends reinvested)
+//              Source: S&P Global / Slickcharts
+//
+// Intl Stocks— MSCI EAFE Total Return Index (net div, USD-denominated)
+//              Source: MSCI official fact sheets
+//
+// Bonds      — Bloomberg US Aggregate Bond Index Total Return
+//              Source: Bloomberg / ICE BofA
+//
+// Real Estate— FTSE NAREIT All Equity REITs Total Return Index
+//              Source: NAREIT (reit.com)
+//
+// Cash       — ICE BofA US 3-Month Treasury Bill Index
+//              Source: FRED / ICE Data Services
+//
+// Crypto     — Bitcoin (BTC-USD) calendar-year close-to-close returns
+//              Genesis block: 3 Jan 2009. Treated as 0 until 2011
+//              (pre-2011 BTC had no liquid market; allocations are not meaningful)
+//              Source: CoinGecko / CoinMarketCap historical data
+//
+const H = {
+  //              1993    1994    1995    1996    1997    1998    1999
+  us:   [ 0.1008, 0.0132, 0.3758, 0.2296, 0.3336, 0.2858, 0.2104,
+  //              2000    2001    2002    2003    2004    2005    2006    2007    2008    2009
+          -0.0910,-0.1189,-0.2210, 0.2868, 0.1088, 0.0491, 0.1580, 0.0549,-0.3700, 0.2646,
+  //              2010    2011    2012    2013    2014    2015    2016    2017    2018    2019
+           0.1506, 0.0211, 0.1600, 0.3239, 0.1369, 0.0138, 0.1196, 0.2183,-0.0438, 0.3149,
+  //              2020    2021    2022    2023    2024
+           0.1840, 0.2871,-0.1811, 0.2629, 0.2502],
+
+  //              1993    1994    1995    1996    1997    1998    1999
+  intl: [ 0.3294, 0.0806, 0.1155, 0.0636, 0.0206, 0.2033, 0.2730,
+  //              2000    2001    2002    2003    2004    2005    2006    2007    2008    2009
+          -0.1417,-0.2144,-0.1594, 0.3917, 0.2070, 0.1402, 0.2686, 0.1163,-0.4338, 0.3246,
+  //              2010    2011    2012    2013    2014    2015    2016    2017    2018    2019
+           0.0821,-0.1173, 0.1790, 0.2329,-0.0490,-0.0039, 0.0151, 0.2562,-0.1379, 0.2266,
+  //              2020    2021    2022    2023    2024
+           0.0828, 0.1178,-0.1400, 0.1850, 0.0430],
+
+  //              1993    1994    1995    1996    1997    1998    1999
+  bond: [ 0.0975,-0.0292, 0.1847, 0.0363, 0.0965, 0.0869,-0.0082,
+  //              2000    2001    2002    2003    2004    2005    2006    2007    2008    2009
+           0.1163, 0.0844, 0.1026, 0.0410, 0.0434, 0.0243, 0.0433, 0.0697, 0.0524, 0.0593,
+  //              2010    2011    2012    2013    2014    2015    2016    2017    2018    2019
+           0.0654, 0.0784, 0.0421,-0.0202, 0.0597, 0.0055, 0.0265, 0.0354,-0.0005, 0.0872,
+  //              2020    2021    2022    2023    2024
+           0.0751,-0.0154,-0.1301, 0.0553, 0.0125],
+
+  //              1993    1994    1995    1996    1997    1998    1999
+  reit: [ 0.1965, 0.0317, 0.1527, 0.3527, 0.2026,-0.1750,-0.0462,
+  //              2000    2001    2002    2003    2004    2005    2006    2007    2008    2009
+           0.2637, 0.1393, 0.0382, 0.3713, 0.3158, 0.1216, 0.3506,-0.1569,-0.3773, 0.2799,
+  //              2010    2011    2012    2013    2014    2015    2016    2017    2018    2019
+           0.2795, 0.0829, 0.1970, 0.0286, 0.3014, 0.0319, 0.0863, 0.0927,-0.0422, 0.2900,
+  //              2020    2021    2022    2023    2024
+          -0.0757, 0.4134,-0.2495, 0.1136, 0.0519],
+
+  //              1993    1994    1995    1996    1997    1998    1999
+  cash: [ 0.0297, 0.0380, 0.0568, 0.0519, 0.0507, 0.0478, 0.0452,
+  //              2000    2001    2002    2003    2004    2005    2006    2007    2008    2009
+           0.0611, 0.0386, 0.0171, 0.0106, 0.0134, 0.0316, 0.0497, 0.0500, 0.0159, 0.0014,
+  //              2010    2011    2012    2013    2014    2015    2016    2017    2018    2019
+           0.0013, 0.0005, 0.0008, 0.0006, 0.0004, 0.0007, 0.0032, 0.0106, 0.0193, 0.0235,
+  //              2020    2021    2022    2023    2024
+           0.0038, 0.0005, 0.0203, 0.0525, 0.0530],
+
+  // Bitcoin: 0 through 2010 (no liquid market). 2011 onward = actual calendar-year
+  // close-to-close returns using CoinGecko/CoinMarketCap Dec 31 USD prices.
+  //   2011: $0.30 → $4.72  (+1,473%)    2017: $963 → $14,041  (+1,358%)
+  //   2012: $4.72 → $13.50 (+186%)      2018: $14,041 → $3,747 (-73.3%)
+  //   2013: $13.50 → $746  (+5,429%)    2019: $3,747 → $7,194  (+92.0%)
+  //   2014: $746 → $315    (-57.8%)     2020: $7,194 → $29,022 (+303.5%)
+  //   2015: $315 → $426    (+35.2%)     2021: $29,022 → $46,306 (+59.6%)
+  //   2016: $426 → $964    (+126.3%)    2022: $46,306 → $16,605 (-64.1%)
+  //                                     2023: $16,605 → $42,265 (+154.5%)
+  //                                     2024: $42,265 → $93,668 (+121.6%)
+  //              1993–2010 (18 zeros)
+  btc:  [    0,     0,     0,     0,     0,     0,     0,
+             0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+             0,
+  //              2011    2012     2013     2014    2015    2016    2017     2018    2019
+           14.73,  1.860, 54.29, -0.578,  0.352,  1.263, 13.58, -0.733,  0.920,
+  //              2020    2021    2022    2023    2024
+            3.035,  0.596, -0.641,  1.545,  1.216],
+};
+
+// Annualized volatility (standard deviation of returns) used for intra-year
+// monthly return dispersion. Based on trailing 20-year realized vol per asset class.
+// US Stocks: ~15.6% | Intl: ~17.2% | Bonds: ~5.8% | REITs: ~19.5%
+// Cash: ~0.4% | BTC: ~82% (realized 2015–2024)
+const VOL = { us:0.156, intl:0.172, bond:0.058, reit:0.195, cash:0.004, btc:0.820 };
+
+const ASSETS = [
+  {
+    key:'us', name:'US Stocks', color:'#3b82f6',
+    benchmark: 'S&P 500 Total Return Index',
+    description: 'Large-cap US equities. Tracks 500 leading public companies weighted by market cap.',
+    topHoldings: 'Apple (AAPL), Microsoft (MSFT), NVIDIA (NVDA), Amazon (AMZN), Meta (META), Alphabet (GOOGL), Berkshire Hathaway (BRK.B), Tesla (TSLA), JPMorgan Chase (JPM), UnitedHealth (UNH)',
+  },
+  {
+    key:'intl', name:'Intl Stocks', color:'#8b5cf6',
+    benchmark: 'MSCI EAFE Total Return Index (USD)',
+    description: 'Developed-market international equities: Europe, Australasia, and Far East. Excludes US & Canada.',
+    topHoldings: 'ASML (Netherlands), Nestlé (Switzerland), Novartis (Switzerland), LVMH (France), Toyota (Japan), Shell (UK), Samsung (S. Korea), AstraZeneca (UK), Novo Nordisk (Denmark), HSBC (UK)',
+  },
+  {
+    key:'bond', name:'Bonds', color:'#10b981',
+    benchmark: 'Bloomberg US Aggregate Bond Index',
+    description: 'Broad US investment-grade bond market: US Treasuries, agency MBS, corporate bonds, and CMBS.',
+    topHoldings: 'US Treasury Notes & Bonds (~42%), Agency MBS (Fannie Mae / Freddie Mac) (~26%), Corporate IG bonds (~25%): Apple, Microsoft, JPMorgan, Bank of America, Verizon',
+  },
+  {
+    key:'reit', name:'Real Estate', color:'#f59e0b',
+    benchmark: 'FTSE NAREIT All Equity REITs Total Return Index',
+    description: 'US-listed equity REITs owning income-producing real estate across all sectors.',
+    topHoldings: 'Prologis (Industrial), American Tower (Cell Towers), Equinix (Data Centers), Crown Castle (Towers), Public Storage (Self-Storage), Welltower (Healthcare), Digital Realty (Data Centers), Simon Property (Retail), Realty Income (Net Lease), SBA Communications (Towers)',
+  },
+  {
+    key:'cash', name:'Cash', color:'#6b7280',
+    benchmark: 'ICE BofA US 3-Month Treasury Bill Index',
+    description: 'Short-term US government obligations maturing in ≤90 days. Represents the risk-free rate.',
+    topHoldings: '3-Month US Treasury Bills. Also proxied by money market funds (SPAXX, VMFXX) and high-yield savings accounts.',
+  },
+  {
+    key:'btc', name:'Crypto', color:'#f97316',
+    benchmark: 'Bitcoin (BTC-USD) — calendar-year total return',
+    description: 'Bitcoin only. The largest cryptocurrency by market cap (~55% dominance). Pre-2011 returns are 0 (no liquid market). Extremely high volatility asset.',
+    topHoldings: 'Bitcoin (BTC) — market cap ~$1.8T (Jan 2025). Related public equities: MicroStrategy (MSTR), Coinbase (COIN), Marathon Digital (MARA), Riot Platforms (RIOT), CleanSpark (CLSK)',
+  },
+];
+
+const PRESETS = {
+  conservative: { us:20, intl:10, bond:50, reit:10, cash:10, btc:0  },
+  balanced:     { us:40, intl:20, bond:30, reit: 5, cash: 5, btc:0  },
+  growth:       { us:55, intl:25, bond:10, reit: 5, cash: 2, btc:3  },
+  aggressive:   { us:50, intl:25, bond: 0, reit:10, cash: 0, btc:15 },
+  allStocks:    { us:60, intl:40, bond: 0, reit: 0, cash: 0, btc:0  },
+  crypto:       { us:35, intl:15, bond:10, reit: 5, cash: 5, btc:30 },
+};
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let alloc = { ...PRESETS.balanced };
+let mainChart = null;
+let allocChart = null;
+let currentTab = 'growth';
+let lastResult = null;
+
+// ─── SEEDED RNG ──────────────────────────────────────────────────────────────
+
+function makeRng(seed) {
+  return () => {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function boxMuller(rng) {
+  const u1 = Math.max(rng(), 1e-10), u2 = rng();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+// Random normal using Math.random (for Monte Carlo — non-deterministic)
+function randNormal() {
+  const u1 = Math.max(Math.random(), 1e-10), u2 = Math.random();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+
+function arrayPercentile(sorted, p) {
+  const idx = (p / 100) * (sorted.length - 1);
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+// ─── MONTE CARLO ─────────────────────────────────────────────────────────────
+
+function runMonteCarlo(startVal, cagr, vol, recurAmt, recurFreq, numYears, numSims) {
+  // Lognormal monthly parameters (Ito-corrected drift)
+  const monthlyLogMu  = Math.log(1 + cagr) / 12;
+  const monthlyLogSig = vol / Math.sqrt(12);
+  const drift = monthlyLogMu - 0.5 * monthlyLogSig * monthlyLogSig;
+  const totalMonths = numYears * 12;
+
+  // Year-end value buckets: yearBuckets[year][simIndex]
+  const yearBuckets = Array.from({ length: numYears }, () => []);
+
+  for (let s = 0; s < numSims; s++) {
+    let val = startVal;
+    for (let m = 0; m < totalMonths; m++) {
+      // Add recurring contribution
+      if (recurAmt > 0 && recurFreq !== 'none') {
+        const addNow = recurFreq === 'monthly' ||
+          (recurFreq === 'quarterly' && m % 3 === 0) ||
+          (recurFreq === 'annually' && m % 12 === 0);
+        if (addNow) val += recurAmt;
+      }
+      // Apply lognormal monthly return
+      val *= Math.exp(drift + monthlyLogSig * randNormal());
+      // Record year-end
+      if ((m + 1) % 12 === 0) yearBuckets[(m + 1) / 12 - 1].push(val);
+    }
+  }
+
+  return yearBuckets.map(bucket => {
+    bucket.sort((a, b) => a - b);
+    return {
+      p10: arrayPercentile(bucket, 10),
+      p25: arrayPercentile(bucket, 25),
+      p50: arrayPercentile(bucket, 50),
+      p75: arrayPercentile(bucket, 75),
+      p90: arrayPercentile(bucket, 90),
+    };
+  });
+}
+
+// Analytical expected value with contributions (deterministic)
+function analyticalProjection(startVal, cagr, recurAmt, recurFreq, numYears) {
+  const r_m = Math.pow(1 + cagr, 1 / 12) - 1;
+  let val = startVal;
+  const vals = [];
+  for (let y = 0; y < numYears; y++) {
+    for (let m = 0; m < 12; m++) {
+      if (recurAmt > 0 && recurFreq !== 'none') {
+        const addNow = recurFreq === 'monthly' ||
+          (recurFreq === 'quarterly' && m % 3 === 0) ||
+          (recurFreq === 'annually' && m === 0);
+        if (addNow) val += recurAmt;
+      }
+      val *= (1 + r_m);
+    }
+    vals.push(val);
+  }
+  return vals;
+}
+
+// Generate 12 monthly returns that compound exactly to annualReturn
+function monthlyReturns(assetIdx, yearIdx) {
+  const ann = H[ASSETS[assetIdx].key][yearIdx];
+  const std = VOL[ASSETS[assetIdx].key] / Math.sqrt(12);
+  const mu  = Math.pow(1 + ann, 1/12) - 1;
+  const rng = makeRng(assetIdx * 100003 + yearIdx * 7919);
+  const out = [];
+  for (let m = 0; m < 11; m++) out.push(mu + boxMuller(rng) * std);
+  // Force last month so product = 1 + annualReturn
+  const prod = out.reduce((p, r) => p * (1 + r), 1);
+  out.push((1 + ann) / prod - 1);
+  return out;
+}
+
+// ─── BACKTEST ────────────────────────────────────────────────────────────────
+
+function runBacktest() {
+  const sy       = parseInt(document.getElementById('startYear').value);
+  const ey       = parseInt(document.getElementById('endYear').value);
+  const inv      = parseFloat(document.getElementById('initInv').value.replace(/[^0-9.]/g,'')) || 10000;
+  const reb      = document.getElementById('rebalance').value;
+  const recurAmt = parseFloat(document.getElementById('recurAmt').value.replace(/[^0-9.]/g,'')) || 0;
+  const recurFreq = document.getElementById('recurFreq').value;
+
+  const si = YEARS.indexOf(sy), ei = YEARS.indexOf(ey);
+  if (si < 0 || ei < 0 || si >= ei) { alert('Invalid year range.'); return; }
+
+  // Normalize allocation weights
+  const w = {};
+  let total = ASSETS.reduce((s, a) => s + (alloc[a.key] || 0), 0);
+  if (total === 0) { alert('All allocations are 0%.'); return; }
+  ASSETS.forEach(a => w[a.key] = (alloc[a.key] || 0) / total);
+
+  // Pre-generate monthly returns for all assets/years
+  const monthly = {}; // monthly[assetKey][yearOffset][month]
+  ASSETS.forEach((a, ai) => {
+    monthly[a.key] = [];
+    for (let yi = si; yi <= ei; yi++) monthly[a.key].push(monthlyReturns(ai, yi));
+  });
+
+  // Also generate for benchmarks using same seed approach
+  const spMonthly  = []; // monthly S&P 500
+  const bndMonthly = []; // monthly bonds (for 60/40)
+  for (let yi = si; yi <= ei; yi++) {
+    spMonthly.push(monthlyReturns(0, yi));   // asset 0 = US stocks
+    bndMonthly.push(monthlyReturns(2, yi));  // asset 2 = bonds
+  }
+
+  let portVal = inv, spVal = inv, sfVal = inv;
+  const portVals = [inv], spVals = [inv], sfVals = [inv];
+  const dates = [];
+  const annualRows = [];
+  const driftW = { ...w }; // tracks weights if no rebalancing
+  let totalContributed = inv; // running total money put in
+
+  for (let yi = si; yi <= ei; yi++) {
+    const yOff = yi - si;
+    const year = YEARS[yi];
+    let yearStart = portVal;
+    let yearContrib = 0;
+
+    for (let m = 0; m < 12; m++) {
+      const dateStr = `${year}-${String(m+1).padStart(2,'0')}`;
+      dates.push(dateStr);
+
+      // Add recurring contribution before growth this month
+      if (recurAmt > 0 && recurFreq !== 'none') {
+        const addNow = recurFreq === 'monthly' ||
+          (recurFreq === 'quarterly' && m % 3 === 0) ||
+          (recurFreq === 'annually' && m === 0);
+        if (addNow) {
+          portVal += recurAmt;
+          totalContributed += recurAmt;
+          yearContrib += recurAmt;
+        }
+      }
+
+      // Portfolio return
+      let portR = 0;
+      ASSETS.forEach(a => {
+        const wt = reb === 'none' ? driftW[a.key] : w[a.key];
+        portR += wt * monthly[a.key][yOff][m];
+      });
+
+      // Update drift weights
+      if (reb === 'none') {
+        const newW = {};
+        let sum = 0;
+        ASSETS.forEach(a => { newW[a.key] = driftW[a.key] * (1 + monthly[a.key][yOff][m]); sum += newW[a.key]; });
+        ASSETS.forEach(a => driftW[a.key] = newW[a.key] / sum);
+      }
+      // Quarterly rebalance: reset to target at end of Q1/Q2/Q3/Q4
+      if (reb === 'quarterly' && (m === 2 || m === 5 || m === 8 || m === 11)) {
+        ASSETS.forEach(a => driftW[a.key] = w[a.key]);
+      }
+
+      portVal *= (1 + portR);
+      spVal   *= (1 + spMonthly[yOff][m]);
+      sfVal   *= (1 + 0.6 * spMonthly[yOff][m] + 0.4 * bndMonthly[yOff][m]);
+
+      portVals.push(portVal);
+      spVals.push(spVal);
+      sfVals.push(sfVal);
+    }
+
+    annualRows.push({
+      year,
+      portR: portVal / (yearStart + yearContrib) - 1,
+      spR:   H.us[yi],
+      sfR:   0.6 * H.us[yi] + 0.4 * H.bond[yi],
+      yearContrib,
+    });
+    yearStart = portVal;
+  }
+
+  // ── Metrics ──────────────────────────────────────────────
+  const annRets = annualRows.map(r => r.portR);
+  const numYears = ei - si + 1;
+  const cagr = Math.pow(portVal / inv, 1 / numYears) - 1;
+  const meanR = annRets.reduce((a, b) => a + b, 0) / annRets.length;
+  const vol   = Math.sqrt(annRets.reduce((s, r) => s + (r - meanR) ** 2, 0) / annRets.length);
+  const sharpe = (cagr - 0.03) / vol;
+
+  // Max drawdown from monthly values
+  let peak = portVals[0], maxDD = 0;
+  const drawdowns = portVals.map(v => {
+    peak = Math.max(peak, v);
+    const dd = (v - peak) / peak;
+    maxDD = Math.min(maxDD, dd);
+    return dd * 100;
+  });
+
+  const bestIdx  = annRets.indexOf(Math.max(...annRets));
+  const worstIdx = annRets.indexOf(Math.min(...annRets));
+
+  lastResult = {
+    dates, portVals, spVals, sfVals, drawdowns, annualRows,
+    cagr, vol, sharpe, maxDD,
+    best: annRets[bestIdx], bestYear: annualRows[bestIdx].year,
+    worst: annRets[worstIdx], worstYear: annualRows[worstIdx].year,
+    inv, finalVal: portVal, numYears, totalContributed,
+    recurAmt, recurFreq,
+    startYear: sy, endYear: ey,
+  };
+
+  lastProjection = null; // invalidate projection cache
+  // Pre-fill projection CAGR input with historical CAGR (capped at 25% to avoid unrealistic projections)
+  const cappedCagr = Math.min(cagr, 0.25);
+  document.getElementById('projCagr').value = (cappedCagr * 100).toFixed(1);
+  updateMetrics(lastResult);
+  renderCurrentChart();
+  buildTable(lastResult);
+  document.getElementById('returnsTable').style.display = 'block';
+  document.getElementById('runInfo').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+}
+
+// ─── METRICS ─────────────────────────────────────────────────────────────────
+
+function pct(v, dp = 1) {
+  return (v == null || isNaN(v)) ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(dp) + '%';
+}
+function money(v) {
+  return '$' + Math.round(v).toLocaleString('en-US');
+}
+function setMetric(id, text, cls) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'metric-val ' + (cls || 'neu');
+}
+
+function updateMetrics(r) {
+  setMetric('m-cagr',   pct(r.cagr),   r.cagr >= 0 ? 'pos' : 'neg');
+  setMetric('m-vol',    pct(r.vol),     'neu');
+  setMetric('m-sharpe', r.sharpe.toFixed(2), r.sharpe >= 1 ? 'pos' : r.sharpe >= 0 ? 'neu' : 'neg');
+  setMetric('m-dd',     pct(r.maxDD),   'neg');
+  setMetric('m-bw',     pct(r.best, 0) + ' / ' + pct(r.worst, 0), 'neu');
+
+  document.getElementById('m-cagr-sub').textContent = `${money(r.inv)} → ${money(r.finalVal)}`;
+
+  const gain = r.finalVal - r.totalContributed;
+  setMetric('m-invested', money(r.totalContributed), 'neu');
+  document.getElementById('m-growth-sub').textContent =
+    `${gain >= 0 ? '+' : ''}${money(gain)} net gain`;
+  document.getElementById('m-bw-sub').textContent   = `Best ${r.bestYear} / Worst ${r.worstYear}`;
+  document.getElementById('m-dd-sub').textContent   = `Over ${r.numYears} years`;
+}
+
+// ─── CHARTS ──────────────────────────────────────────────────────────────────
+
+const BASE_OPTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 400 },
+  plugins: {
+    legend: { labels: { color: '#7d8590', font: { size: 12 }, boxWidth: 10, padding: 14 } },
+    tooltip: {
+      backgroundColor: '#1f2937', borderColor: '#30363d', borderWidth: 1,
+      titleColor: '#e6edf3', bodyColor: '#7d8590', padding: 10,
+    },
+  },
+  scales: {
+    x: { grid: { color: 'rgba(48,54,61,0.5)' }, ticks: { color: '#7d8590', maxTicksLimit: 12 } },
+    y: { grid: { color: 'rgba(48,54,61,0.5)' }, ticks: { color: '#7d8590' } },
+  },
+};
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.chart-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+  const toolbar = document.getElementById('chartToolbar');
+  toolbar.style.display = (tab === 'growth') ? 'flex' : 'none';
+  if (tab !== 'projection') document.getElementById('projSummary').style.display = 'none';
+  if (lastResult) renderCurrentChart();
+}
+
+function rerenderChart() {
+  if (lastResult) renderCurrentChart();
+}
+
+function renderCurrentChart() {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('mainCanvas').style.display = 'block';
+  if (mainChart) { mainChart.destroy(); mainChart = null; }
+  const ctx = document.getElementById('mainCanvas').getContext('2d');
+  if      (currentTab === 'growth')     drawGrowth(ctx);
+  else if (currentTab === 'annual')     drawAnnual(ctx);
+  else if (currentTab === 'drawdown')   drawDrawdown(ctx);
+  else if (currentTab === 'alloc')      drawAllocTab(ctx);
+  else if (currentTab === 'projection') drawProjection(ctx);
+}
+
+// Downsample: take every Nth element from an array
+function sample(arr, step) { return arr.filter((_, i) => i % step === 0); }
+
+function drawGrowth(ctx) {
+  const r = lastResult;
+  const step = Math.max(1, Math.floor(r.portVals.length / 200));
+  const vals = sample(r.portVals, step);
+  const spv  = sample(r.spVals,   step);
+  const sfv  = sample(r.sfVals,   step);
+
+  // Keep raw date strings so the tick callback can parse them
+  const allDates = ['START', ...r.dates];
+  const labels = sample(allDates, step);
+
+  const showSP  = document.getElementById('cbSP').checked;
+  const show60  = document.getElementById('cb6040').checked;
+  const logMode = document.getElementById('scaleMode').value === 'log';
+
+  const datasets = [{
+    label: 'My Portfolio', data: vals,
+    borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.07)',
+    fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2.5,
+  }];
+  if (showSP)  datasets.push({ label: 'S&P 500',    data: spv, borderColor: '#3b82f6', fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5, borderDash: [5,3] });
+  if (show60)  datasets.push({ label: '60/40 Blend', data: sfv, borderColor: '#10b981', fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5, borderDash: [5,3] });
+
+  mainChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      ...BASE_OPTS,
+      plugins: {
+        ...BASE_OPTS.plugins,
+        tooltip: { ...BASE_OPTS.plugins.tooltip, callbacks: { label: c => `${c.dataset.label}: ${money(c.raw)}` } },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(48,54,61,0.5)' },
+          ticks: {
+            color: '#7d8590', maxTicksLimit: 50, autoSkip: true,
+            callback: function(val, idx) {
+              const lbl = labels[idx] || '';
+              if (lbl === 'START') return String(r.startYear);
+              const parts = lbl.split('-');
+              return parts.length === 2 && parts[1] === '01' ? parts[0] : '';
+            },
+          },
+        },
+        y: {
+          ...BASE_OPTS.scales.y,
+          type: logMode ? 'logarithmic' : 'linear',
+          ticks: { color: '#7d8590', callback: v => v >= 1e6 ? '$'+(v/1e6).toFixed(1)+'M' : v >= 1000 ? '$'+(v/1000).toFixed(0)+'K' : '$'+v },
+        },
+      },
+    },
+  });
+}
+
+function drawAnnual(ctx) {
+  const r = lastResult;
+  const rets = r.annualRows.map(a => +(a.portR * 100).toFixed(2));
+
+  mainChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: r.annualRows.map(a => String(a.year)),
+      datasets: [{
+        label: 'Annual Return',
+        data: rets,
+        backgroundColor: rets.map(v => v >= 0 ? 'rgba(63,185,80,0.7)' : 'rgba(248,81,73,0.7)'),
+        borderColor: rets.map(v => v >= 0 ? '#3fb950' : '#f85149'),
+        borderWidth: 1, borderRadius: 3,
+      }],
+    },
+    options: {
+      ...BASE_OPTS,
+      plugins: {
+        ...BASE_OPTS.plugins,
+        tooltip: { ...BASE_OPTS.plugins.tooltip, callbacks: { label: c => `Return: ${c.raw >= 0 ? '+' : ''}${c.raw.toFixed(1)}%` } },
+      },
+      scales: {
+        x: BASE_OPTS.scales.x,
+        y: { ...BASE_OPTS.scales.y, ticks: { color: '#7d8590', callback: v => v + '%' } },
+      },
+    },
+  });
+}
+
+function drawDrawdown(ctx) {
+  const r = lastResult;
+  const step = Math.max(1, Math.floor(r.drawdowns.length / 200));
+  const dds  = sample(r.drawdowns, step);
+  const allDates = ['START', ...r.dates];
+  const labels = sample(allDates, step);
+
+  mainChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Drawdown from Peak',
+        data: dds,
+        borderColor: '#f85149', backgroundColor: 'rgba(248,81,73,0.1)',
+        fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2,
+      }],
+    },
+    options: {
+      ...BASE_OPTS,
+      plugins: {
+        ...BASE_OPTS.plugins,
+        tooltip: { ...BASE_OPTS.plugins.tooltip, callbacks: { label: c => `Drawdown: ${c.raw.toFixed(1)}%` } },
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(48,54,61,0.5)' },
+          ticks: {
+            color: '#7d8590', maxTicksLimit: 50, autoSkip: true,
+            callback: function(val, idx) {
+              const lbl = labels[idx] || '';
+              if (lbl === 'START') return '';
+              const parts = lbl.split('-');
+              return parts.length === 2 && parts[1] === '01' ? parts[0] : '';
+            },
+          },
+        },
+        y: { ...BASE_OPTS.scales.y, ticks: { color: '#7d8590', callback: v => v + '%' } },
+      },
+    },
+  });
+}
+
+function drawAllocTab(ctx) {
+  mainChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ASSETS.map(a => a.name),
+      datasets: [{ data: ASSETS.map(a => alloc[a.key] || 0), backgroundColor: ASSETS.map(a => a.color), borderWidth: 2, borderColor: '#161b22' }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '60%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#7d8590', font: { size: 12 }, padding: 12, boxWidth: 12 } },
+        tooltip: { ...BASE_OPTS.plugins.tooltip, callbacks: { label: c => ` ${c.label}: ${c.raw}%` } },
+      },
+    },
+  });
+}
+
+// ─── PROJECTION CHART ────────────────────────────────────────────────────────
+
+let lastProjection = null; // cached Monte Carlo result
+
+function rerunProjection() {
+  lastProjection = null; // invalidate cache
+  if (currentTab === 'projection' && lastResult) renderCurrentChart();
+}
+
+function drawProjection(ctx) {
+  const r = lastResult;
+  const numProjYears = parseInt(document.getElementById('projYears').value);
+  const numSims      = parseInt(document.getElementById('projSims').value);
+  const cagrOverride = parseFloat(document.getElementById('projCagr').value) / 100;
+  const useCagr      = isNaN(cagrOverride) ? r.cagr : cagrOverride;
+
+  // Run Monte Carlo (or use cache)
+  if (!lastProjection || lastProjection.useCagr !== useCagr || lastProjection.vol !== r.vol ||
+      lastProjection.numProjYears !== numProjYears || lastProjection.numSims !== numSims) {
+    lastProjection = {
+      data: runMonteCarlo(r.finalVal, useCagr, r.vol, r.recurAmt, r.recurFreq, numProjYears, numSims),
+      analytical: analyticalProjection(r.finalVal, useCagr, r.recurAmt, r.recurFreq, numProjYears),
+      useCagr, vol: r.vol, numProjYears, numSims,
+    };
+  }
+  const projData = lastProjection.data;
+  const analytData = lastProjection.analytical;
+
+  // Historical year-end values (yearly granularity for clean blending)
+  const histLabels = [String(r.startYear)];
+  const histVals   = [r.inv];
+  r.annualRows.forEach((row, i) => {
+    histLabels.push(String(row.year));
+    histVals.push(r.portVals[(i + 1) * 12]);
+  });
+  const histLen = histVals.length; // includes start point
+
+  // Future labels: endYear+1 .. endYear+numProjYears
+  const futureLabels = Array.from({ length: numProjYears }, (_, i) => String(r.endYear + 1 + i));
+  const allLabels = [...histLabels, ...futureLabels];
+
+  // Helper: build array with nulls before offset, connecting value at offset, then future values
+  const futureSeries = (arr) => {
+    const out = new Array(histLen - 1).fill(null);
+    out.push(r.finalVal); // connect at last historical point
+    arr.forEach(v => out.push(v));
+    return out;
+  };
+
+  // Historical: actual values, then null for future
+  const histSeries = [...histVals, ...new Array(numProjYears).fill(null)];
+
+  const yFmt = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : v >= 1000 ? '$' + (v / 1000).toFixed(0) + 'K' : '$' + Math.round(v);
+
+  mainChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allLabels,
+      datasets: [
+        // Band boundaries (invisible, used for fill-between)
+        { label: '', data: futureSeries(projData.map(d => d.p10)), borderColor: 'transparent', pointRadius: 0, fill: false },
+        { label: 'Range (10%–90%)', data: futureSeries(projData.map(d => d.p90)), borderColor: 'transparent', pointRadius: 0, fill: '-1', backgroundColor: 'rgba(99,102,241,0.10)' },
+        { label: '', data: futureSeries(projData.map(d => d.p25)), borderColor: 'transparent', pointRadius: 0, fill: false },
+        { label: 'Range (25%–75%)', data: futureSeries(projData.map(d => d.p75)), borderColor: 'transparent', pointRadius: 0, fill: '-1', backgroundColor: 'rgba(99,102,241,0.14)' },
+        // Median & analytical
+        { label: 'Median Projection (50th %ile)', data: futureSeries(projData.map(d => d.p50)), borderColor: '#6366f1', borderDash: [7, 3], pointRadius: 0, borderWidth: 2, fill: false },
+        { label: 'Expected Value (analytical)', data: futureSeries(analytData), borderColor: '#bc8cff', borderDash: [3, 3], pointRadius: 0, borderWidth: 1.5, fill: false },
+        // Historical
+        { label: 'Historical Portfolio', data: histSeries, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.07)', fill: true, tension: 0.3, pointRadius: 2, borderWidth: 2.5 },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#7d8590', font: { size: 12 }, boxWidth: 10, padding: 14,
+            filter: item => item.text !== '', // hide invisible band boundary datasets
+          },
+        },
+        tooltip: {
+          ...BASE_OPTS.plugins.tooltip,
+          callbacks: {
+            label: c => c.dataset.label && c.raw != null ? `${c.dataset.label}: ${yFmt(c.raw)}` : null,
+            filter: item => item.dataset.label !== '' && item.raw != null,
+          },
+        },
+        annotation: { annotations: {
+          splitLine: {
+            type: 'line',
+            xMin: histLen - 1, xMax: histLen - 1,
+            borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderDash: [4, 4],
+            label: { content: 'Today →', display: true, position: 'start', color: '#7d8590', font: { size: 11 }, backgroundColor: 'transparent' },
+          }
+        }},
+      },
+      scales: {
+        x: { grid: { color: 'rgba(48,54,61,0.5)' }, ticks: { color: '#7d8590', maxTicksLimit: 15 } },
+        y: { grid: { color: 'rgba(48,54,61,0.5)' }, ticks: { color: '#7d8590', callback: yFmt } },
+      },
+    },
+  });
+
+  // Update summary cards
+  const finalProj = projData[numProjYears - 1];
+  const finalAnal = analytData[numProjYears - 1];
+  document.getElementById('projP10').textContent      = yFmt(finalProj.p10);
+  document.getElementById('projP25').textContent      = yFmt(finalProj.p25);
+  document.getElementById('projP50').textContent      = yFmt(finalProj.p50);
+  document.getElementById('projP75').textContent      = yFmt(finalProj.p75);
+  document.getElementById('projP90').textContent      = yFmt(finalProj.p90);
+  document.getElementById('projExpected').textContent = yFmt(finalAnal);
+  const cagrNote = useCagr !== r.cagr ? ` (historical: ${pct(r.cagr)})` : '';
+  document.getElementById('projSummaryLabel').textContent =
+    `${numProjYears}-year outlook from ${r.endYear} · ${numSims} simulations · ${pct(useCagr)} exp. return${cagrNote} · ${pct(r.vol)} vol`;
+  document.getElementById('projSummary').style.display = 'block';
+}
+
+// ─── SIDEBAR ALLOCATION CHART ────────────────────────────────────────────────
+
+function renderAllocChart() {
+  if (allocChart) { allocChart.destroy(); allocChart = null; }
+  const ctx = document.getElementById('allocCanvas').getContext('2d');
+  allocChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ASSETS.map(a => a.name),
+      datasets: [{ data: ASSETS.map(a => alloc[a.key] || 0), backgroundColor: ASSETS.map(a => a.color), borderWidth: 1, borderColor: '#161b22' }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { ...BASE_OPTS.plugins.tooltip, callbacks: { label: c => ` ${c.label}: ${c.raw}%` } },
+      },
+    },
+  });
+}
+
+// ─── TABLE ───────────────────────────────────────────────────────────────────
+
+function buildTable(r) {
+  const tbody = document.getElementById('returnsBody');
+  tbody.innerHTML = '';
+  r.portVals.slice(-1); // use final portVals for cumulative
+  // Recalculate cumulative portfolio value year by year from portVals
+  // portVals has (numMonths + 1) entries; grab year-end values
+  const numYears = r.annualRows.length;
+  r.annualRows.forEach((row, i) => {
+    const yearEndIdx = (i + 1) * 12; // 12 months per year
+    const val = r.portVals[yearEndIdx];
+    const contrib = row.yearContrib || 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:600">${row.year}</td>
+      <td><span class="tag ${row.portR >= 0 ? 'tag-g' : 'tag-r'}">${pct(row.portR, 1)}</span></td>
+      <td style="color:${row.spR >= 0 ? 'var(--green)' : 'var(--red)'}">${pct(row.spR, 1)}</td>
+      <td style="color:${row.sfR >= 0 ? 'var(--green)' : 'var(--red)'}">${pct(row.sfR, 1)}</td>
+      <td style="color:var(--muted)">${contrib > 0 ? money(contrib) : '—'}</td>
+      <td style="color:var(--muted)">${money(val)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── SLIDERS ─────────────────────────────────────────────────────────────────
+
+function buildSliders() {
+  const container = document.getElementById('assetSliders');
+  container.innerHTML = '';
+  ASSETS.forEach(asset => {
+    const val = alloc[asset.key] || 0;
+    const row = document.createElement('div');
+    row.className = 'asset-row';
+    row.innerHTML = `
+      <div class="asset-header">
+        <div class="asset-dot" style="background:${asset.color}"></div>
+        <span class="asset-name">${asset.name}
+          <span class="info-icon" style="margin-left:3px" onclick="goToInfo('info-${asset.key}')" title="View in Information tab">?</span>
+        </span>
+        <input class="asset-pct" id="pct-${asset.key}" type="text" value="${val}%"
+          onfocus="this.select()"
+          onchange="onPctChange('${asset.key}',this.value)">
+      </div>
+      <input type="range" min="0" max="100" step="1" value="${val}"
+        id="rng-${asset.key}"
+        style="--slider-color:${asset.color}"
+        oninput="onSlide('${asset.key}',this.value)">
+    `;
+    container.appendChild(row);
+  });
+}
+
+function onSlide(key, v) {
+  alloc[key] = parseInt(v);
+  document.getElementById(`pct-${key}`).value = v + '%';
+  onAllocChange();
+}
+
+function onPctChange(key, v) {
+  const n = Math.max(0, Math.min(100, parseInt(v) || 0));
+  alloc[key] = n;
+  document.getElementById(`rng-${key}`).value = n;
+  document.getElementById(`pct-${key}`).value = n + '%';
+  onAllocChange();
+}
+
+function onAllocChange() {
+  const total = ASSETS.reduce((s, a) => s + (alloc[a.key] || 0), 0);
+  const el = document.getElementById('allocTotal');
+  el.textContent = `Total: ${total}%`;
+  el.className = 'alloc-total ' + (Math.abs(total - 100) <= 1 ? 'ok' : 'warn');
+  renderAllocChart();
+  setActivePreset(null);
+  // Re-render allocation tab if open
+  if (currentTab === 'alloc' && lastResult) renderCurrentChart();
+}
+
+function applyPreset(name) {
+  const p = PRESETS[name];
+  if (!p) return;
+  alloc = { ...p };
+  buildSliders();
+  onAllocChange();
+  setActivePreset(name);
+}
+
+function setActivePreset(name) {
+  const names = ['conservative','balanced','growth','aggressive','allStocks','crypto'];
+  document.querySelectorAll('.preset-btn').forEach((btn, i) => btn.classList.toggle('active', names[i] === name));
+}
+
+// ─── YEAR SELECTS ────────────────────────────────────────────────────────────
+
+function buildYearSelects() {
+  const ss = document.getElementById('startYear');
+  const es = document.getElementById('endYear');
+  YEARS.forEach(y => {
+    ss.innerHTML += `<option value="${y}"${y === 2000 ? ' selected':''}>${y}</option>`;
+    es.innerHTML += `<option value="${y}"${y === 2024 ? ' selected':''}>${y}</option>`;
+  });
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+buildYearSelects();
+buildSliders();
+onAllocChange();
+// Hide toolbar until first run
+document.getElementById('chartToolbar').style.display = 'none';
+
+// Sync sidebar benchmarks with chart toolbar
+document.getElementById('showSP').addEventListener('change', e => {
+  document.getElementById('cbSP').checked = e.target.checked;
+  if (lastResult) renderCurrentChart();
+});
+document.getElementById('show6040').addEventListener('change', e => {
+  document.getElementById('cb6040').checked = e.target.checked;
+  if (lastResult) renderCurrentChart();
+});
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────────
+
+const QUIZ_QUESTIONS = [
+  {
+    q: 'How old are you?',
+    hint: 'Your age helps determine your investment time horizon.',
+    options: [
+      { letter:'A', title:'Under 30', desc:'Long runway — decades to grow and recover from downturns', score:4 },
+      { letter:'B', title:'30–45',    desc:'Strong earning years with solid time horizon ahead', score:3 },
+      { letter:'C', title:'46–60',    desc:'Approaching retirement, balance matters more now', score:2 },
+      { letter:'D', title:'60+',      desc:'Capital preservation becomes a priority', score:1 },
+    ]
+  },
+  {
+    q: 'When do you plan to use this money?',
+    hint: 'Shorter time horizons call for more conservative allocations.',
+    options: [
+      { letter:'A', title:'1–3 years',   desc:'Short term — stability is critical', score:1 },
+      { letter:'B', title:'3–10 years',  desc:'Medium term — moderate risk is acceptable', score:2 },
+      { letter:'C', title:'10–20 years', desc:'Long term — you can ride out market cycles', score:3 },
+      { letter:'D', title:'20+ years',   desc:'Very long term — maximize growth potential', score:4 },
+    ]
+  },
+  {
+    q: 'How would you describe your investment experience?',
+    hint: 'More experienced investors are often more comfortable with volatility.',
+    options: [
+      { letter:'A', title:'None',         desc:'I\'m just starting out', score:1 },
+      { letter:'B', title:'Some',         desc:'I\'ve invested in stocks or funds before', score:2 },
+      { letter:'C', title:'Experienced',  desc:'I actively manage my portfolio', score:3 },
+      { letter:'D', title:'Professional', desc:'Finance or investing is my field', score:4 },
+    ]
+  },
+  {
+    q: 'How stable is your income?',
+    hint: 'Income stability affects how much risk you can afford to take.',
+    options: [
+      { letter:'A', title:'Unstable',               desc:'Freelance, seasonal, or uncertain income', score:1 },
+      { letter:'B', title:'Mostly stable',           desc:'Steady job but some uncertainty', score:2 },
+      { letter:'C', title:'Very stable',             desc:'Secure employment or strong business', score:3 },
+      { letter:'D', title:'Multiple income streams', desc:'Diversified income sources', score:4 },
+    ]
+  },
+  {
+    q: 'Your portfolio drops 30% in one month. What do you do?',
+    hint: 'This reveals your true emotional relationship with risk.',
+    options: [
+      { letter:'A', title:'Sell everything',      desc:'I can\'t handle seeing those losses', score:1 },
+      { letter:'B', title:'Sell some',             desc:'I\'d reduce risk to sleep better', score:2 },
+      { letter:'C', title:'Hold steady',           desc:'Stay the course — it\'ll recover', score:3 },
+      { letter:'D', title:'Buy more',              desc:'Great opportunity to average down', score:4 },
+    ]
+  },
+  {
+    q: 'What is your primary financial goal?',
+    hint: 'Different goals require different strategies.',
+    options: [
+      { letter:'A', title:'Preserve capital',  desc:'Don\'t lose what I have', score:1 },
+      { letter:'B', title:'Generate income',   desc:'Regular dividends or interest payments', score:2 },
+      { letter:'C', title:'Balanced growth',   desc:'Grow steadily without extreme swings', score:3 },
+      { letter:'D', title:'Maximum growth',    desc:'Highest possible long-term return', score:4 },
+    ]
+  },
+  {
+    q: 'How do you feel about high-risk / high-reward assets like crypto?',
+    hint: 'These can dramatically boost returns — or losses.',
+    options: [
+      { letter:'A', title:'Avoid completely',      desc:'Not for me — too unpredictable', score:1 },
+      { letter:'B', title:'Tiny allocation only',  desc:'Maybe 1–3%, just to have exposure', score:2 },
+      { letter:'C', title:'Comfortable with some', desc:'5–10% feels right to me', score:3 },
+      { letter:'D', title:'Significant exposure',  desc:'I believe in high-risk, high-reward', score:4 },
+    ]
+  },
+];
+
+// Maps total score → profile
+const QUIZ_PROFILES = [
+  {
+    min:7, max:11,
+    name: 'Capital Preserver',
+    badge: 'Very Conservative',
+    desc: 'You prioritize safety above all. Your focus is protecting what you have, accepting lower returns in exchange for stability and peace of mind.',
+    traits: ['Low risk tolerance','Short time horizon','Stability focused','Income oriented'],
+    alloc: { us:10, intl:5, bond:55, reit:10, cash:20, btc:0 },
+  },
+  {
+    min:12, max:16,
+    name: 'Cautious Investor',
+    badge: 'Conservative',
+    desc: 'You lean toward safety but are open to modest growth. You want your money to outpace inflation without losing sleep over market swings.',
+    traits: ['Below-average risk','Medium time horizon','Income + growth','Steady approach'],
+    alloc: { us:20, intl:10, bond:45, reit:15, cash:10, btc:0 },
+  },
+  {
+    min:17, max:21,
+    name: 'Balanced Builder',
+    badge: 'Moderate',
+    desc: 'You want a healthy mix of growth and stability. You understand markets fluctuate and can tolerate moderate dips in pursuit of long-term gains.',
+    traits: ['Moderate risk','Long time horizon','Diversified approach','Growth + income'],
+    alloc: { us:40, intl:20, bond:25, reit:10, cash:5, btc:0 },
+  },
+  {
+    min:22, max:25,
+    name: 'Growth Seeker',
+    badge: 'Moderately Aggressive',
+    desc: 'You\'re focused on long-term wealth building. You can stomach volatility and see market dips as buying opportunities rather than reasons to panic.',
+    traits: ['Above-average risk','Long time horizon','Growth focused','Opportunistic'],
+    alloc: { us:50, intl:25, bond:10, reit:10, cash:2, btc:3 },
+  },
+  {
+    min:26, max:28,
+    name: 'Aggressive Grower',
+    badge: 'Aggressive',
+    desc: 'You\'re chasing maximum returns and fully accept the risks. You have a long time horizon, strong income, and the experience to ride out major downturns.',
+    traits: ['High risk tolerance','Very long horizon','Max growth','Experienced investor'],
+    alloc: { us:50, intl:20, bond:0, reit:10, cash:0, btc:20 },
+  },
+];
+
+let quizStep = 0;
+let quizAnswers = [];
+
+function openQuiz() {
+  quizStep = 0;
+  quizAnswers = [];
+  document.getElementById('quizOverlay').classList.add('open');
+  renderQuizStep();
+}
+
+function closeQuiz() {
+  document.getElementById('quizOverlay').classList.remove('open');
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('quizOverlay')) closeQuiz();
+}
+
+function renderQuizStep() {
+  const total = QUIZ_QUESTIONS.length;
+  const pct = (quizStep / total) * 100;
+  document.getElementById('quizProgress').style.width = pct + '%';
+
+  if (quizStep >= total) { renderQuizResult(); return; }
+
+  const q = QUIZ_QUESTIONS[quizStep];
+  const selected = quizAnswers[quizStep];
+  const letters = ['A','B','C','D'];
+
+  document.getElementById('quizContent').innerHTML = `
+    <div class="quiz-step-label">Question ${quizStep + 1} of ${total}</div>
+    <div class="quiz-question">${q.q}</div>
+    <div class="quiz-hint">${q.hint}</div>
+    <div class="quiz-options">
+      ${q.options.map((opt, i) => `
+        <div class="quiz-option${selected === i ? ' selected' : ''}" onclick="selectAnswer(${i})">
+          <div class="quiz-option-letter">${letters[i]}</div>
+          <div class="quiz-option-text">
+            <div class="quiz-option-title">${opt.title}</div>
+            <div class="quiz-option-desc">${opt.desc}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="quiz-nav">
+      <button class="btn-ghost" onclick="quizBack()" ${quizStep === 0 ? 'disabled' : ''}>← Back</button>
+      <span style="font-size:12px;color:var(--muted)">${total - quizStep - 1} question${total - quizStep - 1 !== 1 ? 's' : ''} remaining</span>
+      <button class="btn btn-primary" onclick="quizNext()" ${selected === undefined ? 'disabled style="opacity:0.4;cursor:default"' : ''}>
+        ${quizStep === total - 1 ? 'See Results →' : 'Next →'}
+      </button>
+    </div>
+  `;
+}
+
+function selectAnswer(idx) {
+  quizAnswers[quizStep] = idx;
+  renderQuizStep();
+}
+
+function quizNext() {
+  if (quizAnswers[quizStep] === undefined) return;
+  quizStep++;
+  renderQuizStep();
+}
+
+function quizBack() {
+  if (quizStep > 0) { quizStep--; renderQuizStep(); }
+}
+
+function renderQuizResult() {
+  document.getElementById('quizProgress').style.width = '100%';
+
+  const totalScore = quizAnswers.reduce((sum, ansIdx, qi) => sum + QUIZ_QUESTIONS[qi].options[ansIdx].score, 0);
+  const profile = QUIZ_PROFILES.find(p => totalScore >= p.min && totalScore <= p.max) || QUIZ_PROFILES[2];
+
+  const allocHTML = ASSETS.map(a => `
+    <div class="result-alloc-item">
+      <div class="result-alloc-name" style="display:flex;align-items:center;gap:5px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${a.color};display:inline-block"></span>
+        ${a.name}
+      </div>
+      <div class="result-alloc-pct" style="color:${a.color}">${profile.alloc[a.key]}%</div>
+    </div>
+  `).join('');
+
+  document.getElementById('quizContent').innerHTML = `
+    <div class="quiz-result">
+      <div style="font-size:48px;margin-bottom:12px">🎯</div>
+      <div class="result-badge">${profile.badge}</div>
+      <div class="result-title">${profile.name}</div>
+      <div class="result-desc">${profile.desc}</div>
+      <div class="result-traits">${profile.traits.map(t => `<span class="trait-tag">${t}</span>`).join('')}</div>
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:10px">Recommended Allocation</div>
+      <div class="result-alloc">${allocHTML}</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn-ghost" onclick="quizStep=0;quizAnswers=[];renderQuizStep()">↩ Retake Quiz</button>
+        <button class="btn btn-primary" onclick="applyQuizResult(${JSON.stringify(profile.alloc).replace(/"/g,'&quot;')})">
+          ✓ Apply to Builder
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:14px">Score: ${totalScore}/28</div>
+    </div>
+  `;
+}
+
+function applyQuizResult(profileAlloc) {
+  alloc = { ...profileAlloc };
+  buildSliders();
+  onAllocChange();
+  setActivePreset(null);
+  closeQuiz();
+}
+
+// ─── PAGE NAVIGATION ─────────────────────────────────────────────────────────
+
+function switchPage(page) {
+  document.getElementById('page-builder').classList.toggle('active', page === 'builder');
+  document.getElementById('page-assets').classList.toggle('active', page === 'assets');
+  document.getElementById('page-info').classList.toggle('active', page === 'info');
+  document.getElementById('nav-builder').classList.toggle('active', page === 'builder');
+  document.getElementById('nav-assets').classList.toggle('active', page === 'assets');
+  document.getElementById('nav-info').classList.toggle('active', page === 'info');
+  const btn = document.getElementById('headerActionBtn');
+  if (page === 'assets') {
+    btn.textContent = '▶ Run Projections';
+    btn.onclick = runAssetProjections;
+    btn.style.display = '';
+  } else if (page === 'info') {
+    btn.style.display = 'none';
+  } else {
+    btn.textContent = '▶ Run Backtest';
+    btn.onclick = runBacktest;
+    btn.style.display = '';
+  }
+}
+
+function goToInfo(sectionId) {
+  switchPage('info');
+  requestAnimationFrame(() => {
+    const el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+// ─── ASSET PROJECTIONS ───────────────────────────────────────────────────────
+
+const ASSET_TEMPLATES = [
+  { name: 'US Stocks',   cagr: 0.103, vol: 0.162, color: '#58a6ff' },
+  { name: 'Intl Stocks', cagr: 0.075, vol: 0.175, color: '#3fb950' },
+  { name: 'Bonds',       cagr: 0.040, vol: 0.060, color: '#f0c040' },
+  { name: 'REITs',       cagr: 0.090, vol: 0.190, color: '#bc8cff' },
+  { name: 'Cash',        cagr: 0.045, vol: 0.005, color: '#7d8590' },
+  { name: 'Bitcoin',     cagr: 0.500, vol: 0.800, color: '#f7931a' },
+  { name: 'Gold',        cagr: 0.060, vol: 0.155, color: '#ffd700' },
+  { name: 'Small Cap',   cagr: 0.115, vol: 0.210, color: '#f85149' },
+];
+
+let projAssets = [];
+let apChart = null;
+let apNextId = 1;
+
+const AP_INVEST_COLORS = [
+  '#58a6ff','#3fb950','#f0c040','#bc8cff','#f85149','#f7931a','#ffd700','#7d8590',
+  '#4ac6b7','#e36bff','#ff7b7b','#a3e635',
+];
+
+function buildTemplateButtons() {
+  const container = document.getElementById('templateBtns');
+  container.innerHTML = ASSET_TEMPLATES.map((t, i) => `
+    <button class="template-btn" onclick="addAssetFromTemplate(${i})">
+      <span class="tb-dot" style="background:${t.color}"></span>${t.name}
+    </button>
+  `).join('');
+}
+
+function addAssetFromTemplate(idx) {
+  const t = ASSET_TEMPLATES[idx];
+  const color = AP_INVEST_COLORS[projAssets.length % AP_INVEST_COLORS.length];
+  projAssets.push({
+    id: apNextId++,
+    name: t.name,
+    cagr: t.cagr,
+    vol: t.vol,
+    startVal: 10000,
+    recurAmt: 0,
+    recurFreq: 'monthly',
+    color,
+  });
+  buildAssetList();
+}
+
+function addCustomAsset() {
+  const name = document.getElementById('customName').value.trim() || 'Custom';
+  const cagr = parseFloat(document.getElementById('customCagr').value) / 100 || 0.1;
+  const vol  = parseFloat(document.getElementById('customVol').value) / 100 || 0.25;
+  const color = AP_INVEST_COLORS[projAssets.length % AP_INVEST_COLORS.length];
+  projAssets.push({ id: apNextId++, name, cagr, vol, startVal: 10000, recurAmt: 0, recurFreq: 'monthly', color });
+  document.getElementById('customName').value = '';
+  buildAssetList();
+}
+
+function removeAsset(id) {
+  projAssets = projAssets.filter(a => a.id !== id);
+  buildAssetList();
+  if (projAssets.length === 0) resetApChart();
+}
+
+function updateAssetField(id, field, rawVal) {
+  const a = projAssets.find(x => x.id === id);
+  if (!a) return;
+  if (field === 'startVal') a.startVal = parseFloat(rawVal.replace(/[^0-9.]/g,'')) || 10000;
+  else if (field === 'recurAmt') a.recurAmt = parseFloat(rawVal.replace(/[^0-9.]/g,'')) || 0;
+  else if (field === 'recurFreq') a.recurFreq = rawVal;
+  else if (field === 'cagr') a.cagr = parseFloat(rawVal) / 100 || a.cagr;
+  else if (field === 'vol') a.vol = parseFloat(rawVal) / 100 || a.vol;
+}
+
+function buildAssetList() {
+  const list = document.getElementById('assetItemList');
+  const empty = document.getElementById('assetListEmpty');
+  if (projAssets.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = projAssets.map(a => `
+    <div class="asset-item">
+      <div class="asset-item-header">
+        <span class="asset-item-dot" style="background:${a.color}"></span>
+        <span class="asset-item-name">${a.name}</span>
+        <button class="asset-item-remove" onclick="removeAsset(${a.id})">✕</button>
+      </div>
+      <div class="asset-item-grid">
+        <div class="asset-item-field">
+          <span>Initial ($)</span>
+          <input class="form-input" style="width:80px;font-size:11px;padding:2px 5px"
+            value="${money(a.startVal)}"
+            onchange="updateAssetField(${a.id},'startVal',this.value)">
+        </div>
+        <div class="asset-item-field">
+          <span>Contrib ($)</span>
+          <input class="form-input" style="width:80px;font-size:11px;padding:2px 5px"
+            value="${a.recurAmt}"
+            onchange="updateAssetField(${a.id},'recurAmt',this.value)">
+        </div>
+        <div class="asset-item-field">
+          <span>Frequency</span>
+          <select class="form-input" style="width:90px;font-size:11px;padding:2px 5px"
+            onchange="updateAssetField(${a.id},'recurFreq',this.value)">
+            <option value="none" ${a.recurFreq==='none'?'selected':''}>None</option>
+            <option value="monthly" ${a.recurFreq==='monthly'?'selected':''}>Monthly</option>
+            <option value="quarterly" ${a.recurFreq==='quarterly'?'selected':''}>Quarterly</option>
+            <option value="annually" ${a.recurFreq==='annually'?'selected':''}>Annually</option>
+          </select>
+        </div>
+        <div class="asset-item-field">
+          <span>Return %/yr</span>
+          <input class="form-input" style="width:60px;font-size:11px;padding:2px 5px"
+            type="number" step="0.1" value="${(a.cagr*100).toFixed(1)}"
+            onchange="updateAssetField(${a.id},'cagr',this.value)">
+        </div>
+        <div class="asset-item-field">
+          <span>Volatility %/yr</span>
+          <input class="form-input" style="width:60px;font-size:11px;padding:2px 5px"
+            type="number" step="0.1" value="${(a.vol*100).toFixed(1)}"
+            onchange="updateAssetField(${a.id},'vol',this.value)">
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function resetApChart() {
+  if (apChart) { apChart.destroy(); apChart = null; }
+  document.getElementById('apCanvas').style.display = 'none';
+  document.getElementById('apEmpty').style.display = 'flex';
+  document.getElementById('apResultsGrid').innerHTML = '';
+}
+
+function runAssetProjections() {
+  if (projAssets.length === 0) {
+    alert('Add at least one asset first.');
+    return;
+  }
+  const numYears = parseInt(document.getElementById('apProjYears').value);
+  const numSims  = parseInt(document.getElementById('apProjSims').value);
+
+  const results = projAssets.map(a => {
+    const mc = runMonteCarlo(a.startVal, a.cagr, a.vol, a.recurAmt, a.recurFreq, numYears, numSims);
+    const analytical = analyticalProjection(a.startVal, a.cagr, a.recurAmt, a.recurFreq, numYears);
+    return { asset: a, mc, analytical, numYears };
+  });
+
+  drawComparisonChart(results, numYears);
+  renderAssetResultCards(results, numYears);
+}
+
+function drawComparisonChart(results, numYears) {
+  const canvas = document.getElementById('apCanvas');
+  const empty  = document.getElementById('apEmpty');
+  canvas.style.display = 'block';
+  empty.style.display = 'none';
+
+  const labels = Array.from({ length: numYears }, (_, i) => `Year ${i + 1}`);
+
+  // Build band + median datasets per asset
+  const datasets = [];
+  results.forEach(r => {
+    const c = r.asset.color;
+    const hex2rgba = (hex, a) => {
+      const n = parseInt(hex.slice(1), 16);
+      return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+    };
+    const p10 = r.mc.map(y => y.p10);
+    const p90 = r.mc.map(y => y.p90);
+    const p25 = r.mc.map(y => y.p25);
+    const p75 = r.mc.map(y => y.p75);
+    const med = r.mc.map(y => y.p50);
+
+    // Outer band (p10-p90)
+    datasets.push({ label: `_${r.asset.name}_p10`, data: p10, borderWidth: 0, pointRadius: 0, fill: false, backgroundColor: 'transparent', borderColor: 'transparent' });
+    datasets.push({ label: `_${r.asset.name}_p90`, data: p90, borderWidth: 0, pointRadius: 0, fill: '-1', backgroundColor: hex2rgba(c, 0.10), borderColor: 'transparent' });
+    // Inner band (p25-p75)
+    datasets.push({ label: `_${r.asset.name}_p25`, data: p25, borderWidth: 0, pointRadius: 0, fill: false, backgroundColor: 'transparent', borderColor: 'transparent' });
+    datasets.push({ label: `_${r.asset.name}_p75`, data: p75, borderWidth: 0, pointRadius: 0, fill: '-1', backgroundColor: hex2rgba(c, 0.18), borderColor: 'transparent' });
+    // Median line
+    datasets.push({ label: `${r.asset.name} (median)`, data: med, borderColor: c, borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0.35 });
+  });
+
+  if (apChart) apChart.destroy();
+  apChart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: {
+            color: '#7d8590', font: { size: 11 },
+            filter: item => !datasets[item.datasetIndex]?.label?.startsWith('_'),
+          }
+        },
+        tooltip: {
+          backgroundColor: '#0d1117', borderColor: '#30363d', borderWidth: 1,
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.label?.startsWith('_')) return null;
+              return ` ${ctx.dataset.label}: ${money(ctx.parsed.y)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#7d8590', font: { size: 11 } }, grid: { color: 'rgba(48,54,61,0.5)' } },
+        y: {
+          ticks: { color: '#7d8590', font: { size: 11 }, callback: v => '$' + (v >= 1e6 ? (v/1e6).toFixed(1)+'M' : (v/1e3).toFixed(0)+'K') },
+          grid: { color: 'rgba(48,54,61,0.5)' }
+        }
+      }
+    }
+  });
+}
+
+function renderAssetResultCards(results, numYears) {
+  const grid = document.getElementById('apResultsGrid');
+  grid.innerHTML = results.map(r => {
+    const last = r.mc[r.mc.length - 1];
+    const analytical = r.analytical[r.analytical.length - 1];
+    const totalContrib = r.asset.startVal + r.asset.recurAmt * (
+      r.asset.recurFreq === 'monthly' ? numYears * 12 :
+      r.asset.recurFreq === 'quarterly' ? numYears * 4 :
+      r.asset.recurFreq === 'annually' ? numYears : 0
+    );
+    const rows = [
+      { label: 'Bear (10th %ile)', val: last.p10, sub: pctGain(last.p10, totalContrib) },
+      { label: 'Pessimistic (25th)', val: last.p25, sub: pctGain(last.p25, totalContrib) },
+      { label: 'Median (50th)', val: last.p50, sub: pctGain(last.p50, totalContrib) },
+      { label: 'Optimistic (75th)', val: last.p75, sub: pctGain(last.p75, totalContrib) },
+      { label: 'Bull (90th %ile)', val: last.p90, sub: pctGain(last.p90, totalContrib) },
+      { label: 'Expected (formula)', val: analytical, sub: pctGain(analytical, totalContrib) },
+    ];
+    return `
+      <div class="ap-result-card">
+        <div class="ap-result-header">
+          <span class="ap-result-dot" style="background:${r.asset.color}"></span>
+          <span class="ap-result-name">${r.asset.name}</span>
+          <span class="ap-result-horizon">${numYears}yr</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">
+          Initial: ${money(r.asset.startVal)} · Return: ${(r.asset.cagr*100).toFixed(1)}% · Vol: ${(r.asset.vol*100).toFixed(1)}%
+          ${r.asset.recurAmt > 0 ? ` · +${money(r.asset.recurAmt)}/${r.asset.recurFreq}` : ''}
+        </div>
+        <div class="ap-result-rows">
+          ${rows.map(row => `
+            <div class="ap-result-row">
+              <span class="ap-result-row-label">${row.label}</span>
+              <div>
+                <span class="ap-result-row-val">${money(row.val)}</span>
+                <span class="ap-result-sub" style="color:${row.val >= totalContrib ? 'var(--green)' : 'var(--red)'}">${row.sub}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function pctGain(finalVal, invested) {
+  const g = (finalVal - invested) / invested * 100;
+  return (g >= 0 ? '+' : '') + g.toFixed(1) + '%';
+}
+
+// Init
+buildTemplateButtons();
+</script>
+</body>
+</html>
