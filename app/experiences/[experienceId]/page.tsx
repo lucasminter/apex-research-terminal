@@ -1,20 +1,11 @@
-import React from "react";
+export const dynamic = "force-dynamic";
 
-export default function ExperiencePage(props: any) {
-  const params = props?.params;
+export default async function ExperiencePage({
+  params,
+}: {
+  params: Promise<{ experienceId: string }>;
+}) {
+  const { experienceId } = await params;
 
-  return (
-    <div style={{ padding: 40, fontFamily: "system-ui" }}>
-      <h1>Apex Research Terminal</h1>
-
-      <h3>DEBUG</h3>
-      <p>If you see this, you are hitting the correct deployed file.</p>
-
-      <h4>props.params</h4>
-      <pre>{JSON.stringify(params, null, 2)}</pre>
-
-      <h4>props</h4>
-      <pre>{JSON.stringify(Object.keys(props || {}), null, 2)}</pre>
-    </div>
-  );
+  return <pre>{experienceId}</pre>;
 }

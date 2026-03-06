@@ -1,8 +1,8 @@
 import { headers } from "next/headers";
 import { whopsdk } from "@/lib/whop";
 
-export default async function Page({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default async function Page({ params }: { params: Promise<{ companyID: string }> }) {
+  const { companyID } = await params;
 
   // Detect if running locally
   const isDev = process.env.NODE_ENV !== "production";
@@ -13,11 +13,14 @@ export default async function Page({ params }: { params: { companyId: string } }
   // Only run real auth when deployed
   if (!isDev) {
     try {
-      const verified = await whopsdk.verifyUserToken(await headers());
+      const hdrs = await headers();
+      // Prefer explicit Whop header, fall back to Authorization if present
+      const token = hdrs.get("x-whop-user-token") ?? hdrs.get("authorization") ?? undefined;
+
+      const verified = await whopsdk.verifyUserToken(token);
       userId = verified.userId;
 
-      const access = await whopsdk.users.checkAccess(companyId, { id: userId });
-
+      const access = await whopsdk.users.checkAccess(companyID, { id: userId });
       accessLevel = access?.access_level ?? "none";
 
       if (accessLevel === "none") {
@@ -29,6 +32,8 @@ export default async function Page({ params }: { params: { companyId: string } }
         );
       }
     } catch (error) {
+      // Log for server-side debugging and show a simple error to the user
+      console.error("Whop auth error:", error);
       return (
         <div style={{ padding: 20 }}>
           <h2>Authentication Error</h2>
@@ -43,7 +48,7 @@ export default async function Page({ params }: { params: { companyId: string } }
       <div style={{ marginBottom: 10 }}>
         <h2 style={{ margin: 0 }}>Apex Research Terminal</h2>
         <div style={{ opacity: 0.7, fontSize: 12 }}>
-          Company: {companyId} | User: {userId} | Access: {accessLevel}
+          Company: {companyID} | User: {userId} | Access: {accessLevel}
         </div>
       </div>
 
