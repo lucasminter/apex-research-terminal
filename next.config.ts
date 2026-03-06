@@ -7,12 +7,9 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           {
+            // CSP frame-ancestors takes precedence over X-Frame-Options in all modern browsers
             key: 'Content-Security-Policy',
             value: "frame-ancestors 'self' https://whop.com https://*.whop.com",
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'ALLOWALL',
           },
         ],
       },
