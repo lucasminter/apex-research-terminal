@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ error: 'Provide symbols or q parameter' }, { status: 400 });
-  } catch (e) {
-    return NextResponse.json({ error: e.message, quotes: [], quoteResponse: { result: [] } }, { status: 500 });
+  } catch (e: any) {
+    return NextResponse.json({ error: e?.message ?? String(e), quotes: [], quoteResponse: { result: [] } }, { status: 500 });
   }
 }
