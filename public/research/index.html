@@ -3,1185 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Investment Research Hub</title>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0d1117; --surface: #161b22; --surface2: #1f2937;
-  --border: #30363d; --accent: #58a6ff; --accent-soft: rgba(88,166,255,0.08);
-  --text: #e6edf3; --muted: #7d8590; --green: #3fb950; --red: #f85149;
-  --yellow: #d29922; --purple: #bc8cff; --orange: #f97316;
-}
-body {
-  background: var(--bg); color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 14px; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-}
-header {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 0 20px; height: 52px; display: flex; align-items: center;
-  justify-content: space-between; flex-shrink: 0; z-index: 50;
-}
-.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
-.logo-icon {
-  width: 28px; height: 28px; border-radius: 7px;
-  background: linear-gradient(135deg, #3fb950, #58a6ff);
-  display: flex; align-items: center; justify-content: center; font-size: 15px;
-}
-.nav-tabs { display: flex; gap: 2px; }
-.nav-tab {
-  padding: 6px 16px; border-radius: 6px; border: none; background: transparent;
-  color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s;
-}
-.nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-.nav-tab.active { color: var(--accent); background: var(--accent-soft); }
-.wl-badge {
-  background: var(--accent); color: #0d1117; border-radius: 10px;
-  padding: 1px 7px; font-size: 11px; font-weight: 700; margin-left: 4px;
-}
-
-/* PAGES */
-.page { display: none; flex: 1; overflow: hidden; }
-.page.active { display: flex; flex-direction: column; }
-
-/* ── SCREENER ── */
-.filter-bar {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 10px 20px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap;
-}
-.search-wrap { position: relative; }
-.search-wrap input {
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 7px;
-  color: var(--text); font-size: 13px; padding: 7px 12px 7px 32px; width: 220px; outline: none;
-}
-.search-wrap input:focus { border-color: var(--accent); }
-.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
-.flt-select {
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
-  color: var(--muted); font-size: 12px; padding: 6px 10px; cursor: pointer; outline: none;
-}
-.flt-select:focus { border-color: var(--accent); }
-.chips { display: flex; gap: 5px; flex-wrap: wrap; }
-.chip {
-  padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border);
-  background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; transition: all 0.15s;
-}
-.chip:hover { border-color: var(--accent); color: var(--accent); }
-.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
-.rsep { color: var(--border); }
-.rcount { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
-
-.screener-scroll { flex: 1; overflow-y: auto; }
-.live-badge { display:inline-block; padding:1px 5px; border-radius:3px; font-size:9px; font-weight:700; background:rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); margin-left:5px; vertical-align:middle; letter-spacing:0.04em; }
-.live-price-tag { font-size:11px; }
-.live-searching-row td { padding:8px 14px; }
-.live-searching { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
-.live-spinner { width:10px; height:10px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:lspin 0.7s linear infinite; flex-shrink:0; }
-@keyframes lspin { to { transform:rotate(360deg); } }
-.screener-scroll::-webkit-scrollbar { width: 5px; }
-.screener-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-table.inv-tbl { width: 100%; border-collapse: collapse; }
-table.inv-tbl thead th {
-  position: sticky; top: 0; background: #111827; z-index: 5;
-  padding: 9px 14px; text-align: left; font-size: 10px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted);
-  border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none;
-}
-table.inv-tbl thead th:hover { color: var(--text); }
-table.inv-tbl thead th.srt { color: var(--accent); }
-table.inv-tbl tbody tr { border-bottom: 1px solid rgba(48,54,61,0.6); cursor: pointer; transition: background 0.1s; }
-table.inv-tbl tbody tr:hover { background: rgba(255,255,255,0.025); }
-table.inv-tbl tbody tr.exp-active { background: var(--accent-soft); }
-table.inv-tbl td { padding: 10px 14px; font-size: 13px; vertical-align: middle; }
-
-.tkr { font-weight: 700; font-size: 13px; color: var(--accent); }
-.inv-type-lbl { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
-.co-name { font-size: 12px; color: var(--muted); }
-.sec-badge {
-  display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 600;
-  background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
-}
-.sc-cell { display: flex; align-items: center; gap: 7px; min-width: 88px; }
-.sc-val { font-weight: 700; font-size: 13px; min-width: 24px; }
-.sc-bar-bg { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-.sc-bar { height: 100%; border-radius: 3px; }
-.cg { color: var(--green); } .ca { color: var(--accent); } .cy { color: var(--yellow); } .cr { color: var(--red); }
-.bg { background: var(--green); } .ba { background: var(--accent); } .by { background: var(--yellow); } .br { background: var(--red); }
-.pos { color: var(--green); } .neg { color: var(--red); } .neu { color: var(--text); } .mdt { color: var(--muted); font-size:12px; }
-.wlbtn {
-  width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--border);
-  background: transparent; color: var(--muted); cursor: pointer; font-size: 14px;
-  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
-}
-.wlbtn:hover { border-color: var(--yellow); color: var(--yellow); }
-.wlbtn.on { border-color: var(--yellow); color: var(--yellow); background: rgba(210,153,34,0.1); }
-
-/* Expanded panel */
-.exp-td { padding: 0 !important; }
-.exp-panel {
-  padding: 20px 24px; background: rgba(22,27,34,0.85); border-top: 1px solid var(--border);
-  display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 20px;
-}
-.ep-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
-.ep-desc { font-size: 12px; color: var(--muted); line-height: 1.65; }
-.ep-desc strong { color: var(--text); }
-.ep-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-.ep-tag { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: var(--accent-soft); border: 1px solid rgba(88,166,255,0.2); color: var(--accent); }
-.ep-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 12px; }
-.ep-metric { background: var(--surface2); border-radius: 6px; padding: 8px 10px; }
-.ep-mlbl { font-size: 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; margin-bottom: 2px; }
-.ep-mval { font-size: 15px; font-weight: 700; }
-.ep-list { display: flex; flex-direction: column; gap: 6px; }
-.ep-item { font-size: 12px; color: var(--muted); display: flex; gap: 7px; line-height: 1.5; }
-.ep-item::before { content: '◆'; color: var(--accent); flex-shrink: 0; font-size: 8px; margin-top: 3px; }
-.ep-item.risk::before { color: var(--red); }
-
-/* ── MACRO ── */
-.macro-scroll { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-.macro-scroll::-webkit-scrollbar { width: 5px; }
-.macro-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.m-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 12px; }
-.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
-.kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 13px 14px; }
-.kpi-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
-.kpi-val { font-size: 20px; font-weight: 800; line-height: 1; margin-bottom: 3px; }
-.kpi-sub { font-size: 11px; color: var(--muted); }
-.kpi-trend { font-size: 11px; font-weight: 600; margin-top: 4px; }
-.yield-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
-.yield-bars { display: flex; align-items: flex-end; gap: 6px; height: 90px; margin-top: 12px; }
-.yb-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
-.yb-rate { font-size: 9px; font-weight: 700; }
-.yb-bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; }
-.yb-lbl { font-size: 9px; color: var(--muted); }
-.heat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.heat-cell { border-radius: 7px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); }
-.heat-name { font-size: 11px; font-weight: 600; margin-bottom: 4px; color: rgba(255,255,255,0.75); }
-.heat-pct { font-size: 17px; font-weight: 800; }
-.heat-sub { font-size: 9px; color: rgba(255,255,255,0.45); margin-top: 2px; }
-.events-col { display: flex; flex-direction: column; gap: 8px; }
-.ev-row { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; padding: 11px 14px; display: flex; align-items: center; gap: 14px; }
-.ev-date { font-size: 11px; font-weight: 700; color: var(--accent); min-width: 90px; }
-.ev-name { font-size: 13px; font-weight: 500; flex: 1; }
-.ev-impact { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; }
-.imp-h { background: rgba(248,81,73,0.12); color: var(--red); border: 1px solid rgba(248,81,73,0.25); }
-.imp-m { background: rgba(210,153,34,0.12); color: var(--yellow); border: 1px solid rgba(210,153,34,0.25); }
-.imp-l { background: rgba(63,185,80,0.12); color: var(--green); border: 1px solid rgba(63,185,80,0.25); }
-.ev-note { font-size: 11px; color: var(--muted); min-width: 180px; text-align: right; }
-
-/* ── NEWS ── */
-.news-scroll { flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; align-content: start; }
-.news-scroll::-webkit-scrollbar { width: 5px; }
-.news-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.nc-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
-.nc-icon { font-size: 16px; }
-.nc-title { font-size: 13px; font-weight: 700; }
-.ns-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
-.ns-hdr { padding: 9px 13px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
-.ns-name { font-size: 12px; font-weight: 700; }
-.ns-tag { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
-.tag-live { background: rgba(248,81,73,0.12); color: var(--red); border: 1px solid rgba(248,81,73,0.2); }
-.tag-off { background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.2); }
-.tag-ana { background: rgba(188,140,255,0.12); color: var(--purple); border: 1px solid rgba(188,140,255,0.2); }
-.ns-links { padding: 4px 0; }
-.ns-link {
-  display: flex; align-items: center; gap: 8px; padding: 8px 13px;
-  border-bottom: 1px solid rgba(48,54,61,0.4); text-decoration: none; transition: background 0.1s;
-}
-.ns-link:last-child { border-bottom: none; }
-.ns-link:hover { background: rgba(255,255,255,0.03); }
-.ns-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.ns-txt { font-size: 12px; color: var(--muted); flex: 1; line-height: 1.4; }
-.ns-link:hover .ns-txt { color: var(--text); }
-.ns-arr { font-size: 10px; color: var(--border); }
-.ns-link:hover .ns-arr { color: var(--muted); }
-.geo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; }
-.geo-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
-.geo-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.geo-name { font-size: 12px; font-weight: 700; flex: 1; }
-.geo-risk { font-size: 10px; font-weight: 700; }
-.geo-body { font-size: 11px; color: var(--muted); line-height: 1.55; }
-.geo-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
-.geo-tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-
-/* ── STRATEGY ── */
-.strategy-frame { flex: 1; width: 100%; border: none; display: block; }
-
-/* ── WATCHLIST ── */
-.wl-scroll { flex: 1; overflow-y: auto; padding: 20px; }
-.wl-scroll::-webkit-scrollbar { width: 5px; }
-.wl-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.wl-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 12px; color: var(--muted); }
-.wl-empty-icon { font-size: 52px; opacity: 0.15; }
-.wl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(275px, 1fr)); gap: 12px; }
-.wl-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-.wl-c-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
-.wl-c-tkr { font-size: 20px; font-weight: 800; color: var(--accent); }
-.wl-c-name { font-size: 11px; color: var(--muted); margin-top: 1px; }
-.wl-rm { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 2px; border-radius: 3px; }
-.wl-rm:hover { color: var(--red); }
-.wl-scores { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px; }
-.wl-sc { text-align: center; background: var(--surface2); border-radius: 6px; padding: 7px; }
-.wl-sc-lbl { font-size: 9px; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
-.wl-sc-val { font-size: 16px; font-weight: 800; }
-.wl-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* ── MOBILE ── */
-@media (max-width: 768px) {
-  header {
-    height: auto; flex-direction: column; align-items: flex-start;
-    padding: 10px 14px 0; gap: 0;
-  }
-  header > div:last-child { display: none; }
-  .logo { padding-bottom: 8px; }
-  .nav-tabs {
-    overflow-x: auto; flex-wrap: nowrap;
-    -webkit-overflow-scrolling: touch;
-    border-top: 1px solid var(--border);
-    margin: 0 -14px; padding: 6px 14px;
-    width: calc(100% + 28px);
-  }
-  .nav-tabs::-webkit-scrollbar { display: none; }
-  .nav-tab { white-space: nowrap; padding: 6px 14px; font-size: 12px; }
-
-  /* Filter bar */
-  .filter-bar { padding: 8px 12px; gap: 7px; }
-  .search-wrap input { width: 160px; }
-  .chip { font-size: 10px; padding: 3px 8px; }
-  .rcount { display: none; }
-
-  /* Screener table - horizontal scroll */
-  .screener-scroll { overflow-x: auto; }
-  table.inv-tbl { min-width: 700px; }
-
-  /* Expanded panel - single column */
-  .exp-panel { grid-template-columns: 1fr; gap: 14px; }
-  .ev-note { display: none; }
-
-  /* Macro */
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-  .heat-grid { grid-template-columns: repeat(2, 1fr); }
-  .macro-scroll { padding: 12px; gap: 14px; }
-
-  /* News - single column */
-  .news-scroll { grid-template-columns: 1fr; padding: 12px; }
-
-  /* Watchlist */
-  .wl-grid { grid-template-columns: 1fr; }
-  .wl-scroll { padding: 12px; }
-}
-</style>
+<title>Research Hub — Investment Research Terminal</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
 <header>
   <div class="logo">
     <div class="logo-icon">📊</div>
-    Investment Research Hub
+    <span>Research Hub</span>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" id="nav-screener" onclick="showPage('screener')">Screener</button>
-    <button class="nav-tab" id="nav-macro" onclick="showPage('macro')">Macro Dashboard</button>
-    <button class="nav-tab" id="nav-news" onclick="showPage('news')">News Hub</button>
-    <button class="nav-tab" id="nav-watchlist" onclick="showPage('watchlist')">
-      Watchlist<span class="wl-badge" id="wlBadge" style="display:none">0</span>
-    </button>
-    <button class="nav-tab" id="nav-strategy" onclick="showPage('strategy')">Strategy Builder</button>
-  </div>
-  <div style="font-size:11px;color:var(--muted)">Data as of Q1 2025</div>
+  <nav style="display: flex; gap: 8px;">
+    <a href="index.html" class="nav-link active">Dashboard</a>
+    <a href="screener.html" class="nav-link">Screener</a>
+    <a href="macro.html" class="nav-link">Macro</a>
+    <a href="news.html" class="nav-link">News</a>
+  </nav>
 </header>
 
-<!-- SCREENER -->
-<div id="page-screener" class="page active">
-  <div class="filter-bar">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="Ticker or company…" oninput="applyFilters()">
-    </div>
-    <select class="flt-select" id="sectorFlt" onchange="applyFilters()">
-      <option value="">All Sectors</option>
-      <option>Technology</option><option>Communication Services</option><option>Healthcare</option>
-      <option>Financials</option><option>Consumer Discretionary</option><option>Consumer Staples</option>
-      <option>Energy</option><option>Utilities</option><option>Industrials</option><option>ETF</option>
-    </select>
-    <select class="flt-select" id="moatFlt" onchange="applyFilters()">
-      <option value="">Any Moat</option>
-      <option>Very Wide</option><option>Wide</option><option>Moderate</option>
-    </select>
-    <span class="rsep">|</span>
-    <div class="chips" id="scoreChips">
-      <button class="chip on" onclick="setSF(this,'')">All</button>
-      <button class="chip" onclick="setSF(this,'ov85')">Overall ≥ 85</button>
-      <button class="chip" onclick="setSF(this,'ov75')">Overall ≥ 75</button>
-      <button class="chip" onclick="setSF(this,'up80')">Upside ≥ 80</button>
-      <button class="chip" onclick="setSF(this,'h85')">Health ≥ 85</button>
-    </div>
-    <span class="rcount" id="rcount"></span>
-  </div>
-  <div class="screener-scroll">
-    <table class="inv-tbl">
-      <thead>
-        <tr>
-          <th onclick="sortBy('ticker')">Ticker <span id="sa-ticker"></span></th>
-          <th onclick="sortBy('name')">Company <span id="sa-name"></span></th>
-          <th onclick="sortBy('sector')">Sector <span id="sa-sector"></span></th>
-          <th onclick="sortBy('overall')" class="srt">Overall ▼</th>
-          <th onclick="sortBy('upside')">Upside <span id="sa-upside"></span></th>
-          <th onclick="sortBy('health')">Health <span id="sa-health"></span></th>
-          <th onclick="sortBy('presence')">Presence <span id="sa-presence"></span></th>
-          <th onclick="sortBy('cap')">Mkt Cap <span id="sa-cap"></span></th>
-          <th onclick="sortBy('fwdPE')">Fwd P/E <span id="sa-fwdPE"></span></th>
-          <th onclick="sortBy('revGrowth')">Rev Grwth <span id="sa-revGrowth"></span></th>
-          <th onclick="sortBy('dividend')">Div Yld <span id="sa-dividend"></span></th>
-          <th>WL</th>
-        </tr>
-      </thead>
-      <tbody id="tBody"></tbody>
-    </table>
-  </div>
-</div>
+<main class="container">
+  <h1>Investment Research Terminal</h1>
+  <p style="color: var(--muted); font-size: 15px; margin-bottom: 40px; max-width: 600px;">Access real-time investment analysis, sector rotation signals, earnings data, and macro indicators. Built for traders and investors seeking edge in today's markets.</p>
 
-<!-- MACRO -->
-<div id="page-macro" class="page">
-  <div class="macro-scroll">
-    <div><div class="m-title">Federal Reserve &amp; Interest Rates</div><div class="kpi-grid" id="ratesGrid"></div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-      <div><div class="m-title">Economy &amp; Inflation (Latest Readings)</div><div class="kpi-grid" id="ecoGrid"></div></div>
-      <div><div class="m-title">US Treasury Yield Curve — Basis Points</div><div class="yield-wrap"><div style="font-size:11px;color:var(--muted)">As of Q1 2025 · Partially inverted curve normalizing</div><div class="yield-bars" id="yieldBars"></div></div></div>
-    </div>
-    <div><div class="m-title">Sector Performance — 2024 Full Year Total Return (S&amp;P 500 GICS)</div><div class="heat-grid" id="heatGrid"></div></div>
-    <div><div class="m-title">Key Market Events &amp; Catalysts</div><div class="events-col" id="eventsCol"></div></div>
-    <div><div class="m-title">Market Pulse — Key Levels</div><div class="kpi-grid" id="mktGrid"></div></div>
-  </div>
-</div>
-
-<!-- NEWS -->
-<div id="page-news" class="page">
-  <div class="news-scroll" id="newsGrid"></div>
-</div>
-
-<!-- STRATEGY BUILDER -->
-<div id="page-strategy" class="page">
-  <iframe class="strategy-frame" src="/strategy/index.html" title="Strategy Builder"></iframe>
-</div>
-
-<!-- WATCHLIST -->
-<div id="page-watchlist" class="page">
-  <div class="wl-scroll" id="wlBody"></div>
-</div>
-
-<script>
-// ═══════════════════════════════════════════════════════════════════════════
-// INVESTMENT DATABASE
-// Upside (0-100): growth potential, analyst consensus, revenue/EPS trajectory
-// Health (0-100): balance sheet, FCF, margins, debt coverage
-// Presence (0-100): market share, brand moat, scale, competitive position
-// Overall = 40% Upside + 30% Health + 30% Presence
-// Source: Q4 2024 / Q1 2025 verified fundamental data
-// ═══════════════════════════════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════════════════════════════
-// UNIVERSE — popular tickers loaded live on startup
-// ═══════════════════════════════════════════════════════════════════════════
-const UNIVERSE = [
-  // Mega-cap tech
-  'TSLA','ORCL','CRM','NFLX','ADBE','INTC','QCOM','TXN','CSCO','IBM','DELL','PANW','CRWD','SNOW','ZS','NET','MDB','TEAM','OKTA','WDAY','VEEV','INTU','ADSK','CDNS','SNPS','FTNT','CHKP','HPQ','HPE','WDC','STX','ANET','KEYS','GDDY',
-  // Finance
-  'BRK-B','WFC','BAC','C','MS','GS','BLK','AXP','SCHW','COF','USB','TFC','PNC','CME','ICE','SPGI','MCO','MSCI','BX','APO','KKR','CG','ARES','TROW','IVZ','PFG','LNC','GL','RJF','FNF',
-  // Healthcare
-  'JNJ','PFE','MRK','BMY','AMGN','GILD','BIIB','REGN','VRTX','MRNA','BNTX','ABT','MDT','SYK','BSX','ISRG','BDX','DHR','TMO','A','IQV','IDXX','DXCM','EW','ZBH','BAX','HOLX','EXAS','CI','HUM','CVS','MCK','CAH','ABC','MOH','CNC','ELV',
-  // Consumer
-  'PG','JNJ','KO','PEP','MO','PM','MDLZ','GIS','CPB','HRL','CAG','MKC','CLX','CL','EL','ULTA','NKE','TGT','HD','LOW','DG','DLTR','KR','SYY','MCD','SBUX','YUM','CMG','DRI','MAR','HLT','H','ABNB','UBER','LYFT','DASH','RBLX','TTWO','EA','SPOT','DIS','CMCSA','T','VZ','TMUS',
-  // Energy
-  'CVX','COP','OXY','SLB','HAL','BKR','PSX','VLO','MPC','EOG','DVN','FANG','APA','MRO','HES',
-  // Industrials
-  'GE','HON','MMM','EMR','ETN','PH','ITW','AME','CARR','OTIS','DE','CMI','TT','URI','GWW','FAST','PCAR','GD','BA','NOC','HWM','TDG','AXON','PWR','ROP','FTV','VRSK','IR','GNRC',
-  // Materials
-  'LIN','APD','SHW','PPG','ECL','NEM','FCX','GOLD','NUE','AA','ALB','MP','CTVA','CF','MOS','FMC','IFF',
-  // Utilities
-  'DUK','SO','D','EXC','AEP','ED','XEL','WEC','PPL','ETR','FE','AES','CMS','NRG',
-  // REITs
-  'AMT','PLD','CCI','EQIX','DLR','WY','WELL','O','VICI','PSA','EXR','MAA','CPT','UDR','AVB','EQR','REG','KIM','SPG','NNN','STAG','CUBE','REXR',
-  // ETFs
-  'IWM','SMH','SOXX','GDX','GDXJ','SLV','IAU','TLT','IEF','SHY','HYG','LQD','AGG','BND','EEM','EFA','VEA','VWO','VGK','EWJ','FXI','KWEB','XLF','XLE','XLK','XLV','XLI','XLY','XLP','XLC','XLRE','XLU','XLB','SCHD','VNQ','VIG','VYM','IBB','XBI','ARKK','KRE','DIA','IVV','VOO','TQQQ','SQQQ',
-  // Crypto
-  'BTC-USD','ETH-USD','SOL-USD','XRP-USD','BNB-USD','DOGE-USD','ADA-USD','AVAX-USD','LINK-USD','DOT-USD','MATIC-USD','LTC-USD','BCH-USD','ATOM-USD',
-  // Crypto equities
-  'COIN','MARA','RIOT','CLSK','HUT','CIFR','BTBT',
-  // International ADRs
-  'BABA','JD','PDD','BIDU','NIO','LI','XPEV','TCOM','NTES','BILI','SE','GRAB','SHOP','RY','TD','BMO','BNS','CM','ENB','CNQ','SU','TRP','CP','CNI','WPM','AEM','BHP','RIO','VALE','SCCO','MT','SAP','AZN','NVS','SNY','GSK','ABB','SONY','TM','HMC',
-  // Additional growth / popular
-  'ARM','SMCI','CEG','VST','GEHC','GEV','APP','CELH','DKNG','HOOD','SOFI','AFRM','UPST','F','GM','RIVN','STLA','LCID','PARA','WBD','FOX','NTES','INTL','ACGL','AON','MMC','AJG','BRO',
-];
-console.log('UNIVERSE size:', UNIVERSE.length);
-
-const DB = [
-  {
-    ticker:'NVDA', name:'NVIDIA Corporation', sector:'Technology', type:'Stock',
-    cap:3300, fwdPE:35, revGrowth:122, epsGrowth:150, fcfMargin:55, dividend:0.03, moat:'Very Wide',
-    upside:93, health:88, presence:97,
-    desc:'Dominant AI GPU maker. The CUDA software ecosystem creates near-impenetrable lock-in across AI training and inference. Blackwell GPU architecture drives the next major revenue step-function in data center.',
-    catalysts:['Blackwell/GB200 NVL72 rack-scale deployments accelerating across hyperscalers','Sovereign AI investments from 40+ countries building national AI infrastructure','Inference demand growing faster than training — Hopper installed base monetizing','CUDA expanding into robotics, autonomous vehicles, drug discovery'],
-    risks:['China export controls could remove ~8% of addressable revenue','AMD MI300X/MI400 gaining enterprise evaluations as alternative','Customer concentration: top 5 hyperscalers = majority of revenue','Valuation demands sustained 30%+ growth for multiple years'],
-    tags:['AI','Semiconductors','Data Center','CUDA','Blackwell']
-  },
-  {
-    ticker:'MSFT', name:'Microsoft Corporation', sector:'Technology', type:'Stock',
-    cap:3100, fwdPE:30, revGrowth:16, epsGrowth:22, fcfMargin:35, dividend:0.7, moat:'Very Wide',
-    upside:79, health:95, presence:98,
-    desc:'Unmatched enterprise software platform. Azure + Copilot AI integration drives monetization across Office 365, Teams, GitHub, and Dynamics. $100B+ annual FCF engine compounding at 15%.',
-    catalysts:['Copilot at $30/seat monetizing across 300M+ potential Office users','Azure market share gaining from 24% → 26%+ with Copilot workload pull-through','GitHub Copilot Enterprise adoption accelerating developer productivity','OpenAI partnership provides exclusive frontier model access for enterprise'],
-    risks:['DOJ cloud bundling antitrust scrutiny','$60B+ capex in 2025 for AI infrastructure compresses near-term FCF margins','Azure growth deceleration if enterprise IT budgets tighten'],
-    tags:['AI','Cloud','Enterprise Software','Copilot','Azure']
-  },
-  {
-    ticker:'AAPL', name:'Apple Inc.', sector:'Technology', type:'Stock',
-    cap:3300, fwdPE:28, revGrowth:7, epsGrowth:11, fcfMargin:26, dividend:0.5, moat:'Very Wide',
-    upside:65, health:90, presence:99,
-    desc:'Hardware ecosystem + Services flywheel at $100B/yr growing 14%. $90B+ annual buyback reduces share count ~3%/yr. iPhone installed base of 1.4B+ is most valuable consumer platform on earth.',
-    catalysts:['Apple Intelligence AI features driving first meaningful upgrade supercycle since iPhone X','Services (App Store, iCloud, Apple TV+) expanding to 74% gross margin','India manufacturing scale-up reducing China production dependency','Vision Pro spatial computing as 10-year platform optionality'],
-    risks:['China revenue (~17%) vulnerable to consumer nationalism/tariffs','iPhone upgrade cycle saturating in developed markets','DOJ antitrust targeting App Store 27-30% commission structure','EU Digital Markets Act forcing App Store sideloading'],
-    tags:['Consumer Tech','Services','Apple Intelligence','Buybacks','Ecosystem']
-  },
-  {
-    ticker:'GOOGL', name:'Alphabet Inc.', sector:'Communication Services', type:'Stock',
-    cap:2100, fwdPE:22, revGrowth:14, epsGrowth:28, fcfMargin:28, dividend:0.5, moat:'Very Wide',
-    upside:86, health:95, presence:97,
-    desc:'Search monopoly (91% global share) + fastest-growing cloud (GCP +28% YoY) + YouTube #1 streaming hours globally. Most attractive valuation in mega-cap tech at 22x forward earnings.',
-    catalysts:['AI Overviews monetization in Search proceeding with no cannibalization observed','Gemini Ultra enterprise tier adoption growing rapidly','Waymo robotaxi expanding to 10+ cities — commercialization underway','GCP gaining AI infrastructure share with native Gemini advantage','$70B+ authorized buyback at historically attractive valuation'],
-    risks:['DOJ antitrust ruling could force Google Search remedies or structural separation','Perplexity AI / ChatGPT SearchGPT displacing informational query share','YouTube content moderation regulatory fines accelerating in EU'],
-    tags:['AI','Search','Cloud GCP','YouTube','Advertising','Waymo']
-  },
-  {
-    ticker:'META', name:'Meta Platforms Inc.', sector:'Communication Services', type:'Stock',
-    cap:1400, fwdPE:24, revGrowth:22, epsGrowth:45, fcfMargin:38, dividend:0.4, moat:'Wide',
-    upside:83, health:92, presence:95,
-    desc:'3.27B daily active users across Family of Apps. AI recommendation engine driving engagement and ad pricing power. 38% FCF margins with accelerating earnings — best combination in mega-cap tech.',
-    catalysts:['AI ad targeting improvements driving ROAS superior to Google — advertiser budget shift','Llama 3 open-source ecosystem attracting 50M+ developer adopters','Instagram Reels monetization gap narrowing versus TikTok','WhatsApp business messaging monetization at $1B run rate and accelerating','Threads reaching 200M+ MAUs as X/Twitter substitute'],
-    risks:['EU Digital Services Act compliance cost + content liability exposure','Reality Labs burning $5B+/yr with meaningful consumer VR still 3-5 years out','US teen mental health class action and legislative risk','Ad market cyclicality in recession scenario'],
-    tags:['Social Media','AI','Advertising','Llama','Instagram','WhatsApp']
-  },
-  {
-    ticker:'AMZN', name:'Amazon.com Inc.', sector:'Consumer Discretionary', type:'Stock',
-    cap:2100, fwdPE:38, revGrowth:11, epsGrowth:65, fcfMargin:9, dividend:0, moat:'Very Wide',
-    upside:87, health:85, presence:97,
-    desc:'AWS ($105B run rate, +17% growth) funds everything else. Advertising ($50B+, 30%+ growth) is highest-margin business. Logistics and retail reaching structural profitability after decade of investment.',
-    catalysts:['AWS Bedrock AI inference platform + Trainium2 custom chips winning enterprise AI workloads','Advertising business scaling to $70B+ replacing TV spend','International retail achieving profitability as scale is reached','Project Kuiper satellite broadband as $10B+ long-term revenue stream'],
-    risks:['FTC antitrust targeting marketplace seller practices and logistics','AWS competition from Azure (Copilot) and GCP (Gemini) intensifying','Labor costs and union pressure compressing logistics EBIT margins'],
-    tags:['Cloud AWS','E-Commerce','AI','Advertising','Logistics']
-  },
-  {
-    ticker:'TSM', name:'Taiwan Semiconductor Mfg.', sector:'Technology', type:'Stock',
-    cap:830, fwdPE:20, revGrowth:30, epsGrowth:35, fcfMargin:42, dividend:1.8, moat:'Very Wide',
-    upside:88, health:90, presence:95,
-    desc:'Only foundry capable of 3nm/2nm at commercial scale. Manufactures chips for NVIDIA, Apple, AMD, ARM designs. AI accelerator demand driving CoWoS advanced packaging to permanent full capacity.',
-    catalysts:['N2 node ramping in 2025 with Apple and NVIDIA as anchor customers','Arizona Fab 21 operational — reduces geopolitical risk discount in stock','CHIPS Act $6.6B grant supporting US fab expansion to Phase 3','CoWoS packaging 2× expansion enables NVIDIA Blackwell volume ramp'],
-    risks:['Taiwan Strait invasion scenario is primary tail risk (low probability, extreme impact)','Customer concentration: Apple ~25%, NVIDIA ~11% of revenue','Capital intensity of $35B+/yr capex limits FCF yield for shareholders','US-China tech cold war escalation restricting US customer design-wins at TSMC'],
-    tags:['Semiconductors','Foundry','AI','2nm','CHIPS Act','Taiwan']
-  },
-  {
-    ticker:'ASML', name:'ASML Holding N.V.', sector:'Technology', type:'Stock',
-    cap:330, fwdPE:35, revGrowth:25, epsGrowth:30, fcfMargin:30, dividend:0.7, moat:'Very Wide',
-    upside:88, health:88, presence:93,
-    desc:'Absolute monopoly in EUV lithography — the machine that makes advanced chips physically possible. Zero credible competitors. $40B+ backlog. Every leading fab on earth is an ASML customer.',
-    catalysts:['High-NA EUV (TWINSCAN EXE:5000) ramping for 2nm+ nodes at Intel, TSMC, Samsung','AI-driven demand pulls forward next 3 fab expansion cycles — orders accelerating','$40B order backlog provides 2+ years of high-confidence revenue visibility'],
-    risks:['China DUV export restrictions remove ~15% of revenue permanently','Fab capex cycle can turn sharply — equipment orders lumpy by nature','Single-site production risk (Veldhoven, Netherlands) for irreplaceable machines'],
-    tags:['Semiconductor Equipment','EUV Monopoly','AI','Deep Tech','Netherlands']
-  },
-  {
-    ticker:'AVGO', name:'Broadcom Inc.', sector:'Technology', type:'Stock',
-    cap:800, fwdPE:28, revGrowth:50, epsGrowth:22, fcfMargin:50, dividend:1.6, moat:'Wide',
-    upside:81, health:74, presence:89,
-    desc:'Custom AI ASIC chips (XPUs) for Google, Meta, ByteDance at massive scale. VMware acquisition doubles software revenue to $20B+/yr at high margins. 50% FCF margins despite integration.',
-    catalysts:['XPU custom AI chip TAM growing to $60-90B by 2027 — Broadcom well-positioned','VMware cross-sell delivering $8.5B in incremental software revenue synergies','Networking (Tomahawk switching, Jericho routers) essential AI cluster infrastructure','Ethernet networking for AI replacing InfiniBand in cost-sensitive deployments'],
-    risks:['$70B post-VMware debt load severely constrains capital allocation flexibility','Top 3 customers (Google, Apple, Meta) = majority of semiconductor revenue','VMware to VCF migration customer pushback creating deal delays'],
-    tags:['Custom AI Chips','Networking','VMware','Enterprise Software','XPU']
-  },
-  {
-    ticker:'AMD', name:'Advanced Micro Devices', sector:'Technology', type:'Stock',
-    cap:230, fwdPE:35, revGrowth:14, epsGrowth:65, fcfMargin:20, dividend:0, moat:'Moderate',
-    upside:78, health:82, presence:82,
-    desc:'MI300X AI GPU gaining serious traction as NVIDIA alternative. x86 datacenter CPU market share continuing to gain versus Intel. ROCm software closing the CUDA ecosystem gap.',
-    catalysts:['MI300X at $4B+ annualized revenue and accelerating with major cloud deployments','MI400 GPU launching 2025 with superior memory bandwidth vs Hopper','EPYC Genoa/Turin CPUs taking 25%+ datacenter market share from Intel','Instinct software ecosystem partnerships with PyTorch, JAX, TensorFlow'],
-    risks:['NVIDIA CUDA moat — millions of ML engineers trained exclusively on CUDA','MI300X enterprise wins are evaluations, not yet at scale of NVIDIA deployments','Semiconductor cycle risk if AI capex spend moderates in late 2025'],
-    tags:['AI GPUs','Semiconductors','CPUs','MI300X','EPYC']
-  },
-  {
-    ticker:'LLY', name:'Eli Lilly and Company', sector:'Healthcare', type:'Stock',
-    cap:730, fwdPE:40, revGrowth:32, epsGrowth:90, fcfMargin:22, dividend:0.7, moat:'Very Wide',
-    upside:87, health:78, presence:91,
-    desc:'Tirzepatide (Mounjaro/Zepbound) defines the GLP-1 obesity market. 32% revenue growth with a multi-decade runway as obesity treatment becomes global standard of care for 1B+ patients.',
-    catalysts:['SURMOUNT cardiovascular outcomes expanding Zepbound to renal/heart failure patients','Oral GLP-1 orforglipron removes injection barrier — doubles addressable market','Alzheimer\'s donanemab advancing through FDA review','$20B manufacturing expansion ensuring supply meets surging demand'],
-    risks:['Manufacturing capacity constraints limiting near-term revenue capture','IRA Medicare drug pricing negotiation may target GLP-1 drugs in 2027+','Novo Nordisk CagriSema showing superior weight loss — competition intensifying','Pipeline trial failure probability (standard biotech tail risk)'],
-    tags:['GLP-1','Obesity','Pharma','Tirzepatide','Diabetes','Alzheimer\'s']
-  },
-  {
-    ticker:'NVO', name:'Novo Nordisk A/S', sector:'Healthcare', type:'Stock',
-    cap:400, fwdPE:22, revGrowth:25, epsGrowth:30, fcfMargin:35, dividend:1.3, moat:'Very Wide',
-    upside:81, health:86, presence:89,
-    desc:'Ozempic/Wegovy pioneer with ~50% GLP-1 global market share. Decades of manufacturing expertise, IP, and physician relationships. CagriSema next-generation combination showing 25%+ weight loss.',
-    catalysts:['SELECT trial drives broad cardiovascular prevention prescribing','CagriSema Phase 3 data — potential best-in-class weight loss agent','Oral semaglutide scaling to replace injection for millions of patients','Rare blood disorder pipeline (hemophilia, sickle cell) underappreciated'],
-    risks:['Compounding pharmacy alternative semaglutide reducing branded Wegovy demand','LLY tirzepatide gaining market share with head-to-head superiority data','Payer reimbursement coverage decisions could limit prescription volumes'],
-    tags:['GLP-1','Obesity','Pharma','Ozempic','Wegovy','Denmark']
-  },
-  {
-    ticker:'UNH', name:'UnitedHealth Group Inc.', sector:'Healthcare', type:'Stock',
-    cap:480, fwdPE:18, revGrowth:8, epsGrowth:12, fcfMargin:6, dividend:1.5, moat:'Very Wide',
-    upside:72, health:85, presence:93,
-    desc:'Largest US health insurer (50M+ members) plus Optum (pharmacy benefits, care delivery, health IT). Vertically integrated model generating $25B+ earnings with decades of consistent execution.',
-    catalysts:['Optum Health scaling to 5M+ value-based care patients by 2026','Medicare Advantage penetration reaching 55%+ of eligible Medicare population','Change Healthcare fully recovered — $3B+ of diverted revenue returning'],
-    risks:['Medical Loss Ratio elevated from surging healthcare utilization post-COVID','Government Medicare Advantage reimbursement rate cuts in 2025 benchmark','DOJ antitrust scrutiny of vertical integration across payer-provider','Change Healthcare cybersecurity incident reputational and legal overhang'],
-    tags:['Health Insurance','Managed Care','Optum','Medicare Advantage']
-  },
-  {
-    ticker:'JPM', name:'JPMorgan Chase & Co.', sector:'Financials', type:'Stock',
-    cap:680, fwdPE:13, revGrowth:7, epsGrowth:5, fcfMargin:0, dividend:2.5, moat:'Very Wide',
-    upside:70, health:88, presence:97,
-    desc:'America\'s best-managed financial institution. #1 in US investment banking fees, consumer deposits, auto lending, and AUM. Jamie Dimon\'s consistent capital allocation creates long-term value.',
-    catalysts:['M&A / IPO market recovery driving investment banking fee rebound','Net Interest Income sustaining above $90B with higher-for-longer rates','First Republic integration fully delivering $2B+ in annual synergies','Private Bank growing UHNW client relationships at record pace'],
-    risks:['Credit cycle deterioration — CRE office exposure of $17B remains stressed','Basel III Endgame capital requirements could force dividend/buyback reductions','Recession scenario compresses NIM and elevates consumer credit charge-offs'],
-    tags:['Banking','Investment Banking','Asset Management','Consumer Finance']
-  },
-  {
-    ticker:'V', name:'Visa Inc.', sector:'Financials', type:'Stock',
-    cap:590, fwdPE:26, revGrowth:10, epsGrowth:15, fcfMargin:56, dividend:0.7, moat:'Very Wide',
-    upside:74, health:88, presence:96,
-    desc:'Global payment network processing $15T+/yr with zero credit risk. 56% FCF margins. Cross-border volume (+14% YoY) is highest-margin revenue line. Irreplaceable two-sided network with 100M+ merchant acceptance.',
-    catalysts:['Tap-to-pay penetration in cash-heavy markets (LatAm, India, SEA)','Visa Direct real-time payments replacing ACH in B2B and P2P disbursements','Value-Added Services ($8B segment growing 20%+) diversifying revenue','Government and payroll digitization programs worldwide'],
-    risks:['DOJ debit routing antitrust lawsuit — Durbin Amendment expansion risk','BNPL substitution for sub-$500 purchases by Affirm, Klarna, Afterpay','CBDC adoption is 10-15 year tail risk to network economics'],
-    tags:['Payments','Global Network','Fintech','Cross-Border','VAS']
-  },
-  {
-    ticker:'MA', name:'Mastercard Incorporated', sector:'Financials', type:'Stock',
-    cap:470, fwdPE:27, revGrowth:11, epsGrowth:17, fcfMargin:52, dividend:0.6, moat:'Very Wide',
-    upside:75, health:87, presence:95,
-    desc:'Duopoly with Visa on global card networks. Services segment (Cyber & Intelligence, Data & Services) approaching 35% of revenue at 20%+ growth — transforming toward a data and software company.',
-    catalysts:['Open Banking infrastructure (Aiia acquisition) enabling bank data monetization','Mastercard Send real-time disbursements scaling to $5T+ in annual volume','Cybersecurity & Identity services growing 20%+ with zero marginal cost','Government payment digitization contract wins globally'],
-    risks:['European interchange cap regulation structurally limits European card economics','Same systemic CBDC and regulatory risks as Visa','Big Tech potential entry into card network infrastructure'],
-    tags:['Payments','Global Network','Fintech','Data Services','Cybersecurity']
-  },
-  {
-    ticker:'XOM', name:'ExxonMobil Corporation', sector:'Energy', type:'Stock',
-    cap:520, fwdPE:14, revGrowth:3, epsGrowth:5, fcfMargin:10, dividend:3.5, moat:'Wide',
-    upside:58, health:85, presence:93,
-    desc:'Pioneer acquisition makes ExxonMobil the dominant Permian Basin operator. Guyana deepwater is among the world\'s lowest-breakeven reserves. Best balance sheet in Big Oil with minimal debt.',
-    catalysts:['Guyana Payara + Yellowtail production ramp to 1.2M BOE/day by 2027','Pioneer Permian synergies delivering $2B+/yr above original estimate','Low-carbon solutions (carbon capture, hydrogen) positioning for energy transition'],
-    risks:['WTI crude below $60/bbl scenario pressures free cash flow (break-even ~$45)','Energy transition risk — oil demand peak potentially visible in 2030s','Geopolitical supply disruption creating commodity price volatility'],
-    tags:['Energy','Oil & Gas','Permian Basin','Guyana','Dividends']
-  },
-  {
-    ticker:'NEE', name:'NextEra Energy Inc.', sector:'Utilities', type:'Stock',
-    cap:140, fwdPE:22, revGrowth:8, epsGrowth:10, fcfMargin:0, dividend:2.8, moat:'Wide',
-    upside:68, health:72, presence:83,
-    desc:'World\'s largest wind and solar energy generator. Florida Power & Light provides stable regulated base. AI data center power demand creating a once-in-a-generation infrastructure buildout tailwind.',
-    catalysts:['AI hyperscaler data center PPAs — Microsoft, Google, Amazon signing 10-20 year contracts','IRA Inflation Reduction Act tax credits make renewable projects 30-40% more economically attractive','FPL rate base growing 9%/yr through capital deployment in Florida'],
-    risks:['Interest rate sensitivity — utility P/E multiples compress when rates rise','Permitting delays and transmission line buildout timelines (3-7 years)','Hurricane season direct infrastructure damage to FPL Florida assets'],
-    tags:['Clean Energy','Wind','Solar','AI Power Demand','Utility','IRA']
-  },
-  {
-    ticker:'LMT', name:'Lockheed Martin Corporation', sector:'Industrials', type:'Stock',
-    cap:110, fwdPE:16, revGrowth:5, epsGrowth:7, fcfMargin:11, dividend:2.8, moat:'Wide',
-    upside:64, health:74, presence:91,
-    desc:'F-35 program lifetime value exceeds $400B. Missile defense, hypersonics, and classified programs structurally benefit from elevated global geopolitical tensions. NATO allies increasing defense budgets.',
-    catalysts:['F-35 international orders from Belgium, Finland, Germany ramping','Hypersonic weapons (LRASM, PAC-3 MSE) production ramping for DoD and allies','NATO defense spending toward 2-3% GDP target = $200B+ additional annual spend','Classified black programs growing faster than public revenues suggest'],
-    risks:['F-35 software delays and cost overruns create congressional scrutiny risk','Government shutdown / continuing resolution halts new contract awards','9x debt/equity financial leverage limits strategic M&A flexibility'],
-    tags:['Defense','Aerospace','F-35','Missiles','Hypersonics','NATO']
-  },
-  {
-    ticker:'RTX', name:'RTX Corporation', sector:'Industrials', type:'Stock',
-    cap:160, fwdPE:18, revGrowth:10, epsGrowth:14, fcfMargin:9, dividend:2.0, moat:'Wide',
-    upside:70, health:77, presence:89,
-    desc:'Pratt & Whitney GTF aircraft engines + Raytheon defense systems. Commercial aerospace aftermarket is multi-year compounding tailwind as 1,100+ GTF engine fleet matures and requires MRO.',
-    catalysts:['GTF MRO aftermarket growing 20%+ as engines enter heavy maintenance cycles','Patriot / NASAMS air defense systems seeing unprecedented export demand','Collins Aerospace avionics on every new Airbus A320 and Boeing 737 MAX'],
-    risks:['GTF powder metal recall total charge of $6-7B creates multi-year earnings headwind','Supply chain constraints limiting new engine production rates to backlog','Defense budget sequestration if geopolitical tensions unexpectedly de-escalate'],
-    tags:['Defense','Aerospace','Aircraft Engines','Air Defense MRO','Collins']
-  },
-  {
-    ticker:'CAT', name:'Caterpillar Inc.', sector:'Industrials', type:'Stock',
-    cap:185, fwdPE:17, revGrowth:1, epsGrowth:8, fcfMargin:12, dividend:1.7, moat:'Wide',
-    upside:64, health:80, presence:89,
-    desc:'Infrastructure supercycle + mining equipment demand for copper, lithium, gold. Services and parts aftermarket approaching 50% of revenue — providing recession-resilient recurring cash flows.',
-    catalysts:['US Infrastructure Investment and Jobs Act multi-year deployment','Data center and power infrastructure construction driving equipment demand','Copper/lithium/gold mining capex for energy transition critical minerals','Services segment targeting $28B by 2026 at higher margins than equipment'],
-    risks:['Construction equipment order cycle showing peak — dealer inventory normalization','China construction downturn reducing Asian revenue 10%+','Manufacturing capacity utilization declining as orders moderate'],
-    tags:['Industrial Equipment','Mining','Infrastructure','Construction','Services']
-  },
-  {
-    ticker:'COST', name:'Costco Wholesale Corporation', sector:'Consumer Staples', type:'Stock',
-    cap:380, fwdPE:50, revGrowth:7, epsGrowth:12, fcfMargin:4, dividend:0.5, moat:'Very Wide',
-    upside:56, health:88, presence:91,
-    desc:'96% membership renewal rate and artificially compressed gross margins create self-reinforcing value flywheel. Gold bar phenomenon demonstrates brand extends far beyond traditional retail.',
-    catalysts:['International expansion pipeline — 70+ warehouses in development','Pharmacy and optical disruption stealing market from healthcare incumbents','Membership fee increase (next hike historically every 5-7 years, due)','Costco Travel and auto services growing double-digits'],
-    risks:['50x P/E prices in near-perfection for a physical retail business','Amazon Prime + Walmart+ competition for premium consumer wallet share','Wage inflation disproportionately impacts labor-intensive warehouse model'],
-    tags:['Retail','Membership','Consumer Staples','Value','International']
-  },
-  {
-    ticker:'WMT', name:'Walmart Inc.', sector:'Consumer Staples', type:'Stock',
-    cap:690, fwdPE:30, revGrowth:6, epsGrowth:11, fcfMargin:4, dividend:1.0, moat:'Very Wide',
-    upside:58, health:82, presence:97,
-    desc:'Supply chain scale advantage + Walmart+ membership + Advertising business ($3.4B, +30% growth). Flipkart and PhonePe provide massive India optionality not priced into US-focused equity story.',
-    catalysts:['Walmart Connect advertising growing to $6B+/yr at 80%+ margins','Walmart+ membership scaling (target 50M households by 2026)','Flipkart IPO potential unlocking substantial India enterprise value','Healthcare clinics, pharmacy, and optical disruption of healthcare incumbents'],
-    risks:['30x P/E requires sustained delivery unlike traditional retail company valuation history','Tariff/trade war impact on imported consumer goods COGS margins','E-commerce profitability still trailing Amazon fulfillment economics'],
-    tags:['Retail','Consumer Staples','Advertising','E-Commerce','India','Flipkart']
-  },
-  {
-    ticker:'PLTR', name:'Palantir Technologies Inc.', sector:'Technology', type:'Stock',
-    cap:75, fwdPE:90, revGrowth:20, epsGrowth:80, fcfMargin:28, dividend:0, moat:'Moderate',
-    upside:63, health:85, presence:69,
-    desc:'AIP (Artificial Intelligence Platform) adoption accelerating in US enterprise. Government contracts provide stable base. First US software company purpose-built for classified AI applications at scale.',
-    catalysts:['US Commercial revenue growing 55%+ via AIP bootcamp enterprise sales strategy','TITAN US Army AI program + DoD AI/ML contract pipeline expanding','NATO allies upgrading intelligence and battlefield AI infrastructure with Palantir','GAIA (EU government AI initiatives) opening multi-billion European government market'],
-    risks:['90x forward P/E requires AIP to scale to hundreds of large enterprise customers','Government continuing resolution / budget sequestration halts new spending','Customer concentration and high implementation cost limits SME penetration'],
-    tags:['AI','Defense Tech','Data Analytics','Government','AIP','Enterprise']
-  },
-  {
-    ticker:'DDOG', name:'Datadog Inc.', sector:'Technology', type:'Stock',
-    cap:45, fwdPE:65, revGrowth:26, epsGrowth:50, fcfMargin:25, dividend:0, moat:'Wide',
-    upside:80, health:83, presence:73,
-    desc:'Best-in-class cloud observability, monitoring, and security platform. AI observability (LLM monitoring, GPU utilization) is the next major growth vector as every enterprise deploys AI models.',
-    catalysts:['LLM observability platform — every enterprise AI deployment requires Datadog monitoring','Average customer using 5+ products — cross-sell driving ARPU 15%+ growth','New products: Application Security, Bits AI, Flex Logs accelerating adoption','Fortune 500 consolidation from 5+ point solutions to Datadog platform saves cost'],
-    risks:['Cloud optimization headwinds: customers reducing data volume to cut costs','Hyperscaler competition (AWS CloudWatch, Azure Monitor) at lower price points','65x P/E requires sustained 25%+ growth for 5+ years — narrow margin for error'],
-    tags:['Cloud Observability','AI Monitoring','DevOps','SaaS','Security']
-  },
-  {
-    ticker:'ABBV', name:'AbbVie Inc.', sector:'Healthcare', type:'Stock',
-    cap:320, fwdPE:16, revGrowth:4, epsGrowth:8, fcfMargin:28, dividend:3.7, moat:'Moderate',
-    upside:60, health:70, presence:85,
-    desc:'Humira biosimilar headwind cycling through 2025. Skyrizi and Rinvoq together tracking to $31B+ by 2027, exceeding Humira\'s peak. 3.7% dividend yield well-covered by $20B+ annual FCF.',
-    catalysts:['Skyrizi + Rinvoq combined replacing Humira revenue by 2025 inflection','Epcoritamab blood cancer approval and commercialization ramp','Cerevel Therapeutics psychiatric pipeline (Parkinson\'s, schizophrenia, depression)'],
-    risks:['$60B net debt from M&A activity constrains financial flexibility significantly','Legacy portfolio patent cliff creating 2025 headwinds even with new drugs ramping','Pipeline failure probability standard for pharma — key programs must succeed'],
-    tags:['Pharma','Immunology','Neurology','Dividends','Pipeline','Skyrizi']
-  },
-  {
-    ticker:'MSTR', name:'MicroStrategy Inc.', sector:'Technology', type:'Stock',
-    cap:35, fwdPE:0, revGrowth:0, epsGrowth:0, fcfMargin:0, dividend:0, moat:'None',
-    upside:55, health:40, presence:53,
-    desc:'Leveraged Bitcoin treasury company holding 220,000+ BTC (~$20B at $95K BTC). Trades at significant premium to Bitcoin NAV. Effectively provides leveraged BTC equity exposure via convertible note structure.',
-    catalysts:['Bitcoin price appreciation is the singular driver of all business value','Institutional Bitcoin ETF inflows driving structural demand beyond retail','Convertible note issuance strategy allows buying more BTC at accretive NAV premium'],
-    risks:['Bitcoin price decline of 50%+ could trigger margin calls on convertible debt structure','Premium-to-NAV compression would crush stock even if BTC price stays flat','SEC scrutiny of BTC accounting treatment and treasury disclosure standards'],
-    tags:['Bitcoin','Crypto Treasury','Leveraged BTC','Speculative','High Risk']
-  },
-  {
-    ticker:'SPY', name:'SPDR S&P 500 ETF Trust', sector:'ETF', type:'ETF',
-    cap:580, fwdPE:22, revGrowth:11, epsGrowth:14, fcfMargin:0, dividend:1.3, moat:'N/A',
-    upside:68, health:95, presence:99,
-    desc:'World\'s most liquid ETF. $580B AUM. 0.0945% expense ratio. Tracks 500 largest US companies. The global benchmark — everything else is measured against it.',
-    catalysts:['US earnings growth consensus +12% EPS in 2025','AI productivity gains boosting corporate profit margins across sectors','$850B+ annual buybacks providing structural price floor support'],
-    risks:['22x forward P/E above 20-year average of 17x — historically leads to lower 10-yr returns','Top 10 holdings = 36% of index weight — severe concentration in 7 mega-cap names','Rate-sensitive if Fed reverses course and re-hikes amid sticky inflation'],
-    tags:['S&P 500','Passive','Benchmark','Large Cap','Broad Market']
-  },
-  {
-    ticker:'QQQ', name:'Invesco QQQ Trust', sector:'ETF', type:'ETF',
-    cap:290, fwdPE:27, revGrowth:15, epsGrowth:20, fcfMargin:0, dividend:0.6, moat:'N/A',
-    upside:78, health:92, presence:97,
-    desc:'Nasdaq-100 tracking ETF — the purest expression of US technology and AI leadership. AI earnings super-cycle disproportionately benefits QQQ top holdings. 0.20% expense ratio.',
-    catalysts:['NVDA+MSFT+GOOGL+META AI monetization = top 4 holdings driving index earnings','Software re-rating as AI drives margin expansion across SaaS industry','Semiconductor super-cycle driven by AI infrastructure capex benefiting holdings'],
-    risks:['Top 3 holdings (MSFT+AAPL+NVDA) = ~30% of entire fund concentration','Tech regulatory risk simultaneously hitting multiple top holdings across jurisdictions','Growth multiple compression risk if Fed unexpectedly pauses rate cuts'],
-    tags:['Nasdaq 100','Technology','AI','Growth','Passive']
-  },
-  {
-    ticker:'VTI', name:'Vanguard Total Stock Market ETF', sector:'ETF', type:'ETF',
-    cap:480, fwdPE:21, revGrowth:10, epsGrowth:13, fcfMargin:0, dividend:1.4, moat:'N/A',
-    upside:66, health:96, presence:98,
-    desc:'Broadest US equity exposure — 3,700+ stocks including small and mid cap not in S&P 500. 0.03% expense ratio (world\'s lowest cost broad market fund). Vanguard structure eliminates fund manager agency costs.',
-    catalysts:['Small/mid cap historical outperformance in early rate-cutting cycles','Broader Russell 2000 component recovery if economic soft landing is confirmed','3,700 holdings provides genuine diversification beyond mega-cap concentration of SPY'],
-    risks:['Small cap components face higher credit risk in tighter credit environment','Top 10 holdings still dominate weighting — similar concentration issue as SPY','No active management to tilt away from overvalued sectors'],
-    tags:['Total Market','Passive','Small Cap','Vanguard','Lowest Cost']
-  },
-  {
-    ticker:'GLD', name:'SPDR Gold Shares ETF', sector:'ETF', type:'ETF',
-    cap:72, fwdPE:0, revGrowth:0, epsGrowth:0, fcfMargin:0, dividend:0, moat:'N/A',
-    upside:65, health:90, presence:92,
-    desc:'Physical gold bullion trust. Gold at $2,600+/oz driven by record central bank buying (1,000+ tonnes/yr), de-dollarization, geopolitical hedging, and inflation hedge demand. 0.40% expense ratio.',
-    catalysts:['Central bank reserve diversification away from USD accelerating permanently post-Ukraine sanctions','Geopolitical tail risk premium in gold elevated by multiple simultaneous conflicts','Rate cut cycle reducing opportunity cost of holding non-yielding gold','India and China structural retail and jewelry demand growing with middle class'],
-    risks:['Real interest rate increases reduce gold\'s relative appeal vs bonds','Dollar strengthening creates mechanical headwind to USD gold price','No earnings, dividends, or FCF growth — purely price appreciation thesis'],
-    tags:['Gold','Inflation Hedge','Safe Haven','Commodities','De-Dollarization']
-  },
-];
-
-// ═══════════════════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════════════════
-let watchlist = new Set();
-let sortKey = 'overall';
-let sortAsc = false;
-let scoreFilter = '';
-let expandedTicker = null;
-let filtered = [];
-let liveResults = [];
-let liveDebounce = null;
-let liveLoading = false;
-const liveDB = {};
-
-// ═══════════════════════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════════════════════
-function overall(inv) {
-  if (inv.upside == null || inv.health == null || inv.presence == null) return null;
-  return Math.round(inv.upside * 0.40 + inv.health * 0.30 + inv.presence * 0.30);
-}
-function sc(v) { // score class suffix
-  if (v >= 85) return 'g'; if (v >= 70) return 'a'; if (v >= 55) return 'y'; return 'r';
-}
-function scoreCell(v) {
-  if (v == null) return '<div class="sc-cell"><span class="sc-val mdt">—</span></div>';
-  return `<div class="sc-cell"><span class="sc-val c${sc(v)}">${v}</span><div class="sc-bar-bg"><div class="sc-bar b${sc(v)}" style="width:${v}%"></div></div></div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// SCREENER
-// ═══════════════════════════════════════════════════════════════════════════
-function setSF(el, val) {
-  scoreFilter = val;
-  document.querySelectorAll('#scoreChips .chip').forEach(c => c.classList.remove('on'));
-  el.classList.add('on');
-  applyFilters();
-}
-function applyFilters() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const sec = document.getElementById('sectorFlt').value;
-  const moat = document.getElementById('moatFlt').value;
-  filtered = DB.filter(inv => {
-    if (q && !inv.ticker.toLowerCase().includes(q) && !inv.name.toLowerCase().includes(q) && !inv.tags.some(t=>t.toLowerCase().includes(q))) return false;
-    if (sec && inv.sector !== sec) return false;
-    if (moat && inv.moat !== moat) return false;
-    const ov = overall(inv);
-    if (scoreFilter === 'ov85' && ov < 85) return false;
-    if (scoreFilter === 'ov75' && ov < 75) return false;
-    if (scoreFilter === 'up80' && inv.upside < 80) return false;
-    if (scoreFilter === 'h85' && inv.health < 85) return false;
-    return true;
-  });
-  filtered.sort((a, b) => {
-    let av, bv;
-    if (sortKey === 'overall') { av = overall(a); bv = overall(b); }
-    else if (sortKey === 'name') { av = a.name; bv = b.name; }
-    else if (sortKey === 'ticker') { av = a.ticker; bv = b.ticker; }
-    else if (sortKey === 'sector') { av = a.sector; bv = b.sector; }
-    else { av = a[sortKey]; bv = b[sortKey]; }
-    if (typeof av === 'string') return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-    return sortAsc ? av - bv : bv - av;
-  });
-  triggerLiveSearch(q);
-  renderTable();
-}
-function sortBy(key) {
-  sortAsc = (sortKey === key) ? !sortAsc : false;
-  sortKey = key;
-  document.querySelectorAll('.inv-tbl thead th').forEach(th => th.classList.remove('srt'));
-  const th = document.querySelector(`.inv-tbl thead th[onclick="sortBy('${key}')"]`);
-  if (th) th.classList.add('srt');
-  applyFilters();
-}
-function renderTable() {
-  const allRows = [...filtered, ...liveResults.filter(l => !filtered.find(f => f.ticker === l.ticker))];
-  const rcount = document.getElementById('rcount');
-  if (rcount) rcount.textContent = liveLoading ? 'Searching…' : (allRows.length + ' results');
-  let rows = allRows.map(inv => {
-    const ov = overall(inv);
-    const wl = watchlist.has(inv.ticker);
-    const exp = expandedTicker === inv.ticker;
-    const capStr = inv.cap == null ? '—' : inv.cap >= 1000 ? '$' + (inv.cap/1000).toFixed(1) + 'T' : '$' + inv.cap.toFixed(1) + 'B';
-    const liveBadge = inv.live ? '<span class="live-badge">LIVE</span>' : '';
-    const priceStr = inv.live && inv.price != null ? `<div class="live-price-tag" style="color:var(--muted)">${inv.change >= 0 ? '<span style="color:var(--green)">+' + inv.change.toFixed(2) + '%</span>' : '<span style="color:var(--red)">' + inv.change.toFixed(2) + '%</span>'} $${inv.price.toFixed(2)}</div>` : '';
-    return `
-    <tr onclick="toggleExp('${inv.ticker}')" class="${exp ? 'exp-active' : ''}">
-      <td><div><div class="tkr">${inv.ticker}${liveBadge}</div><div class="inv-type-lbl">${inv.type}</div>${priceStr}</div></td>
-      <td><div style="font-size:13px;font-weight:500">${inv.name}</div><div class="co-name">${inv.moat && inv.moat !== 'N/A' ? inv.moat + ' Moat' : inv.sector || ''}</div></td>
-      <td><span class="sec-badge">${inv.sector || '—'}</span></td>
-      <td>${scoreCell(ov)}</td>
-      <td>${scoreCell(inv.upside)}</td>
-      <td>${scoreCell(inv.health)}</td>
-      <td>${scoreCell(inv.presence)}</td>
-      <td class="neu" style="font-size:13px;font-weight:500">${capStr}</td>
-      <td class="neu" style="font-size:13px">${inv.fwdPE > 0 ? inv.fwdPE + 'x' : '—'}</td>
-      <td class="${inv.revGrowth > 15 ? 'pos' : inv.revGrowth > 0 ? 'neu' : 'mdt'}" style="font-size:13px">${inv.revGrowth > 0 ? '+'+inv.revGrowth+'%' : inv.revGrowth ? inv.revGrowth+'%' : '—'}</td>
-      <td class="${inv.dividend > 2 ? 'pos' : 'mdt'}" style="font-size:13px">${inv.dividend > 0 ? inv.dividend + '%' : '—'}</td>
-      <td onclick="event.stopPropagation()"><button class="wlbtn ${wl ? 'on' : ''}" onclick="toggleWL('${inv.ticker}')" title="${wl ? 'Remove' : 'Add to watchlist'}">★</button></td>
-    </tr>
-    ${exp ? `<tr><td class="exp-td" colspan="12">${renderExp(inv)}</td></tr>` : ''}`;
-  }).join('');
-  if (liveLoading) {
-    rows += '<tr class="live-searching-row"><td colspan="12"><div class="live-searching"><div class="live-spinner"></div>Searching live markets…</div></td></tr>';
-  }
-  document.getElementById('tBody').innerHTML = rows;
-}
-function toggleExp(ticker) {
-  expandedTicker = expandedTicker === ticker ? null : ticker;
-  renderTable();
-}
-function renderExp(inv) {
-  const ov = overall(inv);
-  if (inv.live) {
-    const capStr = inv.cap == null ? '—' : inv.cap >= 1000 ? '$' + (inv.cap/1000).toFixed(1) + 'T' : '$' + inv.cap.toFixed(1) + 'B';
-    return `<div class="exp-panel" style="grid-template-columns:1fr 1fr">
+  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+    
+    <!-- Stock Screener Card -->
+    <a href="screener.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
       <div>
-        <div class="ep-label">Overview</div>
-        <div class="ep-desc">${inv.name} (${inv.ticker}) — ${inv.type}${inv.sector ? ', ' + inv.sector : ''}</div>
-        <div style="margin-top:14px"><div class="ep-label">Live Market Data</div>
-        <div class="ep-metrics">
-          <div class="ep-metric"><div class="ep-mlbl">Price</div><div class="ep-mval neu">${inv.price != null ? '$' + inv.price.toFixed(2) : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Change</div><div class="ep-mval ${inv.change > 0 ? 'pos' : inv.change < 0 ? 'neg' : 'neu'}">${inv.change != null ? (inv.change > 0 ? '+' : '') + inv.change.toFixed(2) + '%' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Market Cap</div><div class="ep-mval neu">${capStr}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Fwd P/E</div><div class="ep-mval neu">${inv.fwdPE > 0 ? inv.fwdPE + 'x' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Rev Growth</div><div class="ep-mval ${inv.revGrowth > 0 ? 'pos' : 'neu'}">${inv.revGrowth > 0 ? '+' + inv.revGrowth + '%' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Dividend</div><div class="ep-mval ${inv.dividend > 2 ? 'pos' : 'mdt'}">${inv.dividend > 0 ? inv.dividend + '%' : '—'}</div></div>
-        </div></div>
-      </div>
-      <div>
-        <div class="ep-label">Custom Analysis</div>
-        <div class="ep-desc" style="color:var(--muted);font-size:12px">⚡ Live data from Yahoo Finance. Custom Upside / Health / Presence scores require manual analysis and are not available for live search results.</div>
-      </div>
-    </div>`;
-  }
-  return `<div class="exp-panel">
-    <div>
-      <div class="ep-label">Investment Thesis</div>
-      <div class="ep-desc">${inv.desc}</div>
-      <div class="ep-tags">${inv.tags.map(t=>`<span class="ep-tag">${t}</span>`).join('')}</div>
-      <div style="margin-top:14px">
-        <div class="ep-label">Key Metrics</div>
-        <div class="ep-metrics">
-          <div class="ep-metric"><div class="ep-mlbl">Fwd P/E</div><div class="ep-mval neu">${inv.fwdPE > 0 ? inv.fwdPE+'x' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Rev Growth</div><div class="ep-mval ${inv.revGrowth > 15 ? 'pos' : 'neu'}">${inv.revGrowth > 0 ? '+'+inv.revGrowth+'%' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">FCF Margin</div><div class="ep-mval ${inv.fcfMargin > 20 ? 'pos' : 'neu'}">${inv.fcfMargin > 0 ? inv.fcfMargin+'%' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Dividend</div><div class="ep-mval ${inv.dividend > 2 ? 'pos' : 'mdt'}">${inv.dividend > 0 ? inv.dividend+'%' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">EPS Growth</div><div class="ep-mval ${inv.epsGrowth > 20 ? 'pos' : 'neu'}">${inv.epsGrowth > 0 ? '+'+inv.epsGrowth+'%' : '—'}</div></div>
-          <div class="ep-metric"><div class="ep-mlbl">Overall Score</div><div class="ep-mval c${sc(ov)}">${ov} / 100</div></div>
+        <div style="font-size: 36px; margin-bottom: 12px;">📊</div>
+        <h2 style="font-size: 20px; margin-bottom: 8px;">Stock Screener</h2>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Search and filter 250+ stocks across all major sectors. Analyze fundamentals, growth metrics, and investment quality scores.</p>
+        <div class="tags">
+          <span class="tag">250+ Tickers</span>
+          <span class="tag">Real-Time</span>
+          <span class="tag">Fundamentals</span>
         </div>
       </div>
-    </div>
-    <div>
-      <div class="ep-label">Catalysts &amp; Growth Drivers</div>
-      <div class="ep-list">${inv.catalysts.map(c=>`<div class="ep-item">${c}</div>`).join('')}</div>
-    </div>
-    <div>
-      <div class="ep-label">Key Risks</div>
-      <div class="ep-list">${inv.risks.map(r=>`<div class="ep-item risk">${r}</div>`).join('')}</div>
-    </div>
-  </div>`;
-}
+      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">Explore Screener →</button>
+    </a>
 
-// ═══════════════════════════════════════════════════════════════════════════
-// WATCHLIST
-// ═══════════════════════════════════════════════════════════════════════════
-function toggleWL(ticker) {
-  const live = liveResults.find(r => r.ticker === ticker);
-  if (live) liveDB[ticker] = live;
-  watchlist.has(ticker) ? watchlist.delete(ticker) : watchlist.add(ticker);
-  const badge = document.getElementById('wlBadge');
-  badge.textContent = watchlist.size;
-  badge.style.display = watchlist.size > 0 ? '' : 'none';
-  renderTable();
-  if (document.getElementById('page-watchlist').classList.contains('active')) renderWL();
-}
-function renderWL() {
-  const body = document.getElementById('wlBody');
-  if (watchlist.size === 0) {
-    body.innerHTML = `<div class="wl-empty"><div class="wl-empty-icon">★</div><div style="font-size:16px;font-weight:600">Watchlist is empty</div><div style="font-size:13px;margin-top:4px">Click ★ on any investment in the Screener to track it here</div></div>`;
-    return;
-  }
-  const allWL = [...DB, ...Object.values(liveDB)];
-  body.innerHTML = `<div class="wl-grid">${allWL.filter(inv=>watchlist.has(inv.ticker)).map(inv => {
-    const ov = overall(inv);
-    return `<div class="wl-card">
-      <div class="wl-c-hdr">
-        <div><div class="wl-c-tkr">${inv.ticker}</div><div class="wl-c-name">${inv.name}</div></div>
-        <button class="wl-rm" onclick="toggleWL('${inv.ticker}')" title="Remove">✕</button>
+    <!-- Sector Rotation Card -->
+    <a href="macro.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 36px; margin-bottom: 12px;">🔄</div>
+        <h2 style="font-size: 20px; margin-bottom: 8px;">Sector Rotation</h2>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Monitor macro indicators and sector attractiveness scorecard. Understand market positioning and rotation signals.</p>
+        <div class="tags">
+          <span class="tag">Macro Signals</span>
+          <span class="tag">Rotation</span>
+          <span class="tag">Positioning</span>
+        </div>
       </div>
-      <div class="wl-scores">
-        <div class="wl-sc"><div class="wl-sc-lbl">Upside</div><div class="wl-sc-val ${inv.upside != null ? 'c'+sc(inv.upside) : 'mdt'}">${inv.upside != null ? inv.upside : '—'}</div></div>
-        <div class="wl-sc"><div class="wl-sc-lbl">Health</div><div class="wl-sc-val ${inv.health != null ? 'c'+sc(inv.health) : 'mdt'}">${inv.health != null ? inv.health : '—'}</div></div>
-        <div class="wl-sc"><div class="wl-sc-lbl">Overall</div><div class="wl-sc-val ${ov != null ? 'c'+sc(ov) : 'mdt'}">${ov != null ? ov : '—'}</div></div>
+      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Macro →</button>
+    </a>
+
+    <!-- Earnings Calendar Card -->
+    <a href="earnings.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 36px; margin-bottom: 12px;">📅</div>
+        <h2 style="font-size: 20px; margin-bottom: 8px;">Earnings Calendar</h2>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Upcoming earnings dates, analyst expectations, and historical beat rates. Event-driven trading intelligence.</p>
+        <div class="tags">
+          <span class="tag">Earnings</span>
+          <span class="tag">Events</span>
+          <span class="tag">Catalysts</span>
+        </div>
       </div>
-      <div class="wl-desc">${(inv.desc || (inv.name + ' — ' + inv.type)).substring(0,150)}…</div>
-    </div>`;
-  }).join('')}</div>`;
-}
+      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Earnings →</button>
+    </a>
 
-// ═══════════════════════════════════════════════════════════════════════════
-// LIVE SEARCH (Yahoo Finance via /api/quote proxy)
-// ═══════════════════════════════════════════════════════════════════════════
-async function triggerLiveSearch(q) {
-  clearTimeout(liveDebounce);
-  if (!q || q.length < 2) {
-    liveResults = [];
-    liveLoading = false;
-    renderTable();
-    return;
-  }
-  liveLoading = true;
-  renderTable();
-  liveDebounce = setTimeout(async () => {
-    try {
-      const sRes = await fetch('/api/quote?q=' + encodeURIComponent(q));
-      const sData = await sRes.json();
-      const quotes = (sData.quotes || []).filter(r => ['EQUITY','ETF','MUTUALFUND','CRYPTOCURRENCY','FUTURE','CURRENCY','INDEX'].includes(r.quoteType));
-      const symbols = quotes.slice(0, 10).map(r => r.symbol).filter(s => !DB.find(d => d.ticker === s));
-      if (symbols.length === 0) {
-        liveResults = [];
-        liveLoading = false;
-        renderTable();
-        return;
-      }
-      const qRes = await fetch('/api/quote?symbols=' + encodeURIComponent(symbols.join(',')));
-      const qData = await qRes.json();
-      const result = (qData.quoteResponse && qData.quoteResponse.result) || [];
-      liveResults = result.map(r => ({
-        ticker: r.symbol,
-        name: r.shortName || r.longName || r.symbol,
-        sector: r.sector || r.quoteType || '',
-        type: r.quoteType || 'EQUITY',
-        cap: r.marketCap ? parseFloat((r.marketCap / 1e9).toFixed(2)) : null,
-        fwdPE: r.forwardPE ? parseFloat(r.forwardPE.toFixed(1)) : 0,
-        revGrowth: r.revenueGrowth ? parseFloat((r.revenueGrowth * 100).toFixed(1)) : 0,
-        dividend: r.trailingAnnualDividendYield ? parseFloat((r.trailingAnnualDividendYield * 100).toFixed(2)) : 0,
-        upside: null, health: null, presence: null,
-        moat: 'N/A', tags: [], desc: '', catalysts: [], risks: [],
-        fcfMargin: 0, epsGrowth: 0,
-        live: true,
-        price: r.regularMarketPrice || null,
-        change: r.regularMarketChangePercent || null,
-      }));
-    } catch(e) {
-      liveResults = [];
-    }
-    liveLoading = false;
-    renderTable();
-  }, 700);
-}
+    <!-- Sentiment Analysis Card -->
+    <a href="sentiment.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 36px; margin-bottom: 12px;">💬</div>
+        <h2 style="font-size: 20px; margin-bottom: 8px;">Sentiment Analysis</h2>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">News, social media, and analyst sentiment signals. Track mood shifts and identify contrarian opportunities.</p>
+        <div class="tags">
+          <span class="tag">Sentiment</span>
+          <span class="tag">News Flow</span>
+          <span class="tag">Social</span>
+        </div>
+      </div>
+      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Sentiment →</button>
+    </a>
 
-async function loadUniverse() {
-  const batchSize = 100;
-  const toFetch = UNIVERSE.filter(s => !DB.find(d => d.ticker === s));
-  for (let i = 0; i < toFetch.length; i += batchSize) {
-    const batch = toFetch.slice(i, i + batchSize);
-    try {
-      const res = await fetch('/api/quote?symbols=' + encodeURIComponent(batch.join(',')));
-      const data = await res.json();
-      const result = (data.quoteResponse && data.quoteResponse.result) || [];
-      result.forEach(r => {
-        if (liveResults.find(l => l.ticker === r.symbol)) return;
-        liveResults.push({
-          ticker: r.symbol,
-          name: r.shortName || r.longName || r.symbol,
-          sector: r.sector || r.quoteType || '',
-          type: r.quoteType || 'EQUITY',
-          cap: r.marketCap ? parseFloat((r.marketCap / 1e9).toFixed(2)) : null,
-          fwdPE: r.forwardPE ? parseFloat(r.forwardPE.toFixed(1)) : 0,
-          revGrowth: r.revenueGrowth ? parseFloat((r.revenueGrowth * 100).toFixed(1)) : 0,
-          dividend: r.trailingAnnualDividendYield ? parseFloat((r.trailingAnnualDividendYield * 100).toFixed(2)) : 0,
-          upside: null, health: null, presence: null,
-          moat: 'N/A', tags: [], desc: '', catalysts: [], risks: [],
-          fcfMargin: 0, epsGrowth: 0,
-          live: true,
-          price: r.regularMarketPrice || null,
-          change: r.regularMarketChangePercent || null,
-        });
-      });
-      renderTable();
-    } catch(e) {}
-  }
-}
+    <!-- News Hub Card -->
+    <a href="news.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 36px; margin-bottom: 12px;">📰</div>
+        <h2 style="font-size: 20px; margin-bottom: 8px;">News Hub</h2>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Breaking financial news, Fed policy updates, and geopolitical risk monitoring. Curated sources for market movers.</p>
+        <div class="tags">
+          <span class="tag">Breaking</span>
+          <span class="tag">Macro</span>
+          <span class="tag">Geopolitical</span>
+        </div>
+      </div>
+      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View News →</button>
+    </a>
 
+    <!-- Macro Dashboard Card -->
+    <a href="macro.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="font-size: 36px; margin-bottom: 12px;">📈</div>
+        <h2 style="font-size: 20px; margin-bottom: 8px;">Macro Dashboard</h2>
+        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Fed policy, inflation data, economic indicators, and market valuations. Complete macro framework in one view.</p>
+        <div class="tags">
+          <span class="tag">Economy</span>
+          <span class="tag">Rates</span>
+          <span class="tag">Inflation</span>
+        </div>
+      </div>
+      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Dashboard →</button>
+    </a>
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PAGE NAV
-// ═══════════════════════════════════════════════════════════════════════════
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  document.getElementById('nav-' + id).classList.add('active');
-  if (id === 'watchlist') renderWL();
-  if (id === 'strategy') { /* loaded via iframe */ }
-}
+  </div>
 
-// ═══════════════════════════════════════════════════════════════════════════
-// MACRO DATA  (Q4 2024 – Q1 2025)
-// ═══════════════════════════════════════════════════════════════════════════
-const RATES_DATA = [
-  { lbl:'Fed Funds Rate', val:'4.25–4.50%', sub:'Current target range', trend:'↓ −100bps from 5.50% peak (Sep–Dec 2024 cuts)', col:'var(--accent)' },
-  { lbl:'2-Year Treasury', val:'4.28%', sub:'Short-term benchmark', trend:'↓ Spread vs 10Y normalizing from inversion', col:'var(--accent)' },
-  { lbl:'10-Year Treasury', val:'4.57%', sub:'Benchmark bond rate', trend:'↑ Fiscal deficit / term premium rebuilding', col:'var(--yellow)' },
-  { lbl:'30-Year Treasury', val:'4.79%', sub:'Long-duration anchor', trend:'↑ Pension / insurance demand at these levels', col:'var(--yellow)' },
-  { lbl:'SOFR (Overnight)', val:'4.30%', sub:'Risk-free funding rate', trend:'Aligned with Fed Funds target band', col:'var(--muted)' },
-  { lbl:'Next FOMC', val:'Mar 18–19', sub:'No change expected', trend:'Pause — watching Core PCE toward 2.5%', col:'var(--green)' },
-];
-const ECO_DATA = [
-  { lbl:'CPI YoY', val:'2.9%', sub:'Jan 2025 (BLS)', trend:'↑ Modestly above 2% target', col:'var(--yellow)' },
-  { lbl:'Core PCE YoY', val:'2.8%', sub:'Dec 2024 (Fed preferred)', trend:'Sticky — justifies extended pause', col:'var(--yellow)' },
-  { lbl:'GDP Growth', val:'+2.8%', sub:'Q3 2024 (Annualized)', trend:'Above trend — soft landing confirmed', col:'var(--green)' },
-  { lbl:'Unemployment', val:'4.1%', sub:'Jan 2025 (BLS)', trend:'↑ Gradually normalizing from 3.4% trough', col:'var(--green)' },
-  { lbl:'ISM Manufacturing', val:'49.3', sub:'Jan 2025', trend:'Contraction — sub-50 for 26 of 28 months', col:'var(--red)' },
-  { lbl:'ISM Services', val:'52.8', sub:'Jan 2025', trend:'Expansion — service economy resilient', col:'var(--green)' },
-];
-const YIELD_DATA = [
-  {lbl:'3M',r:4.35},{lbl:'6M',r:4.30},{lbl:'1Y',r:4.22},{lbl:'2Y',r:4.28},
-  {lbl:'3Y',r:4.25},{lbl:'5Y',r:4.31},{lbl:'7Y',r:4.44},{lbl:'10Y',r:4.57},
-  {lbl:'20Y',r:4.81},{lbl:'30Y',r:4.79},
-];
-const HEAT_DATA = [
-  {name:'Comm. Services',pct:40.5,bg:'#0f2b10'},{name:'Technology',pct:36.6,bg:'#0d1f2f'},
-  {name:'Financials',pct:30.0,bg:'#0d1e2f'},{name:'Utilities',pct:23.4,bg:'#0f2515'},
-  {name:'Consumer Disc.',pct:18.8,bg:'#252515'},{name:'Industrials',pct:17.0,bg:'#222212'},
-  {name:'Consumer Staples',pct:14.9,bg:'#1a2712'},{name:'Real Estate',pct:5.0,bg:'#1f201a'},
-  {name:'Healthcare',pct:2.6,bg:'#221d12'},{name:'Materials',pct:2.4,bg:'#1e1c12'},
-  {name:'Energy',pct:-0.7,bg:'#2e1212'},{name:'S&P 500',pct:25.0,bg:'#131828'},
-];
-const EVENTS_DATA = [
-  {date:'Mar 12, 2025',name:'CPI Report — February 2025',imp:'h',note:'Consensus: +2.9% YoY — pivotal for rate cut path'},
-  {date:'Mar 18–19, 2025',name:'FOMC Meeting — No Change Expected',imp:'h',note:'Fed on hold until Core PCE approaches 2.5%'},
-  {date:'Mar 27, 2025',name:'GDP Q4 2024 Final Revision',imp:'m',note:'Expected: +2.5% annualized'},
-  {date:'Mar 28, 2025',name:'Core PCE — February 2025',imp:'h',note:'Fed\'s preferred gauge — key for May cut signal'},
-  {date:'Apr 2025',name:'Q1 2025 Earnings Season Opens',imp:'h',note:'NVDA, MSFT, META, GOOGL — AI capex focus'},
-  {date:'Apr 30, 2025',name:'Core PCE — March 2025',imp:'h',note:'If <2.6%, first June rate cut becomes live'},
-  {date:'May 6–7, 2025',name:'FOMC Meeting — Cut Possible',imp:'h',note:'First potential 25bps cut if inflation cools'},
-  {date:'May 2025',name:'US Debt Ceiling Deadline',imp:'m',note:'Extraordinary measures exhausted — political risk'},
-];
-const MKT_DATA = [
-  { lbl:'S&P 500 Fwd P/E', val:'22.0x', sub:'vs 17x long-run avg', trend:'Premium — priced for AI earnings acceleration', col:'var(--yellow)' },
-  { lbl:'VIX', val:'~15', sub:'30-day implied vol', trend:'Low volatility — complacency caution', col:'var(--green)' },
-  { lbl:'DXY (US Dollar)', val:'~108', sub:'Dollar Index basket', trend:'↑ Strong dollar headwind for EM / multinationals', col:'var(--accent)' },
-  { lbl:'Gold (XAU)', val:'$2,650', sub:'Per troy ounce', trend:'↑ Record central bank buying (1,000+ T/yr)', col:'var(--yellow)' },
-  { lbl:'WTI Crude', val:'$71', sub:'Per barrel', trend:'Range-bound $65–$80 with geopolitical risk floor', col:'var(--orange)' },
-  { lbl:'Bitcoin', val:'~$95K', sub:'BTC/USD', trend:'↑ ETF inflows + halving supply shock impact', col:'var(--orange)' },
-];
+  <!-- Quick Stats Section -->
+  <div style="margin-top: 60px; padding: 32px; background: var(--surface2); border-radius: 12px; border: 1px solid var(--border);">
+    <h2 style="font-size: 18px; margin-bottom: 24px;">Quick Stats</h2>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Stocks</div>
+        <div class="metric-value">250+</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Sectors Covered</div>
+        <div class="metric-value">10+</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Market Cap Range</div>
+        <div class="metric-value">$5B — $3.3T</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Data Freshness</div>
+        <div class="metric-value">Real-Time</div>
+      </div>
+    </div>
+  </div>
 
-function renderMacro() {
-  document.getElementById('ratesGrid').innerHTML = RATES_DATA.map(k =>
-    `<div class="kpi-card"><div class="kpi-lbl">${k.lbl}</div><div class="kpi-val" style="color:${k.col}">${k.val}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-trend" style="color:${k.col};opacity:0.85">${k.trend}</div></div>`).join('');
-  document.getElementById('ecoGrid').innerHTML = ECO_DATA.map(k =>
-    `<div class="kpi-card"><div class="kpi-lbl">${k.lbl}</div><div class="kpi-val" style="color:${k.col}">${k.val}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-trend" style="color:${k.col};opacity:0.85">${k.trend}</div></div>`).join('');
-  const maxR = Math.max(...YIELD_DATA.map(y=>y.r));
-  document.getElementById('yieldBars').innerHTML = YIELD_DATA.map(y => {
-    const h = Math.round((y.r / maxR) * 76);
-    const col = y.r < 4.30 ? 'var(--green)' : y.r < 4.55 ? 'var(--accent)' : 'var(--yellow)';
-    return `<div class="yb-col"><div class="yb-rate" style="color:${col}">${y.r}%</div><div class="yb-bar" style="height:${h}px;background:${col}"></div><div class="yb-lbl">${y.lbl}</div></div>`;
-  }).join('');
-  document.getElementById('heatGrid').innerHTML = HEAT_DATA.map(s => {
-    const col = s.pct >= 25 ? '#3fb950' : s.pct >= 15 ? '#58a6ff' : s.pct >= 5 ? '#d29922' : s.pct >= 0 ? '#f97316' : '#f85149';
-    return `<div class="heat-cell" style="background:${s.bg}"><div class="heat-name">${s.name}</div><div class="heat-pct" style="color:${col}">${s.pct >= 0 ? '+' : ''}${s.pct.toFixed(1)}%</div><div class="heat-sub">2024 Total Return</div></div>`;
-  }).join('');
-  document.getElementById('eventsCol').innerHTML = EVENTS_DATA.map(e =>
-    `<div class="ev-row"><div class="ev-date">${e.date}</div><div class="ev-name">${e.name}</div><span class="ev-impact imp-${e.imp}">${e.imp === 'h' ? 'High' : e.imp === 'm' ? 'Medium' : 'Low'}</span><div class="ev-note">${e.note}</div></div>`).join('');
-  document.getElementById('mktGrid').innerHTML = MKT_DATA.map(k =>
-    `<div class="kpi-card"><div class="kpi-lbl">${k.lbl}</div><div class="kpi-val" style="color:${k.col}">${k.val}</div><div class="kpi-sub">${k.sub}</div><div class="kpi-trend" style="color:${k.col};opacity:0.85">${k.trend}</div></div>`).join('');
-}
+  <!-- Footer -->
+  <div style="margin-top: 60px; padding: 32px 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 12px;">
+    <p>Research Hub — Investment Terminal v1.0</p>
+    <p style="margin-top: 8px;">Built for Apex Research. Data as of March 2026.</p>
+  </div>
 
-// ═══════════════════════════════════════════════════════════════════════════
-// NEWS HUB
-// ═══════════════════════════════════════════════════════════════════════════
-const NEWS = [
-  {
-    icon:'📈', title:'Markets & Economy', col:'var(--accent)',
-    sources:[
-      { name:'Bloomberg Markets', tag:'LIVE', tc:'tag-live', links:[
-        {t:'Global Markets — Equities, Rates, FX, Commodities Real-Time', u:'https://www.bloomberg.com/markets'},
-        {t:'Bloomberg US Economic Calendar & Data Releases', u:'https://www.bloomberg.com/economics'},
-        {t:'Bloomberg Intelligence — Sector & Company Research', u:'https://www.bloomberg.com/professional/solution/bloomberg-intelligence/'},
-        {t:'Corporate Earnings Tracker & Revenue Estimates', u:'https://www.bloomberg.com/markets/stocks'},
-      ]},
-      { name:'Wall Street Journal', tag:'LIVE', tc:'tag-live', links:[
-        {t:'WSJ Markets Hub — Real-Time Prices & Breaking News', u:'https://www.wsj.com/market-data'},
-        {t:'WSJ Economy Section — GDP, Inflation, Jobs', u:'https://www.wsj.com/economy'},
-        {t:'WSJ Earnings Season Coverage', u:'https://www.wsj.com/market-data/stocks'},
-      ]},
-      { name:'Reuters Markets', tag:'LIVE', tc:'tag-live', links:[
-        {t:'Reuters Markets — Breaking Financial News Wire', u:'https://www.reuters.com/markets/'},
-        {t:'Reuters Corporate Earnings & M&A', u:'https://www.reuters.com/markets/companies/'},
-        {t:'Reuters Macro & Economic Data', u:'https://www.reuters.com/business/economy/'},
-      ]},
-      { name:'Morningstar Research', tag:'ANALYSIS', tc:'tag-ana', links:[
-        {t:'Stock Screener with Fair Value Estimates & Star Ratings', u:'https://www.morningstar.com/stocks'},
-        {t:'Morningstar Analyst Reports & Economic Moat Ratings', u:'https://www.morningstar.com/research'},
-        {t:'Morningstar Economic Outlook & Market Valuation', u:'https://www.morningstar.com/economy'},
-      ]},
-      { name:'Financial Times', tag:'LIVE', tc:'tag-live', links:[
-        {t:'FT Markets — Global Financial Markets Coverage', u:'https://www.ft.com/markets'},
-        {t:'FT World Economy — Macro & Central Bank Analysis', u:'https://www.ft.com/world-economy'},
-      ]},
-    ]
-  },
-  {
-    icon:'🏛️', title:'Federal Reserve & Monetary Policy', col:'var(--purple)',
-    sources:[
-      { name:'Federal Reserve — Official', tag:'OFFICIAL', tc:'tag-off', links:[
-        {t:'FOMC Calendar — All Meeting Dates, Minutes & Statements', u:'https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm'},
-        {t:'Fed Chair Powell Speeches & Press Conference Archive', u:'https://www.federalreserve.gov/newsevents/speech.htm'},
-        {t:'FOMC Policy Statements & Press Releases', u:'https://www.federalreserve.gov/newsevents/pressreleases.htm'},
-        {t:'Beige Book — Regional Economic Conditions (8x/yr)', u:'https://www.federalreserve.gov/monetarypolicy/beige-book-default.htm'},
-        {t:'H.4.1 — Federal Reserve Balance Sheet Weekly Data', u:'https://www.federalreserve.gov/releases/h41/'},
-      ]},
-      { name:'CME FedWatch Tool', tag:'LIVE', tc:'tag-live', links:[
-        {t:'FedWatch — Real-Time Rate Cut/Hike Probability Tracker', u:'https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html'},
-        {t:'30-Day Fed Funds Futures (ZQ) — Market Pricing', u:'https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.html'},
-      ]},
-      { name:'FRED — St. Louis Federal Reserve', tag:'OFFICIAL', tc:'tag-off', links:[
-        {t:'FRED Database — 800,000+ Economic Time Series', u:'https://fred.stlouisfed.org/'},
-        {t:'PCE Price Index — Fed\'s Primary Inflation Measure', u:'https://fred.stlouisfed.org/series/PCEPI'},
-        {t:'Effective Federal Funds Rate (EFFR) Daily', u:'https://fred.stlouisfed.org/series/EFFR'},
-        {t:'10Y–2Y Treasury Yield Spread (Recession Indicator)', u:'https://fred.stlouisfed.org/series/T10Y2Y'},
-        {t:'M2 Money Supply — Monetary Aggregates', u:'https://fred.stlouisfed.org/series/M2SL'},
-      ]},
-      { name:'BLS / BEA Official Data', tag:'OFFICIAL', tc:'tag-off', links:[
-        {t:'BLS — CPI Monthly Release (Primary Inflation)', u:'https://www.bls.gov/cpi/'},
-        {t:'BLS — Non-Farm Payrolls Jobs Report (Monthly)', u:'https://www.bls.gov/news.release/empsit.toc.htm'},
-        {t:'BEA — GDP Quarterly Report', u:'https://www.bea.gov/data/gdp/gross-domestic-product'},
-        {t:'BEA — Personal Income & PCE Monthly', u:'https://www.bea.gov/data/income-saving/personal-income'},
-      ]},
-    ]
-  },
-  {
-    icon:'🌍', title:'Geopolitical Risk & Global Themes', col:'var(--orange)',
-    geo: true,
-    themes:[
-      {name:'US–China Technology Cold War', risk:'Extreme', rc:'#f85149', body:'AI chip export controls restricting NVDA/ASML China sales. Taiwan semiconductor risk. TikTok/ByteDance legislative pressure. Supply chain de-coupling of critical technology components.', sectors:['Semiconductors','AI Hardware','Consumer Tech','Cloud']},
-      {name:'Middle East — Red Sea / Houthi Crisis', risk:'High', rc:'#f97316', body:'Houthi attacks adding 2-3 weeks to Asia-Europe shipping. Suez Canal volumes down 40%. Oil supply risk if Iran directly enters conflict. Insurance premiums for shipping routes surging.', sectors:['Energy','Shipping/Logistics','Defense','Consumer Goods']},
-      {name:'NATO / Russia-Ukraine Conflict', risk:'High', rc:'#f97316', body:'Structural increase in NATO defense budgets toward 2-3% of GDP. LMT, RTX, NOC multi-year order books expanding. European energy permanently restructured toward LNG, renewables.', sectors:['Defense','Aerospace','European Energy','LNG Infrastructure']},
-      {name:'US Tariffs & Trade Policy 2025', risk:'High', rc:'#f97316', body:'10-25% proposed tariffs on China, Mexico, Canada. AAPL China manufacturing ($220B in Chinese supply chain), WMT/COST consumer goods imports. Reshoring accelerating but supply shock risk.', sectors:['Consumer Discretionary','Technology','Consumer Staples','Manufacturing']},
-      {name:'AI Regulation — Global Fragmentation', risk:'Medium', rc:'#d29922', body:'EU AI Act compliance burden for US tech companies. China domestic AI model restrictions. US AI safety legislation potential. Creates compliance overhead but also barriers to entry for incumbents.', sectors:['AI Software','Social Media','Cloud','Autonomous Vehicles']},
-      {name:'De-Dollarization & BRICS Currency', risk:'Low-Med', rc:'#d29922', body:'BRICS+ nations exploring alternatives to USD trade settlement. Central bank gold buying at record 1,000+ tonnes/yr reflects reserve diversification from USD Treasuries. Long-term structural shift.', sectors:['Gold','Commodities','Emerging Markets','US Treasuries']},
-    ],
-    sources:[
-      { name:'Council on Foreign Relations', tag:'ANALYSIS', tc:'tag-ana', links:[
-        {t:'CFR Global Conflict Tracker — Interactive Live Map', u:'https://www.cfr.org/global-conflict-tracker'},
-        {t:'Preventive Priorities Survey — Annual Risk Assessment', u:'https://www.cfr.org/report/preventive-priorities-survey'},
-      ]},
-      { name:'Financial Times Geopolitics', tag:'LIVE', tc:'tag-live', links:[
-        {t:'FT Geopolitics & Security — Deep Reporting', u:'https://www.ft.com/geopolitics'},
-        {t:'FT World Economy — International Macro', u:'https://www.ft.com/world-economy'},
-      ]},
-      { name:'Reuters World', tag:'LIVE', tc:'tag-live', links:[
-        {t:'Reuters World News — International Breaking News', u:'https://www.reuters.com/world/'},
-        {t:'Reuters Graphics — Conflict & Data Visualization', u:'https://www.reuters.com/graphics/'},
-      ]},
-    ]
-  }
-];
+</main>
 
-function renderNews() {
-  document.getElementById('newsGrid').innerHTML = NEWS.map(col => `
-    <div>
-      <div class="nc-hdr"><span class="nc-icon">${col.icon}</span><span class="nc-title" style="color:${col.col}">${col.title}</span></div>
-      ${col.geo ? `
-        ${col.themes.map(t => `<div class="geo-card">
-          <div class="geo-hdr"><div class="geo-dot" style="background:${t.rc}"></div><span class="geo-name">${t.name}</span><span class="geo-risk" style="color:${t.rc}">${t.risk}</span></div>
-          <div class="geo-body">${t.body}</div>
-          <div class="geo-tags">${t.sectors.map(s=>`<span class="geo-tag">${s}</span>`).join('')}</div>
-        </div>`).join('')}
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:10px 0 8px">Live Sources</div>
-        ${col.sources.map(src=>`<div class="ns-card"><div class="ns-hdr"><span class="ns-name">${src.name}</span><span class="ns-tag ${src.tc}">${src.tag}</span></div><div class="ns-links">${src.links.map(l=>`<a class="ns-link" href="${l.u}" target="_blank" rel="noopener"><div class="ns-dot" style="background:var(--orange)"></div><span class="ns-txt">${l.t}</span><span class="ns-arr">↗</span></a>`).join('')}</div></div>`).join('')}
-      ` : col.sources.map(src=>`<div class="ns-card"><div class="ns-hdr"><span class="ns-name">${src.name}</span><span class="ns-tag ${src.tc}">${src.tag}</span></div><div class="ns-links">${src.links.map(l=>`<a class="ns-link" href="${l.u}" target="_blank" rel="noopener"><div class="ns-dot" style="background:${col.col}"></div><span class="ns-txt">${l.t}</span><span class="ns-arr">↗</span></a>`).join('')}</div></div>`).join('')}
-    </div>`).join('');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════════════════
-sortBy('overall');
-loadUniverse();
-renderMacro();
-renderNews();
-</script>
 </body>
 </html>

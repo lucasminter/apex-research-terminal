@@ -34,3 +34,18 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Whop integration
+
+Add the following env variables to `.env.local` before running the app locally:
+
+- `WHOP_API_KEY` — your Whop server API key (keep private)
+- `NEXT_PUBLIC_WHOP_APP_ID` — your Whop app id (used client/server)
+
+Then run the dev server:
+
+```bash
+npm run dev
+```
+
+Server-side calls use `lib/whop.ts` which constructs the `Whop` client from `@whop/sdk`.

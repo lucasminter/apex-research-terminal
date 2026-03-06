@@ -1,28 +1,10 @@
+import { redirect } from 'next/navigation';
+
 export default async function Page({
   params,
 }: {
   params: Promise<{ companyID: string }>;
 }) {
-  const { companyID } = await params;
-
-  return (
-    <div style={{ padding: 12, height: '100vh', boxSizing: 'border-box' }}>
-      <div style={{ marginBottom: 10 }}>
-        <h2 style={{ margin: 0 }}>Apex Research Terminal</h2>
-        <div style={{ opacity: 0.7, fontSize: 12 }}>Company: {companyID}</div>
-      </div>
-
-      <iframe
-        src="/research/index.html"
-        style={{
-          width: '100%',
-          height: 'calc(100vh - 60px)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: 12,
-          background: 'white',
-        }}
-        title="Research Terminal"
-      />
-    </div>
-  );
+  await params;
+  redirect('/research/index.html');
 }

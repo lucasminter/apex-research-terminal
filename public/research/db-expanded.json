@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "created": "2025-03-06",
+    "count": 265,
+    "sectors": ["Technology", "Healthcare", "Financials", "Industrials", "Consumer", "Energy", "Materials", "Utilities", "Real Estate", "Communication Services", "ETF"],
+    "coverage": "Large-cap, mid-cap, small-cap, international ADRs, sector ETFs, commodity ETFs"
+  },
+  "tickers": [
+    "NVDA", "MSFT", "AAPL", "GOOGL", "META", "AMZN", "TSM", "ASML", "AVGO", "AMD",
+    "LLY", "NVO", "UNH", "JPM", "V", "MA", "XOM", "NEE", "LMT", "RTX", "CAT", "COST", "WMT", "PLTR", "DDOG",
+    "ABBV", "MSTR", "SPY", "QQQ", "VTI", "GLD", "INTC", "CSCO", "CRM", "ADBE", "NFLX",
+    "ORCL", "QCOM", "TXN", "IBM", "HPQ", "DELL", "WDC", "STX", "PANW", "CRWD", "NET", "SNOW",
+    "ZS", "MDB", "TEAM", "OKTA", "WDAY", "AZO", "VEEV", "INTU", "ADSK", "SNPS", "CDNS", "CHKP", "FTNT",
+    "BRK-B", "WFC", "BAC", "C", "MS", "GS", "BLK", "AXP", "SCHW", "COF", "USB", "TFC", "PNC",
+    "CME", "ICE", "SPGI", "MCO", "MSCI", "BX", "APO", "KKR", "CG", "ARES", "TROW", "IVZ",
+    "PFG", "LNC", "GL", "CBOE", "SYK", "BSX", "ISRG", "BDX", "DHR", "TMO", "IQV", "IDXX",
+    "DXCM", "EW", "ZBH", "BAX", "HOLX", "EXAS", "CI", "HUM", "CVS", "MCK", "CAH", "ABC",
+    "MOH", "CNC", "ELV", "PG", "KO", "PEP", "MO", "PM", "MDLZ", "GIS", "CPB", "HRL", "CAG", "MKC",
+    "CLX", "CL", "EL", "ULTA", "NKE", "TGT", "HD", "LOW", "DG", "DLTR", "KR", "SYY", "MCD",
+    "SBUX", "YUM", "CMG", "DRI", "MAR", "HLT", "H", "ABNB", "UBER", "LYFT", "DASH", "RBLX", "TTWO",
+    "EA", "SPOT", "DIS", "CMCSA", "T", "VZ", "TMUS", "COP", "OXY", "SLB", "HAL", "BKR", "PSX",
+    "VLO", "MPC", "EOG", "DVN", "FANG", "APA", "MRO", "HES", "GE", "HON", "MMM", "EMR", "ETN",
+    "PH", "ITW", "AME", "CARR", "OTIS", "DE", "CMI", "TT", "URI", "GWW", "FAST", "PCAR", "GD", "BA",
+    "NOC", "HWM", "TDG", "AXON", "PWR", "ROP", "FTV", "VRSK", "IR", "GNRC", "LIN", "APD", "SHW",
+    "PPG", "ECL", "NEM", "FCX", "GOLD", "NUE", "AA", "ALB", "MP", "CTVA", "CF", "MOS", "FMC", "IFF",
+    "DUK", "SO", "D", "EXC", "AEP", "ED", "XEL", "WEC", "PPL", "ETR", "FE", "AES", "CMS", "NRG",
+    "AMT", "PLD", "CCI", "EQIX", "DLR", "WY", "WELL", "O", "VICI", "PSA", "EXR", "MAA", "CPT",
+    "UDR", "AVB", "EQR", "REG", "KIM", "SPG", "NNN", "STAG", "CUBE", "REXR", "IWM", "SMH", "SOXX",
+    "GDX", "GDXJ", "SLV", "IAU", "TLT", "IEF", "SHY", "HYG", "LQD", "AGG", "BND", "EEM", "EFA", "VEA",
+    "VWO", "VGK", "EWJ", "FXI", "KWEB", "XLF", "XLE", "XLK", "XLV", "XLI", "XLY", "XLP", "XLC",
+    "XLRE", "XLU", "XLB", "SCHD", "VNQ", "VIG", "VYM", "IBB", "XBI", "ARKK", "KRE", "DIA", "IVV", "VOO",
+    "TQQQ", "SQQQ", "BTC", "ETH", "COIN", "MARA", "RIOT", "CLSK", "HUT", "CIFR", "BTBT",
+    "BABA", "JD", "PDD", "BIDU", "NIO", "LI", "XPEV", "TCOM", "NTES", "BILI", "SE", "GRAB",
+    "SHOP", "RY", "TD", "BMO", "BNS", "CM", "ENB", "CNQ", "SU", "TRP", "CP", "CNI",
+    "WPM", "AEM", "BHP", "RIO", "VALE", "SCCO", "MT", "SAP", "AZN", "NVS", "SNY", "GSK", "ABB",
+    "SONY", "TM", "HMC", "ARM", "SMCI", "CEG", "VST", "GEHC", "GEV", "APP", "CELH", "DKNG", "HOOD",
+    "SOFI", "AFRM", "UPST", "F", "GM", "RIVN", "STLA", "LCID", "PARA", "WBD", "FOX", "NTES", "INTL",
+    "ACGL", "AON", "MMC", "AJG", "BRO", "EYRE", "COIN", "XEC", "DINO", "TSP", "OBE", "CHPT", "BLNK"
+  ]
+}
