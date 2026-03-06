@@ -224,6 +224,34 @@ select.form-input { cursor: pointer; }
 @media (max-width: 1300px) { .metrics-row { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 850px) { .sidebar { width: 280px; min-width: 280px; } }
 
+@media (max-width: 640px) {
+  header { height: auto; flex-wrap: wrap; padding: 10px 14px; gap: 8px; }
+  .run-info { display: none; }
+  .btn span { display: none; }
+  .btn { padding: 6px 10px; }
+
+  .main { flex-direction: column; }
+  .sidebar {
+    width: 100%; min-width: unset; height: auto;
+    position: static; border-right: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 420px;
+  }
+  .alloc-preview { height: 120px; }
+
+  .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  .chart-wrap { height: 240px; }
+  .chart-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .chart-tabs::-webkit-scrollbar { display: none; }
+  .chart-tab { white-space: nowrap; font-size: 12px; }
+
+  .content { padding: 12px; gap: 12px; }
+  .info-page { padding: 16px; }
+
+  .returns-table { overflow-x: auto; }
+  .returns-table table { min-width: 480px; }
+}
+
 /* QUIZ MODAL */
 .quiz-overlay {
   display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
