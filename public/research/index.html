@@ -72,6 +72,12 @@ header {
 .rcount { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
 
 .screener-scroll { flex: 1; overflow-y: auto; }
+.live-badge { display:inline-block; padding:1px 5px; border-radius:3px; font-size:9px; font-weight:700; background:rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); margin-left:5px; vertical-align:middle; letter-spacing:0.04em; }
+.live-price-tag { font-size:11px; }
+.live-searching-row td { padding:8px 14px; }
+.live-searching { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+.live-spinner { width:10px; height:10px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:lspin 0.7s linear infinite; flex-shrink:0; }
+@keyframes lspin { to { transform:rotate(360deg); } }
 .screener-scroll::-webkit-scrollbar { width: 5px; }
 .screener-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
@@ -666,17 +672,23 @@ let sortAsc = false;
 let scoreFilter = '';
 let expandedTicker = null;
 let filtered = [];
+let liveResults = [];
+let liveDebounce = null;
+let liveLoading = false;
+const liveDB = {};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 function overall(inv) {
+  if (inv.upside == null || inv.health == null || inv.presence == null) return null;
   return Math.round(inv.upside * 0.40 + inv.health * 0.30 + inv.presence * 0.30);
 }
 function sc(v) { // score class suffix
   if (v >= 85) return 'g'; if (v >= 70) return 'a'; if (v >= 55) return 'y'; return 'r';
 }
 function scoreCell(v) {
+  if (v == null) return '<div class="sc-cell"><span class="sc-val mdt">—</span></div>';
   return `<div class="sc-cell"><span class="sc-val c${sc(v)}">${v}</span><div class="sc-bar-bg"><div class="sc-bar b${sc(v)}" style="width:${v}%"></div></div></div>`;
 }
 
@@ -714,7 +726,7 @@ function applyFilters() {
     if (typeof av === 'string') return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
     return sortAsc ? av - bv : bv - av;
   });
-  document.getElementById('rcount').textContent = `${filtered.length} of ${DB.length}`;
+  triggerLiveSearch(q);
   renderTable();
 }
 function sortBy(key) {
@@ -726,28 +738,37 @@ function sortBy(key) {
   applyFilters();
 }
 function renderTable() {
-  document.getElementById('tBody').innerHTML = filtered.map(inv => {
+  const allRows = [...filtered, ...liveResults.filter(l => !filtered.find(f => f.ticker === l.ticker))];
+  const rcount = document.getElementById('rcount');
+  if (rcount) rcount.textContent = liveLoading ? 'Searching…' : (allRows.length + ' results');
+  let rows = allRows.map(inv => {
     const ov = overall(inv);
     const wl = watchlist.has(inv.ticker);
     const exp = expandedTicker === inv.ticker;
-    const capStr = inv.cap >= 1000 ? '$' + (inv.cap/1000).toFixed(1) + 'T' : '$' + inv.cap + 'B';
+    const capStr = inv.cap == null ? '—' : inv.cap >= 1000 ? '$' + (inv.cap/1000).toFixed(1) + 'T' : '$' + inv.cap.toFixed(1) + 'B';
+    const liveBadge = inv.live ? '<span class="live-badge">LIVE</span>' : '';
+    const priceStr = inv.live && inv.price != null ? `<div class="live-price-tag" style="color:var(--muted)">${inv.change >= 0 ? '<span style="color:var(--green)">+' + inv.change.toFixed(2) + '%</span>' : '<span style="color:var(--red)">' + inv.change.toFixed(2) + '%</span>'} $${inv.price.toFixed(2)}</div>` : '';
     return `
     <tr onclick="toggleExp('${inv.ticker}')" class="${exp ? 'exp-active' : ''}">
-      <td><div><div class="tkr">${inv.ticker}</div><div class="inv-type-lbl">${inv.type}</div></div></td>
-      <td><div style="font-size:13px;font-weight:500">${inv.name}</div><div class="co-name">${inv.moat !== 'N/A' ? inv.moat + ' Moat' : 'ETF'}</div></td>
-      <td><span class="sec-badge">${inv.sector}</span></td>
+      <td><div><div class="tkr">${inv.ticker}${liveBadge}</div><div class="inv-type-lbl">${inv.type}</div>${priceStr}</div></td>
+      <td><div style="font-size:13px;font-weight:500">${inv.name}</div><div class="co-name">${inv.moat && inv.moat !== 'N/A' ? inv.moat + ' Moat' : inv.sector || ''}</div></td>
+      <td><span class="sec-badge">${inv.sector || '—'}</span></td>
       <td>${scoreCell(ov)}</td>
       <td>${scoreCell(inv.upside)}</td>
       <td>${scoreCell(inv.health)}</td>
       <td>${scoreCell(inv.presence)}</td>
       <td class="neu" style="font-size:13px;font-weight:500">${capStr}</td>
       <td class="neu" style="font-size:13px">${inv.fwdPE > 0 ? inv.fwdPE + 'x' : '—'}</td>
-      <td class="${inv.revGrowth > 15 ? 'pos' : inv.revGrowth > 0 ? 'neu' : 'mdt'}" style="font-size:13px">${inv.revGrowth > 0 ? '+'+inv.revGrowth+'%' : inv.revGrowth === 0 ? '—' : inv.revGrowth+'%'}</td>
+      <td class="${inv.revGrowth > 15 ? 'pos' : inv.revGrowth > 0 ? 'neu' : 'mdt'}" style="font-size:13px">${inv.revGrowth > 0 ? '+'+inv.revGrowth+'%' : inv.revGrowth ? inv.revGrowth+'%' : '—'}</td>
       <td class="${inv.dividend > 2 ? 'pos' : 'mdt'}" style="font-size:13px">${inv.dividend > 0 ? inv.dividend + '%' : '—'}</td>
       <td onclick="event.stopPropagation()"><button class="wlbtn ${wl ? 'on' : ''}" onclick="toggleWL('${inv.ticker}')" title="${wl ? 'Remove' : 'Add to watchlist'}">★</button></td>
     </tr>
     ${exp ? `<tr><td class="exp-td" colspan="12">${renderExp(inv)}</td></tr>` : ''}`;
   }).join('');
+  if (liveLoading) {
+    rows += '<tr class="live-searching-row"><td colspan="12"><div class="live-searching"><div class="live-spinner"></div>Searching live markets…</div></td></tr>';
+  }
+  document.getElementById('tBody').innerHTML = rows;
 }
 function toggleExp(ticker) {
   expandedTicker = expandedTicker === ticker ? null : ticker;
@@ -755,6 +776,28 @@ function toggleExp(ticker) {
 }
 function renderExp(inv) {
   const ov = overall(inv);
+  if (inv.live) {
+    const capStr = inv.cap == null ? '—' : inv.cap >= 1000 ? '$' + (inv.cap/1000).toFixed(1) + 'T' : '$' + inv.cap.toFixed(1) + 'B';
+    return `<div class="exp-panel" style="grid-template-columns:1fr 1fr">
+      <div>
+        <div class="ep-label">Overview</div>
+        <div class="ep-desc">${inv.name} (${inv.ticker}) — ${inv.type}${inv.sector ? ', ' + inv.sector : ''}</div>
+        <div style="margin-top:14px"><div class="ep-label">Live Market Data</div>
+        <div class="ep-metrics">
+          <div class="ep-metric"><div class="ep-mlbl">Price</div><div class="ep-mval neu">${inv.price != null ? '$' + inv.price.toFixed(2) : '—'}</div></div>
+          <div class="ep-metric"><div class="ep-mlbl">Change</div><div class="ep-mval ${inv.change > 0 ? 'pos' : inv.change < 0 ? 'neg' : 'neu'}">${inv.change != null ? (inv.change > 0 ? '+' : '') + inv.change.toFixed(2) + '%' : '—'}</div></div>
+          <div class="ep-metric"><div class="ep-mlbl">Market Cap</div><div class="ep-mval neu">${capStr}</div></div>
+          <div class="ep-metric"><div class="ep-mlbl">Fwd P/E</div><div class="ep-mval neu">${inv.fwdPE > 0 ? inv.fwdPE + 'x' : '—'}</div></div>
+          <div class="ep-metric"><div class="ep-mlbl">Rev Growth</div><div class="ep-mval ${inv.revGrowth > 0 ? 'pos' : 'neu'}">${inv.revGrowth > 0 ? '+' + inv.revGrowth + '%' : '—'}</div></div>
+          <div class="ep-metric"><div class="ep-mlbl">Dividend</div><div class="ep-mval ${inv.dividend > 2 ? 'pos' : 'mdt'}">${inv.dividend > 0 ? inv.dividend + '%' : '—'}</div></div>
+        </div></div>
+      </div>
+      <div>
+        <div class="ep-label">Custom Analysis</div>
+        <div class="ep-desc" style="color:var(--muted);font-size:12px">⚡ Live data from Yahoo Finance. Custom Upside / Health / Presence scores require manual analysis and are not available for live search results.</div>
+      </div>
+    </div>`;
+  }
   return `<div class="exp-panel">
     <div>
       <div class="ep-label">Investment Thesis</div>
@@ -787,6 +830,8 @@ function renderExp(inv) {
 // WATCHLIST
 // ═══════════════════════════════════════════════════════════════════════════
 function toggleWL(ticker) {
+  const live = liveResults.find(r => r.ticker === ticker);
+  if (live) liveDB[ticker] = live;
   watchlist.has(ticker) ? watchlist.delete(ticker) : watchlist.add(ticker);
   const badge = document.getElementById('wlBadge');
   badge.textContent = watchlist.size;
@@ -800,7 +845,8 @@ function renderWL() {
     body.innerHTML = `<div class="wl-empty"><div class="wl-empty-icon">★</div><div style="font-size:16px;font-weight:600">Watchlist is empty</div><div style="font-size:13px;margin-top:4px">Click ★ on any investment in the Screener to track it here</div></div>`;
     return;
   }
-  body.innerHTML = `<div class="wl-grid">${DB.filter(inv=>watchlist.has(inv.ticker)).map(inv => {
+  const allWL = [...DB, ...Object.values(liveDB)];
+  body.innerHTML = `<div class="wl-grid">${allWL.filter(inv=>watchlist.has(inv.ticker)).map(inv => {
     const ov = overall(inv);
     return `<div class="wl-card">
       <div class="wl-c-hdr">
@@ -808,13 +854,65 @@ function renderWL() {
         <button class="wl-rm" onclick="toggleWL('${inv.ticker}')" title="Remove">✕</button>
       </div>
       <div class="wl-scores">
-        <div class="wl-sc"><div class="wl-sc-lbl">Upside</div><div class="wl-sc-val c${sc(inv.upside)}">${inv.upside}</div></div>
-        <div class="wl-sc"><div class="wl-sc-lbl">Health</div><div class="wl-sc-val c${sc(inv.health)}">${inv.health}</div></div>
-        <div class="wl-sc"><div class="wl-sc-lbl">Overall</div><div class="wl-sc-val c${sc(ov)}">${ov}</div></div>
+        <div class="wl-sc"><div class="wl-sc-lbl">Upside</div><div class="wl-sc-val ${inv.upside != null ? 'c'+sc(inv.upside) : 'mdt'}">${inv.upside != null ? inv.upside : '—'}</div></div>
+        <div class="wl-sc"><div class="wl-sc-lbl">Health</div><div class="wl-sc-val ${inv.health != null ? 'c'+sc(inv.health) : 'mdt'}">${inv.health != null ? inv.health : '—'}</div></div>
+        <div class="wl-sc"><div class="wl-sc-lbl">Overall</div><div class="wl-sc-val ${ov != null ? 'c'+sc(ov) : 'mdt'}">${ov != null ? ov : '—'}</div></div>
       </div>
-      <div class="wl-desc">${inv.desc.substring(0,150)}…</div>
+      <div class="wl-desc">${(inv.desc || (inv.name + ' — ' + inv.type)).substring(0,150)}…</div>
     </div>`;
   }).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIVE SEARCH (Yahoo Finance via /api/quote proxy)
+// ═══════════════════════════════════════════════════════════════════════════
+async function triggerLiveSearch(q) {
+  clearTimeout(liveDebounce);
+  if (!q || q.length < 2) {
+    liveResults = [];
+    liveLoading = false;
+    renderTable();
+    return;
+  }
+  liveLoading = true;
+  renderTable();
+  liveDebounce = setTimeout(async () => {
+    try {
+      const sRes = await fetch('/api/quote?q=' + encodeURIComponent(q));
+      const sData = await sRes.json();
+      const quotes = (sData.quotes || []).filter(r => ['EQUITY','ETF','MUTUALFUND','CRYPTOCURRENCY','FUTURE','CURRENCY','INDEX'].includes(r.quoteType));
+      const symbols = quotes.slice(0, 10).map(r => r.symbol).filter(s => !DB.find(d => d.ticker === s));
+      if (symbols.length === 0) {
+        liveResults = [];
+        liveLoading = false;
+        renderTable();
+        return;
+      }
+      const qRes = await fetch('/api/quote?symbols=' + encodeURIComponent(symbols.join(',')));
+      const qData = await qRes.json();
+      const result = (qData.quoteResponse && qData.quoteResponse.result) || [];
+      liveResults = result.map(r => ({
+        ticker: r.symbol,
+        name: r.shortName || r.longName || r.symbol,
+        sector: r.sector || r.quoteType || '',
+        type: r.quoteType || 'EQUITY',
+        cap: r.marketCap ? parseFloat((r.marketCap / 1e9).toFixed(2)) : null,
+        fwdPE: r.forwardPE ? parseFloat(r.forwardPE.toFixed(1)) : 0,
+        revGrowth: r.revenueGrowth ? parseFloat((r.revenueGrowth * 100).toFixed(1)) : 0,
+        dividend: r.trailingAnnualDividendYield ? parseFloat((r.trailingAnnualDividendYield * 100).toFixed(2)) : 0,
+        upside: null, health: null, presence: null,
+        moat: 'N/A', tags: [], desc: '', catalysts: [], risks: [],
+        fcfMargin: 0, epsGrowth: 0,
+        live: true,
+        price: r.regularMarketPrice || null,
+        change: r.regularMarketChangePercent || null,
+      }));
+    } catch(e) {
+      liveResults = [];
+    }
+    liveLoading = false;
+    renderTable();
+  }, 700);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
