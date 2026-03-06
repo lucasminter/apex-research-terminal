@@ -1,19 +1,20 @@
-export default async function ExperiencePage({
-  params,
-}: {
-  params: Promise<{ experienceId: string }>
-}) {
-  const { experienceId } = await params;
+import React from "react";
+
+export default function ExperiencePage(props: any) {
+  const params = props?.params;
 
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 40, fontFamily: "system-ui" }}>
       <h1>Apex Research Terminal</h1>
 
-      <p>Experience ID:</p>
+      <h3>DEBUG</h3>
+      <p>If you see this, you are hitting the correct deployed file.</p>
 
-      <pre>{experienceId}</pre>
+      <h4>props.params</h4>
+      <pre>{JSON.stringify(params, null, 2)}</pre>
 
-      <p>Your terminal UI will go here.</p>
+      <h4>props</h4>
+      <pre>{JSON.stringify(Object.keys(props || {}), null, 2)}</pre>
     </div>
   );
 }
