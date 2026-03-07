@@ -75,7 +75,6 @@ export default function ResearchHub() {
         }}
         title="Research Hub"
         allow="fullscreen"
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
       />
     </div>
   );
