@@ -2,11 +2,26 @@
 
 import { useEffect, useState } from 'react';
 
+// Get absolute URL for iframe based on current origin
+const getIframeUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Use absolute URL to work correctly in Whop's embedded app context
+    const currentOrigin = window.location.origin;
+    return `${currentOrigin}/research/index.html`;
+  }
+  // Fallback for SSR
+  return '/research/index.html';
+};
+
 export default function ResearchHub() {
   const [loading, setLoading] = useState(true);
   const [iframeReady, setIframeReady] = useState(false);
+  const [iframeUrl, setIframeUrl] = useState('/research/index.html');
 
   useEffect(() => {
+    // Set absolute iframe URL on client side
+    setIframeUrl(getIframeUrl());
+    
     // Small delay to ensure DOM setup
     const timer = setTimeout(() => {
       setLoading(false);
@@ -17,10 +32,11 @@ export default function ResearchHub() {
 
   const handleIframeLoad = () => {
     setIframeReady(true);
+    console.log('Research hub iframe loaded successfully');
   };
 
   const handleIframeError = () => {
-    console.error('Failed to load research hub iframe');
+    console.error('Failed to load research hub iframe at:', iframeUrl);
   };
 
   if (loading) {
@@ -61,7 +77,7 @@ export default function ResearchHub() {
         </div>
       )}
       <iframe
-        src="/research/index.html"
+        src={iframeUrl}
         onLoad={handleIframeLoad}
         onError={handleIframeError}
         style={{
