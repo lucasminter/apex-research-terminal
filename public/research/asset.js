@@ -11,14 +11,14 @@ async function loadAsset() {
       <div class="empty-state">
         <div class="empty-state-icon">❌</div>
         <div class="empty-state-title">No Ticker Specified</div>
-        <div class="empty-state-text"><a href="screener.html">Return to screener</a></div>
+        <div class="empty-state-text"><a href="/research/screener.html">Return to screener</a></div>
       </div>
     `;
     return;
   }
 
   try {
-    const response = await fetch("./data/stocks.json");
+    const response = await fetch("/research/data/stocks.json");
     if (!response.ok) throw new Error("Failed to load stocks");
     allStocks = await response.json();
 
@@ -29,7 +29,7 @@ async function loadAsset() {
         <div class="empty-state">
           <div class="empty-state-icon">🔍</div>
           <div class="empty-state-title">Ticker Not Found</div>
-          <div class="empty-state-text">${ticker} is not in our database. <a href="screener.html">View all stocks</a></div>
+          <div class="empty-state-text">${ticker} is not in our database. <a href="/research/screener.html">View all stocks</a></div>
         </div>
       `;
       return;

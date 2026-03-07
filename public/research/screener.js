@@ -4,7 +4,7 @@ let filteredStocks = [];
 // Load stocks from JSON
 async function loadStocks() {
   try {
-    const response = await fetch("./data/stocks.json");
+    const response = await fetch("/research/data/stocks.json");
     if (!response.ok) throw new Error("Failed to load stocks");
     allStocks = await response.json();
     applyFilters();
@@ -70,7 +70,7 @@ function renderStocks() {
       const upsideColor = stock.upside >= 80 ? "var(--green)" : stock.upside >= 70 ? "var(--accent)" : "var(--yellow)";
 
       return `
-        <a href="asset.html?ticker=${encodeURIComponent(stock.ticker)}" class="card">
+        <a href="/research/asset.html?ticker=${encodeURIComponent(stock.ticker)}" class="card">
           <div class="card-title">${stock.ticker}</div>
           <div class="card-subtitle">${stock.name}</div>
           <div class="card-desc">${stock.desc.substring(0, 100)}...</div>
