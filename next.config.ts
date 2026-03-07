@@ -1,35 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return {
-      // Run before filesystem routes so this takes precedence over the page.tsx
-      beforeFiles: [
-        {
-          // Serve the research hub directly at the Whop experiences URL.
-          // This avoids nested iframes (Whop already wraps the app in its own
-          // iframe; a second iframe inside breaks on desktop browsers).
-          // The HTML files have <base href="/research/"> so relative URLs resolve correctly.
-          source: '/experiences/:experienceId',
-          destination: '/research/index.html',
-        },
-      ],
-    };
-  },
-
   async headers() {
     return [
-      // Allow Whop to embed the experiences URL and the research pages
-      {
-        source: '/experiences/:path*',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: "frame-ancestors *",
-          },
-        ],
-      },
-      // Static research assets
+      // Static research assets — middleware handles /experiences/* headers
       {
         source: '/research/:path*',
         headers: [
