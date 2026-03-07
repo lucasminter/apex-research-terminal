@@ -62,7 +62,7 @@ export default function ResearchHub() {
         </div>
       )}
       <iframe
-        src="/research/index.html"
+        src="https://apex-research-terminal-111.vercel.app/research/index.html"
         onLoad={handleIframeLoad}
         onError={handleIframeError}
         style={{
