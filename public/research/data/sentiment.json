@@ -1,0 +1,70 @@
+{
+  "sectors": [
+    { "name": "Technology", "score": 78,  "label": "Positive", "color": "green" },
+    { "name": "Healthcare", "score": 62,  "label": "Positive", "color": "green" },
+    { "name": "Financials", "score": 42,  "label": "Neutral",  "color": "accent" },
+    { "name": "Energy",     "score": -35, "label": "Negative", "color": "red" }
+  ],
+  "stocks": [
+    {
+      "ticker": "NVDA",
+      "score": 85,
+      "score_color": "green",
+      "breakdown": {
+        "news":     { "value": "+88%", "color": "green" },
+        "social":   { "value": "+82%", "color": "green" },
+        "analyst":  { "value": "+88%", "color": "green" },
+        "retail":   { "value": "+79%", "color": "green" }
+      },
+      "note": "AI momentum strong. Blackwell adoption narrative dominant."
+    },
+    {
+      "ticker": "LLY",
+      "score": 82,
+      "score_color": "green",
+      "breakdown": {
+        "news":     { "value": "+84%", "color": "green" },
+        "social":   { "value": "+80%", "color": "green" },
+        "analyst":  { "value": "+86%", "color": "green" },
+        "retail":   { "value": "+81%", "color": "green" }
+      },
+      "note": "Mounjaro market expansion. GLP-1 category growth strong."
+    },
+    {
+      "ticker": "MSFT",
+      "score": 80,
+      "score_color": "green",
+      "breakdown": {
+        "news":     { "value": "+81%", "color": "green" },
+        "social":   { "value": "+76%", "color": "green" },
+        "analyst":  { "value": "+84%", "color": "green" },
+        "retail":   { "value": "+78%", "color": "green" }
+      },
+      "note": "Copilot adoption narrative. Azure growth expectations high."
+    },
+    {
+      "ticker": "XOM",
+      "score": -35,
+      "score_color": "red",
+      "breakdown": {
+        "news":     { "value": "+35%", "color": "orange" },
+        "social":   { "value": "+28%", "color": "yellow" },
+        "analyst":  { "value": "+40%", "color": "accent" },
+        "retail":   { "value": "-18%", "color": "yellow" }
+      },
+      "note": "Energy transition concerns. ESG headwinds persisting."
+    },
+    {
+      "ticker": "C",
+      "score": 15,
+      "score_color": "yellow",
+      "breakdown": {
+        "news":     { "value": "+45%", "color": "yellow" },
+        "social":   { "value": "+38%", "color": "yellow" },
+        "analyst":  { "value": "+52%", "color": "accent" },
+        "retail":   { "value": "+22%", "color": "yellow" }
+      },
+      "note": "Restructuring uncertainty. Emerging market exposure concerns."
+    }
+  ]
+}

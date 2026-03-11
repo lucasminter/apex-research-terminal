@@ -2,19 +2,61 @@
    SHARED STYLES FOR RESEARCH HUB
    ================================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
 :root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface2: #1f2937;
-  --border: #30363d;
-  --accent: #58a6ff;
-  --accent-soft: rgba(88, 166, 255, 0.08);
-  --text: #e6edf3;      
-  --muted: #7d8590;
-  --green: #3fb950;
-  --red: #f85149;
-  --yellow: #d29922;
+  --bg: #0a0f1e;
+  --surface: #0f1629;
+  --surface2: #141d35;
+  --border: #1e2d4a;
+  --accent: #00ff87;
+  --accent-soft: rgba(0, 255, 135, 0.08);
+  --text: #e8eef8;
+  --muted: #6b7fa3;
+  --green: #00ff87;
+  --red: #ff4d6d;
+  --yellow: #f5c842;
+  --gold: #f5c842;
   --orange: #f97316;
+  --hover-overlay: rgba(0, 255, 135, 0.05);
+  --row-hover: rgba(0, 255, 135, 0.04);
+  --list-item-bg: rgba(0, 255, 135, 0.06);
+}
+
+html[data-theme="light"] {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface2: #edf0f7;
+  --border: #d0d7e8;
+  --accent: #0553d4;
+  --accent-soft: rgba(5, 83, 212, 0.08);
+  --text: #0d1526;
+  --muted: #5a6a8a;
+  --green: #0a7c3e;
+  --red: #c82038;
+  --yellow: #9a6700;
+  --gold: #9a6700;
+  --orange: #bc4c00;
+  --hover-overlay: rgba(5, 83, 212, 0.05);
+  --row-hover: rgba(5, 83, 212, 0.04);
+  --list-item-bg: rgba(5, 83, 212, 0.06);
+}
+
+#theme-toggle {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  transition: all 0.15s;
+}
+
+#theme-toggle:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 * {
@@ -31,8 +73,15 @@ html, body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Syne', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
+}
+
+/* Numbers use mono font */
+.metric-value, .pulse-price, .mover-pct, .signal-pill-val,
+.ticker, .detail-ticker, .watchlist-row span:nth-child(3),
+.watchlist-row span:nth-child(4), .count-up {
+  font-family: 'IBM Plex Mono', monospace;
 }
 
 a {
@@ -91,7 +140,7 @@ header {
 
 .nav-link:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--hover-overlay);
 }
 
 .nav-link.active {
@@ -174,6 +223,30 @@ button.primary {
 button.primary:hover {
   opacity: 0.85;
 }
+
+/* GLASSMORPHISM */
+.glass-card {
+  background: rgba(20, 29, 53, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 255, 135, 0.12);
+  border-radius: 14px;
+}
+.glass-card:hover {
+  border-color: rgba(0, 255, 135, 0.3);
+  box-shadow: 0 0 24px rgba(0, 255, 135, 0.08);
+}
+
+/* GOLD ACCENT */
+.accent-gold { color: var(--gold); }
+.border-gold { border-color: var(--gold) !important; }
+
+/* COUNT-UP animation helper */
+@keyframes count-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-up { animation: count-fade-in 0.6s ease both; }
 
 /* GRID & CARDS */
 .grid {
@@ -300,7 +373,7 @@ th {
 
 th:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--list-item-bg);
 }
 
 tr {
@@ -309,7 +382,7 @@ tr {
 }
 
 tr:hover {
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--row-hover);
 }
 
 td {
@@ -505,6 +578,38 @@ td {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* SCORE BARS — screener cards */
+.score-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 2px; }
+
+/* STATS STRIP — screener summary row */
+.stats-strip {
+  display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+  padding: 10px 16px; margin-bottom: 14px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+}
+.stats-item { font-size: 12px; color: var(--muted); }
+.stats-item strong { color: var(--text); font-family: 'IBM Plex Mono', monospace; margin-right: 2px; }
+
+/* FILTER TABS — news category buttons */
+.filter-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+.filter-tab {
+  padding: 6px 14px; border-radius: 20px; font-family: inherit;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-tab:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.filter-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* BREAKING badge — news articles */
+.badge-breaking {
+  display: inline-block; padding: 2px 6px; border-radius: 4px;
+  background: rgba(255,77,109,0.15); color: var(--red);
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; margin-left: 6px; vertical-align: middle;
 }
 
 /* RESPONSIVE */

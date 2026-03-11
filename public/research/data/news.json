@@ -1,0 +1,71 @@
+{
+  "articles": [
+    {
+      "icon": "⚡",
+      "iconBg": "linear-gradient(135deg, #00ff87, #3b82f6)",
+      "title": "NVIDIA Announces Next-Gen Blackwell Architecture Performance Gains",
+      "time": "2 hours ago",
+      "timeColor": "green",
+      "body": "NVIDIA unveils Blackwell GPU architecture breaking performance records with 30% higher throughput on AI inference tasks. Analysts raise price targets following announcement.",
+      "tags": ["NVDA", "AI", "Technology"]
+    },
+    {
+      "icon": "💊",
+      "iconBg": "linear-gradient(135deg, #10b981, #059669)",
+      "title": "Eli Lilly's Mounjaro Obesity Sales Accelerate Beyond Expectations",
+      "time": "4 hours ago",
+      "timeColor": "green",
+      "body": "LLY reports tirzepatide sales surge to $4.2B annually, positioning Mounjaro as fastest-growing pharmaceutical in history. Guidance raised 18% for FY2026.",
+      "tags": ["LLY", "Healthcare", "Pharmaceuticals"]
+    },
+    {
+      "icon": "☁️",
+      "iconBg": "linear-gradient(135deg, #3b82f6, #2563eb)",
+      "title": "Microsoft Azure Cloud Revenue Grows 28% YoY, Beats Targets",
+      "time": "6 hours ago",
+      "timeColor": "green",
+      "body": "MSFT's cloud division shows accelerating growth as enterprise Copilot adoption gains momentum. Management guides 32% growth for next quarter.",
+      "tags": ["MSFT", "Cloud", "Enterprise"]
+    },
+    {
+      "icon": "📊",
+      "iconBg": "linear-gradient(135deg, #f59e0b, #d97706)",
+      "title": "JPMorgan Reports Q1 Performance, Net Interest Margin Stable",
+      "time": "8 hours ago",
+      "timeColor": "green",
+      "body": "JPM delivered strong Q1 earnings with net interest margin at 1.87%, surprising to the upside. Investment banking revenues surge 32% as M&A market heats up.",
+      "tags": ["JPM", "Financials", "Banking"]
+    },
+    {
+      "icon": "⚠️",
+      "iconBg": "linear-gradient(135deg, #ef4444, #dc2626)",
+      "title": "FTC Advances AI Antitrust Probe Against Major Tech Giants",
+      "time": "10 hours ago",
+      "timeColor": "red",
+      "body": "FTC escalates investigation into AI business practices of MSFT, GOOGL, and AMZN. Potential regulatory headwinds could limit cloud dominance strategies.",
+      "tags": ["MSFT", "GOOGL", "Regulation"]
+    },
+    {
+      "icon": "🚀",
+      "iconBg": "linear-gradient(135deg, #8b5cf6, #7c3aed)",
+      "title": "Tesla Cybertruck Production Ramp Accelerating, Guidance Raised",
+      "time": "12 hours ago",
+      "timeColor": "green",
+      "body": "TSLA increases Cybertruck production forecast to 500K units annually. Supply chain improvements and manufacturing efficiency gains support accelerated timeline.",
+      "tags": ["TSLA", "EV", "Manufacturing"]
+    }
+  ],
+  "commentary": {
+    "outlook": "S&P 500 approaches new all-time highs on easing inflation expectations and strong corporate earnings. Fed policy remains data-dependent heading into March FOMC meeting.",
+    "positives": [
+      "AI adoption accelerating across enterprise",
+      "Earnings growth re-accelerating in 2026",
+      "Fed likely to pause or cut rates"
+    ],
+    "risks": [
+      "Valuation compression if growth slows",
+      "Geopolitical tensions (China/Taiwan)",
+      "Regulatory headwinds on Big Tech"
+    ]
+  }
+}

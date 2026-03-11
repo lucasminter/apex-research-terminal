@@ -1,0 +1,46 @@
+{
+  "indicators": {
+    "economic": [
+      { "label": "GDP Growth",      "value": "+2.8%", "color": "green" },
+      { "label": "Inflation Rate",  "value": "3.2%",  "color": "orange" },
+      { "label": "Unemployment",    "value": "3.8%",  "color": "yellow" },
+      { "label": "Fed Funds Rate",  "value": "4.50%", "color": "text" }
+    ],
+    "yield_curve": [
+      { "label": "2Y Yield",       "value": "4.20%",          "color": "text" },
+      { "label": "10Y Yield",      "value": "4.15%",          "color": "text" },
+      { "label": "Curve Status",   "value": "Inverted Easing →", "color": "green" },
+      { "label": "2Y-10Y Spread",  "value": "-5 bps",         "color": "green" }
+    ],
+    "breadth": [
+      { "label": "S&P 500",          "value": "+8.2%", "color": "green" },
+      { "label": "Advance / Decline","value": "2.3:1", "color": "green" },
+      { "label": "VIX Index",        "value": "14.2",  "color": "green" },
+      { "label": "Put/Call Ratio",   "value": "0.68",  "color": "text" }
+    ],
+    "sectors": [
+      { "label": "Technology", "value": "+12.5%", "color": "green" },
+      { "label": "Healthcare", "value": "+6.8%",  "color": "green" },
+      { "label": "Financials", "value": "+5.2%",  "color": "green" },
+      { "label": "Energy",     "value": "-2.1%",  "color": "red" }
+    ],
+    "commodities": [
+      { "label": "Oil (WTI)",  "value": "$75.40",   "color": "text" },
+      { "label": "Gold",       "value": "$2,115/oz","color": "text" },
+      { "label": "Copper",     "value": "+3.2%",    "color": "green" },
+      { "label": "USD Index",  "value": "103.5",    "color": "text" }
+    ],
+    "credit": [
+      { "label": "HY Spread",           "value": "385 bps", "color": "yellow" },
+      { "label": "IG Spread",           "value": "95 bps",  "color": "green" },
+      { "label": "TED Spread",          "value": "42 bps",  "color": "green" },
+      { "label": "Default Probability", "value": "Low",     "color": "green" }
+    ]
+  },
+  "rotation_signals": [
+    { "title": "Growth Dominance",   "color": "accent", "body": "Tech and discretionary leading on re-rating. Stay long quality growth." },
+    { "title": "Value Lagging",      "color": "green",  "body": "Value indices trailing. Consider selective opportunities in financials and energy." },
+    { "title": "Defensive Weakness", "color": "accent", "body": "Staples and utilities underperforming. Risk-on environment intact." },
+    { "title": "Emerging Markets",   "color": "green",  "body": "EM relative strength improving. Watch for rotation from US mega-cap." }
+  ]
+}

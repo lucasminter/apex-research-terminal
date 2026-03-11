@@ -1,0 +1,69 @@
+{
+  "pulse": [
+    { "ticker": "SPY",    "price": "$562.48",  "change": "+1.2%",  "up": true },
+    { "ticker": "QQQ",    "price": "$484.90",  "change": "+1.8%",  "up": true },
+    { "ticker": "DIA",    "price": "$432.15",  "change": "-0.3%",  "up": false },
+    { "ticker": "IWM",    "price": "$208.62",  "change": "+0.7%",  "up": true },
+    { "ticker": "BTC",    "price": "$87,420",  "change": "+3.1%",  "up": true },
+    { "ticker": "GOLD",   "price": "$2,918/oz","change": "+0.8%",  "up": true },
+    { "ticker": "OIL",    "price": "$68.40",   "change": "-1.4%",  "up": false },
+    { "ticker": "VIX",    "price": "22.8",     "change": "+2.1",   "up": false },
+    { "ticker": "10Y",    "price": "4.15%",    "change": "-3bps",  "up": true },
+    { "ticker": "EUR/USD","price": "1.0842",   "change": "-0.2%",  "up": false },
+    { "ticker": "ETH",    "price": "$2,184",   "change": "+2.4%",  "up": true },
+    { "ticker": "SILVER", "price": "$32.60",   "change": "+1.1%",  "up": true }
+  ],
+  "gainers": [
+    { "ticker": "NVDA", "name": "NVIDIA Corp",    "change": "+6.8%", "up": true },
+    { "ticker": "META", "name": "Meta Platforms", "change": "+4.2%", "up": true },
+    { "ticker": "AVGO", "name": "Broadcom Inc",   "change": "+3.7%", "up": true },
+    { "ticker": "LLY",  "name": "Eli Lilly",      "change": "+3.1%", "up": true },
+    { "ticker": "AMZN", "name": "Amazon.com",     "change": "+2.9%", "up": true },
+    { "ticker": "ORCL", "name": "Oracle Corp",    "change": "+2.4%", "up": true }
+  ],
+  "losers": [
+    { "ticker": "TSLA", "name": "Tesla Inc",     "change": "-5.3%", "up": false },
+    { "ticker": "INTC", "name": "Intel Corp",    "change": "-3.8%", "up": false },
+    { "ticker": "BA",   "name": "Boeing Co",     "change": "-3.2%", "up": false },
+    { "ticker": "DIS",  "name": "Walt Disney",   "change": "-2.7%", "up": false },
+    { "ticker": "CVX",  "name": "Chevron Corp",  "change": "-2.1%", "up": false },
+    { "ticker": "WBA",  "name": "Walgreens",     "change": "-1.9%", "up": false }
+  ],
+  "signals": [
+    { "label": "Fed Funds Rate", "value": "4.50%", "valueColor": "text",   "note": "Next cut expected Q2 2026",            "noteColor": "green" },
+    { "label": "Inflation (CPI)","value": "3.2%",  "valueColor": "yellow", "note": "Above Fed 2% target",                  "noteColor": "muted" },
+    { "label": "VIX Fear Index", "value": "22.8",  "valueColor": "yellow", "note": "Elevated — caution zone (12–18 normal)","noteColor": "muted" },
+    { "label": "Unemployment",   "value": "3.8%",  "valueColor": "green",  "note": "Near historically low",               "noteColor": "green" }
+  ],
+  "alerts": [
+    { "icon": "⚡",  "text": "<strong>NVDA earnings in 3 days</strong> — historically averages +8.2% run-up in the week prior. Options market pricing ±9.4% move. Consider trimming if overweight.", "tag": "Bullish", "tagClass": "bullish" },
+    { "icon": "🏛️", "text": "<strong>Fed meeting in 6 days</strong> — markets pricing 68% chance of hold, 32% cut. Elevated VIX suggests uncertainty. Bond yields may spike if hold confirmed.", "tag": "Watch", "tagClass": "caution" },
+    { "icon": "₿",  "text": "<strong>BTC dominance rising to 58%</strong> — historically precedes altcoin rotation 3–4 weeks later. Crypto-adjacent equities (COIN, MSTR) showing relative strength.", "tag": "Neutral", "tagClass": "neutral" }
+  ],
+  "stocks": {
+    "AAPL":  { "name": "Apple Inc",           "price": "$228.52", "change": "+1.1%", "up": true,  "sector": "Technology" },
+    "MSFT":  { "name": "Microsoft Corp",      "price": "$408.31", "change": "+0.8%", "up": true,  "sector": "Technology" },
+    "NVDA":  { "name": "NVIDIA Corp",         "price": "$875.40", "change": "+6.8%", "up": true,  "sector": "Technology" },
+    "AMZN":  { "name": "Amazon.com",          "price": "$198.72", "change": "+2.9%", "up": true,  "sector": "Cons. Disc" },
+    "GOOGL": { "name": "Alphabet Inc",        "price": "$175.84", "change": "+1.4%", "up": true,  "sector": "Comm Services" },
+    "META":  { "name": "Meta Platforms",      "price": "$582.10", "change": "+4.2%", "up": true,  "sector": "Comm Services" },
+    "TSLA":  { "name": "Tesla Inc",           "price": "$248.60", "change": "-5.3%", "up": false, "sector": "Cons. Disc" },
+    "LLY":   { "name": "Eli Lilly",           "price": "$812.50", "change": "+3.1%", "up": true,  "sector": "Healthcare" },
+    "JPM":   { "name": "JPMorgan Chase",      "price": "$236.80", "change": "+0.6%", "up": true,  "sector": "Financials" },
+    "V":     { "name": "Visa Inc",            "price": "$312.44", "change": "+0.9%", "up": true,  "sector": "Financials" },
+    "WMT":   { "name": "Walmart Inc",         "price": "$94.20",  "change": "-0.2%", "up": false, "sector": "Cons. Staples" },
+    "XOM":   { "name": "Exxon Mobil",         "price": "$108.50", "change": "-1.2%", "up": false, "sector": "Energy" },
+    "AVGO":  { "name": "Broadcom Inc",        "price": "$1,284",  "change": "+3.7%", "up": true,  "sector": "Technology" },
+    "ORCL":  { "name": "Oracle Corp",         "price": "$168.30", "change": "+2.4%", "up": true,  "sector": "Technology" },
+    "INTC":  { "name": "Intel Corp",          "price": "$22.15",  "change": "-3.8%", "up": false, "sector": "Technology" },
+    "BA":    { "name": "Boeing Co",           "price": "$175.60", "change": "-3.2%", "up": false, "sector": "Industrials" },
+    "DIS":   { "name": "Walt Disney",         "price": "$102.40", "change": "-2.7%", "up": false, "sector": "Comm Services" },
+    "CVX":   { "name": "Chevron Corp",        "price": "$152.30", "change": "-2.1%", "up": false, "sector": "Energy" },
+    "COST":  { "name": "Costco Wholesale",    "price": "$918.70", "change": "+1.3%", "up": true,  "sector": "Cons. Staples" },
+    "NFLX":  { "name": "Netflix Inc",         "price": "$978.20", "change": "+1.9%", "up": true,  "sector": "Comm Services" },
+    "AMD":   { "name": "Advanced Micro Dev.", "price": "$112.80", "change": "+2.2%", "up": true,  "sector": "Technology" },
+    "CRM":   { "name": "Salesforce Inc",      "price": "$298.40", "change": "+1.1%", "up": true,  "sector": "Technology" },
+    "NKE":   { "name": "Nike Inc",            "price": "$72.40",  "change": "-1.5%", "up": false, "sector": "Cons. Disc" },
+    "PYPL":  { "name": "PayPal Holdings",     "price": "$68.20",  "change": "-0.8%", "up": false, "sector": "Financials" }
+  }
+}

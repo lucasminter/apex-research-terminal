@@ -1,0 +1,18 @@
+{
+  "calendar": [
+    { "date": "Mar 10", "ticker": "JPM",  "company": "JPMorgan",      "sector": "Financials",              "eps_est": "$4.52", "rev_est": "$32.1B",  "beat_rate": 86, "beat_color": "green" },
+    { "date": "Mar 12", "ticker": "BAC",  "company": "Bank of America","sector": "Financials",              "eps_est": "$2.35", "rev_est": "$18.9B",  "beat_rate": 82, "beat_color": "green" },
+    { "date": "Mar 14", "ticker": "LLY",  "company": "Eli Lilly",     "sector": "Healthcare",              "eps_est": "$0.98", "rev_est": "$6.8B",   "beat_rate": 88, "beat_color": "green" },
+    { "date": "Mar 16", "ticker": "NVDA", "company": "NVIDIA",        "sector": "Technology",              "eps_est": "$5.67", "rev_est": "$28.2B",  "beat_rate": 92, "beat_color": "green" },
+    { "date": "Mar 18", "ticker": "MSFT", "company": "Microsoft",     "sector": "Technology",              "eps_est": "$3.12", "rev_est": "$61.5B",  "beat_rate": 88, "beat_color": "green" },
+    { "date": "Mar 20", "ticker": "AAPL", "company": "Apple",         "sector": "Technology",              "eps_est": "$2.18", "rev_est": "$89.3B",  "beat_rate": 81, "beat_color": "yellow" },
+    { "date": "Mar 22", "ticker": "AMZN", "company": "Amazon",        "sector": "Consumer Discretionary",  "eps_est": "$0.77", "rev_est": "$141.2B", "beat_rate": 87, "beat_color": "green" },
+    { "date": "Mar 24", "ticker": "META", "company": "Meta",          "sector": "Communication Services",  "eps_est": "$5.23", "rev_est": "$36.1B",  "beat_rate": 90, "beat_color": "green" }
+  ],
+  "surprises": [
+    { "ticker": "COST", "change": "+8.2%",  "color": "green", "note": "Beat EPS by 12%. Revenue growth 8%. Membership upgrade strong." },
+    { "ticker": "LLY",  "change": "+15.4%", "color": "green", "note": "Mounjaro (tirzepatide) sales accelerating. Guidance raised 18%." },
+    { "ticker": "NVDA", "change": "+6.7%",  "color": "green", "note": "Blackwell adoption acceleration. Data center revenue +122%." },
+    { "ticker": "KR",   "change": "-8.3%",  "color": "red",   "note": "Margin pressure from Amazon competition. Guidance cut 5%." }
+  ]
+}

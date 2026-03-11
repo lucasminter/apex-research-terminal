@@ -3,57 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stock Screener — Research Hub</title>
+  <title>Stock Screener — Apex Research Hub</title>
   <link rel="stylesheet" href="/research/styles.css" />
+  <script>document.documentElement.setAttribute("data-theme",localStorage.getItem("apex-theme")||"dark");</script>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <div class="logo-icon">📊</div>
-      <span>Research Hub</span>
-    </div>
-    <nav style="display: flex; gap: 8px;">
-      <a href="/research/index.html" class="nav-link">Dashboard</a>
-      <a href="/research/screener.html" class="nav-link active">Screener</a>
-      <a href="/research/macro.html" class="nav-link">Macro</a>
-      <a href="/research/news.html" class="nav-link">News</a>
-    </nav>
-  </header>
+<header data-page="screener"></header>
+<script src="/research/components.js"></script>
 
-  <main class="container">
-    <h1>Stock Screener</h1>
-    <p style="color: var(--muted); margin-bottom: 24px;">Search, filter, and analyze 250+ stocks across all sectors.</p>
+<main class="container">
+  <h1>Stock Screener</h1>
+  <p style="color: var(--muted); margin-bottom: 24px;">Search, filter, and rank 250+ stocks across all sectors.</p>
 
-    <div class="toolbar">
-      <input type="text" id="searchInput" placeholder="Search by ticker or company name..." style="flex: 1; min-width: 250px;" />
-      <select id="sectorFilter">
-        <option value="">All Sectors</option>
-        <option value="Technology">Technology</option>
-        <option value="Communication Services">Communication Services</option>
-        <option value="Healthcare">Healthcare</option>
-        <option value="Financials">Financials</option>
-        <option value="Consumer Discretionary">Consumer Discretionary</option>
-        <option value="Consumer Staples">Consumer Staples</option>
-        <option value="Industrials">Industrials</option>
-        <option value="Energy">Energy</option>
-        <option value="Utilities">Utilities</option>
-        <option value="Real Estate">Real Estate</option>
-      </select>
-      <select id="moatFilter">
-        <option value="">All Moats</option>
-        <option value="Very Wide">Very Wide</option>
-        <option value="Wide">Wide</option>
-        <option value="Moderate">Moderate</option>
-        <option value="Narrow">Narrow</option>
-      </select>
-      <button class="primary" onclick="resetFilters()">Reset</button>
-    </div>
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="Search ticker or company..." style="flex: 1; min-width: 200px;" />
+    <select id="sectorFilter">
+      <option value="">All Sectors</option>
+      <option value="Technology">Technology</option>
+      <option value="Communication Services">Communication Services</option>
+      <option value="Healthcare">Healthcare</option>
+      <option value="Financials">Financials</option>
+      <option value="Consumer Discretionary">Consumer Discretionary</option>
+      <option value="Consumer Staples">Consumer Staples</option>
+      <option value="Industrials">Industrials</option>
+      <option value="Energy">Energy</option>
+      <option value="Utilities">Utilities</option>
+      <option value="Real Estate">Real Estate</option>
+    </select>
+    <select id="moatFilter">
+      <option value="">All Moats</option>
+      <option value="Very Wide">Very Wide</option>
+      <option value="Wide">Wide</option>
+      <option value="Moderate">Moderate</option>
+      <option value="Narrow">Narrow</option>
+    </select>
+    <select id="sortSelect">
+      <option value="combined">Sort: Combined Score</option>
+      <option value="health">Sort: Health</option>
+      <option value="upside">Sort: Upside</option>
+      <option value="cap">Sort: Market Cap</option>
+      <option value="pe">Sort: Forward P/E</option>
+    </select>
+    <button class="primary" onclick="resetFilters()">Reset</button>
+  </div>
 
-    <div id="resultCount" style="margin-bottom: 16px; font-size: 13px; color: var(--muted);">Loading...</div>
+  <div id="statsStrip" class="stats-strip" style="display:none;"></div>
+  <div id="resultCount" style="margin-bottom: 16px; font-size: 13px; color: var(--muted);">Loading...</div>
+  <div id="stockGrid" class="grid"></div>
+</main>
 
-    <div id="stockGrid" class="grid"></div>
-  </main>
-
-  <script src="/research/screener.js"></script>
+<script src="/research/screener.js"></script>
+<script src="/research/theme.js"></script>
 </body>
 </html>

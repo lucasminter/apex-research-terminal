@@ -3,151 +3,613 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Research Hub — Investment Research Terminal</title>
+<title>Apex Research Hub — Command Center</title>
 <link rel="stylesheet" href="/research/styles.css">
+<script>document.documentElement.setAttribute("data-theme",localStorage.getItem("apex-theme")||"dark");</script>
+<style>
+  .pulse-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .pulse-track {
+    display: inline-flex;
+    gap: 32px;
+    align-items: center;
+    animation: ticker-scroll 40s linear infinite;
+  }
+  .pulse-bar:hover .pulse-track { animation-play-state: paused; }
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .pulse-item { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+  .pulse-ticker { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+  .pulse-price { color: var(--text); font-weight: 700; }
+  .pulse-change.up { color: var(--green); }
+  .pulse-change.down { color: var(--red); }
+  .pulse-divider { color: var(--border); user-select: none; }
+
+  .regime-banner {
+    border-radius: 12px;
+    padding: 24px 32px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    border: 1px solid;
+  }
+  .regime-banner.risk-on  { background: rgba(63,185,80,0.08);  border-color: rgba(63,185,80,0.3); }
+  .regime-banner.caution  { background: rgba(210,153,34,0.08); border-color: rgba(210,153,34,0.3); }
+  .regime-banner.risk-off { background: rgba(248,81,73,0.08);  border-color: rgba(248,81,73,0.3); }
+
+  .regime-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .regime-badge.risk-on  { background: rgba(63,185,80,0.15);  color: var(--green); }
+  .regime-badge.caution  { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .regime-badge.risk-off { background: rgba(248,81,73,0.15);  color: var(--red); }
+
+  .regime-dot { width: 8px; height: 8px; border-radius: 50%; animation: pdot 2s infinite; }
+  .risk-on  .regime-dot { background: var(--green); }
+  .caution  .regime-dot { background: var(--yellow); }
+  .risk-off .regime-dot { background: var(--red); }
+  @keyframes pdot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  .regime-signals { display: flex; gap: 20px; flex-wrap: wrap; align-self: center; }
+  .regime-signal-item { text-align: center; }
+  .regime-signal-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+  .regime-signal-value { font-size: 14px; font-weight: 700; }
+
+  .what-it-means {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-top: 12px;
+    max-width: 560px;
+  }
+  .what-it-means strong { color: var(--accent); }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 320px;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 960px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-header h2 { font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
+  .section-header h2::before { content: ''; width: 3px; height: 15px; background: var(--accent); border-radius: 2px; display: block; }
+  .section-header a { font-size: 12px; color: var(--muted); text-decoration: none; }
+  .section-header a:hover { color: var(--accent); }
+
+  .mover-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    transition: all 0.15s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .mover-row:hover { border-color: var(--accent); background: var(--accent-soft); text-decoration: none; }
+  .mover-ticker { font-weight: 700; color: var(--accent); font-size: 14px; width: 54px; flex-shrink: 0; }
+  .mover-name { color: var(--muted); font-size: 12px; flex: 1; }
+  .mover-pct { font-weight: 700; font-size: 13px; margin-left: 8px; }
+  .mover-pct.up { color: var(--green); }
+  .mover-pct.down { color: var(--red); }
+
+  .signal-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    margin-bottom: 7px;
+  }
+  .signal-pill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .signal-pill-label { font-size: 12px; color: var(--muted); }
+  .signal-pill-val { font-size: 13px; font-weight: 700; color: var(--text); }
+  .signal-pill-note { font-size: 11px; }
+
+  .watchlist-row {
+    display: grid;
+    grid-template-columns: 74px 1fr 90px 84px 130px 32px;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+    font-size: 13px;
+    transition: background 0.1s;
+  }
+  .watchlist-row:last-child { border-bottom: none; }
+  .watchlist-row:hover { background: var(--accent-soft); }
+  .watchlist-header { background: var(--surface2); font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .watchlist-header:hover { background: var(--surface2); }
+
+  .wl-remove {
+    width: 26px; height: 26px; border-radius: 6px; border: none;
+    background: transparent; color: var(--muted); font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    padding: 0; line-height: 1; transition: all 0.15s;
+  }
+  .wl-remove:hover { background: rgba(248,81,73,0.12); color: var(--red); border: none; }
+
+  .watchlist-add-row {
+    display: flex; gap: 8px; padding: 11px 16px;
+    background: var(--surface2); border-top: 1px solid var(--border);
+  }
+  .watchlist-add-row input { width: 180px; text-transform: uppercase; }
+
+  /* PORTFOLIO SNAPSHOT */
+  .portfolio-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) { .portfolio-strip { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 420px) { .portfolio-strip { grid-template-columns: 1fr 1fr; } }
+
+  .portfolio-stat {
+    padding: 18px 20px;
+    border-radius: 12px;
+    background: rgba(20, 29, 53, 0.7);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .portfolio-stat::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .portfolio-stat.stat-green::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .portfolio-stat.stat-gold::before  { background: linear-gradient(90deg, var(--gold), transparent); }
+  .portfolio-stat.stat-red::before   { background: linear-gradient(90deg, var(--red), transparent); }
+  .portfolio-stat.stat-blue::before  { background: linear-gradient(90deg, #58a6ff, transparent); }
+  .portfolio-stat:hover { border-color: var(--accent); }
+
+  .portfolio-stat-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .portfolio-stat-value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .portfolio-stat-sub   { font-size: 12px; font-weight: 500; }
+
+  /* EDGE SCORE */
+  .edge-score-wrap { padding: 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface2); }
+  .edge-score-ring {
+    width: 96px; height: 96px; margin: 0 auto 14px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) 0% 74%, var(--border) 74% 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .edge-score-ring::after {
+    content: '';
+    position: absolute;
+    width: 74px; height: 74px;
+    border-radius: 50%;
+    background: var(--surface2);
+  }
+  .edge-score-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px; font-weight: 700;
+    color: var(--accent); z-index: 1; position: relative;
+  }
+  .edge-score-bar { margin-top: 8px; }
+  .edge-bar-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; margin-bottom: 6px; }
+  .edge-bar-label { color: var(--muted); }
+  .edge-bar-val   { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--text); }
+  .edge-bar-track { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 8px; }
+  .edge-bar-fill  { height: 4px; border-radius: 2px; background: var(--accent); transition: width 1.2s ease; }
+
+  /* AI ALERTS */
+  .ai-alert {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px 16px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    margin-bottom: 8px; transition: all 0.15s;
+  }
+  .ai-alert:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .ai-alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .ai-alert-text { font-size: 13px; color: var(--text); line-height: 1.5; flex: 1; }
+  .ai-alert-text strong { color: var(--accent); }
+  .ai-alert-tag  { font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; margin-top: 2px; }
+  .ai-alert-tag.bullish  { background: rgba(0,255,135,0.12); color: var(--green); }
+  .ai-alert-tag.caution  { background: rgba(245,200,66,0.12); color: var(--gold); }
+  .ai-alert-tag.neutral  { background: rgba(107,127,163,0.12); color: var(--muted); }
+
+  .hub-card {
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface2);
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .hub-card:hover { border-color: var(--accent); background: var(--accent-soft); transform: translateY(-2px); text-decoration: none; }
+  .hub-icon { font-size: 26px; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: var(--surface); border-radius: 10px; flex-shrink: 0; }
+  .hub-card-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; color: var(--text); }
+  .hub-card-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+</style>
 </head>
 <body>
-<header>
-  <div class="logo">
-    <div class="logo-icon">📊</div>
-    <span>Research Hub</span>
+
+<header data-page="index"></header>
+<script src="/research/components.js"></script>
+
+<!-- MARKET PULSE BAR -->
+<div class="pulse-bar">
+  <div class="pulse-track">
+    <!-- set 1 -->
+    <div class="pulse-item"><span class="pulse-ticker">SPY</span><span class="pulse-price">$562.48</span><span class="pulse-change up">+1.2%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">QQQ</span><span class="pulse-price">$484.90</span><span class="pulse-change up">+1.8%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">DIA</span><span class="pulse-price">$432.15</span><span class="pulse-change down">-0.3%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">IWM</span><span class="pulse-price">$208.62</span><span class="pulse-change up">+0.7%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">BTC</span><span class="pulse-price">$87,420</span><span class="pulse-change up">+3.1%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">GOLD</span><span class="pulse-price">$2,918/oz</span><span class="pulse-change up">+0.8%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">OIL</span><span class="pulse-price">$68.40</span><span class="pulse-change down">-1.4%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">VIX</span><span class="pulse-price">22.8</span><span class="pulse-change down" style="color:var(--red);">+2.1</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">10Y</span><span class="pulse-price">4.15%</span><span class="pulse-change up" style="color:var(--green);">-3bps</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">EUR/USD</span><span class="pulse-price">1.0842</span><span class="pulse-change down">-0.2%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">ETH</span><span class="pulse-price">$2,184</span><span class="pulse-change up">+2.4%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">SILVER</span><span class="pulse-price">$32.60</span><span class="pulse-change up">+1.1%</span></div>
+    <span class="pulse-divider">|</span>
+    <!-- set 2 (duplicate for seamless loop) -->
+    <div class="pulse-item"><span class="pulse-ticker">SPY</span><span class="pulse-price">$562.48</span><span class="pulse-change up">+1.2%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">QQQ</span><span class="pulse-price">$484.90</span><span class="pulse-change up">+1.8%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">DIA</span><span class="pulse-price">$432.15</span><span class="pulse-change down">-0.3%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">IWM</span><span class="pulse-price">$208.62</span><span class="pulse-change up">+0.7%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">BTC</span><span class="pulse-price">$87,420</span><span class="pulse-change up">+3.1%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">GOLD</span><span class="pulse-price">$2,918/oz</span><span class="pulse-change up">+0.8%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">OIL</span><span class="pulse-price">$68.40</span><span class="pulse-change down">-1.4%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">VIX</span><span class="pulse-price">22.8</span><span class="pulse-change down" style="color:var(--red);">+2.1</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">10Y</span><span class="pulse-price">4.15%</span><span class="pulse-change up" style="color:var(--green);">-3bps</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">EUR/USD</span><span class="pulse-price">1.0842</span><span class="pulse-change down">-0.2%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">ETH</span><span class="pulse-price">$2,184</span><span class="pulse-change up">+2.4%</span></div>
+    <span class="pulse-divider">|</span>
+    <div class="pulse-item"><span class="pulse-ticker">SILVER</span><span class="pulse-price">$32.60</span><span class="pulse-change up">+1.1%</span></div>
+    <span class="pulse-divider">|</span>
   </div>
-  <nav style="display: flex; gap: 8px;">
-    <a href="/research/index.html" class="nav-link active">Dashboard</a>
-    <a href="/research/screener.html" class="nav-link">Screener</a>
-    <a href="/research/macro.html" class="nav-link">Macro</a>
-    <a href="/research/news.html" class="nav-link">News</a>
-  </nav>
-</header>
+</div>
 
-<main class="container">
-  <h1>Investment Research Terminal</h1>
-  <p style="color: var(--muted); font-size: 15px; margin-bottom: 40px; max-width: 600px;">Access real-time investment analysis, sector rotation signals, earnings data, and macro indicators. Built for traders and investors seeking edge in today's markets.</p>
+<main class="container" style="padding-top:28px;">
 
-  <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
-    
-    <!-- Stock Screener Card -->
-    <a href="/research/screener.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <div style="font-size: 36px; margin-bottom: 12px;">📊</div>
-        <h2 style="font-size: 20px; margin-bottom: 8px;">Stock Screener</h2>
-        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Search and filter 250+ stocks across all major sectors. Analyze fundamentals, growth metrics, and investment quality scores.</p>
-        <div class="tags">
-          <span class="tag">250+ Tickers</span>
-          <span class="tag">Real-Time</span>
-          <span class="tag">Fundamentals</span>
-        </div>
-      </div>
-      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">Explore Screener →</button>
-    </a>
-
-    <!-- Sector Rotation Card -->
-    <a href="/research/macro.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <div style="font-size: 36px; margin-bottom: 12px;">🔄</div>
-        <h2 style="font-size: 20px; margin-bottom: 8px;">Sector Rotation</h2>
-        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Monitor macro indicators and sector attractiveness scorecard. Understand market positioning and rotation signals.</p>
-        <div class="tags">
-          <span class="tag">Macro Signals</span>
-          <span class="tag">Rotation</span>
-          <span class="tag">Positioning</span>
-        </div>
-      </div>
-      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Macro →</button>
-    </a>
-
-    <!-- Earnings Calendar Card -->
-    <a href="/research/earnings.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <div style="font-size: 36px; margin-bottom: 12px;">📅</div>
-        <h2 style="font-size: 20px; margin-bottom: 8px;">Earnings Calendar</h2>
-        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Upcoming earnings dates, analyst expectations, and historical beat rates. Event-driven trading intelligence.</p>
-        <div class="tags">
-          <span class="tag">Earnings</span>
-          <span class="tag">Events</span>
-          <span class="tag">Catalysts</span>
-        </div>
-      </div>
-      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Earnings →</button>
-    </a>
-
-    <!-- Sentiment Analysis Card -->
-    <a href="/research/sentiment.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <div style="font-size: 36px; margin-bottom: 12px;">💬</div>
-        <h2 style="font-size: 20px; margin-bottom: 8px;">Sentiment Analysis</h2>
-        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">News, social media, and analyst sentiment signals. Track mood shifts and identify contrarian opportunities.</p>
-        <div class="tags">
-          <span class="tag">Sentiment</span>
-          <span class="tag">News Flow</span>
-          <span class="tag">Social</span>
-        </div>
-      </div>
-      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Sentiment →</button>
-    </a>
-
-    <!-- News Hub Card -->
-    <a href="/research/news.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <div style="font-size: 36px; margin-bottom: 12px;">📰</div>
-        <h2 style="font-size: 20px; margin-bottom: 8px;">News Hub</h2>
-        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Breaking financial news, Fed policy updates, and geopolitical risk monitoring. Curated sources for market movers.</p>
-        <div class="tags">
-          <span class="tag">Breaking</span>
-          <span class="tag">Macro</span>
-          <span class="tag">Geopolitical</span>
-        </div>
-      </div>
-      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View News →</button>
-    </a>
-
-    <!-- Macro Dashboard Card -->
-    <a href="/research/macro.html" class="card" style="text-decoration: none; display: flex; flex-direction: column; justify-content: space-between;">
-      <div>
-        <div style="font-size: 36px; margin-bottom: 12px;">📈</div>
-        <h2 style="font-size: 20px; margin-bottom: 8px;">Macro Dashboard</h2>
-        <p style="font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px;">Fed policy, inflation data, economic indicators, and market valuations. Complete macro framework in one view.</p>
-        <div class="tags">
-          <span class="tag">Economy</span>
-          <span class="tag">Rates</span>
-          <span class="tag">Inflation</span>
-        </div>
-      </div>
-      <button class="primary" style="margin-top: 16px; width: 100%; cursor: pointer;">View Dashboard →</button>
-    </a>
-
+  <!-- PORTFOLIO SNAPSHOT -->
+  <div class="portfolio-strip">
+    <div class="portfolio-stat stat-green">
+      <div class="portfolio-stat-label">Portfolio Value</div>
+      <div class="portfolio-stat-value count-up" data-target="247840" data-prefix="$" data-format="comma">$247,840</div>
+      <div class="portfolio-stat-sub" style="color:var(--green);">+$2,841 today</div>
+    </div>
+    <div class="portfolio-stat stat-gold">
+      <div class="portfolio-stat-label">YTD Return</div>
+      <div class="portfolio-stat-value count-up" data-target="14.2" data-suffix="%">+14.2%</div>
+      <div class="portfolio-stat-sub" style="color:var(--muted);">vs S&P 500 +9.8%</div>
+    </div>
+    <div class="portfolio-stat stat-green">
+      <div class="portfolio-stat-label">Day Change</div>
+      <div class="portfolio-stat-value count-up" data-target="1.16" data-suffix="%">+1.16%</div>
+      <div class="portfolio-stat-sub" style="color:var(--muted);">+$2,841 unrealized</div>
+    </div>
+    <div class="portfolio-stat stat-blue">
+      <div class="portfolio-stat-label">Portfolio Beta</div>
+      <div class="portfolio-stat-value count-up" data-target="0.92">0.92</div>
+      <div class="portfolio-stat-sub" style="color:var(--muted);">Lower risk than market</div>
+    </div>
   </div>
 
-  <!-- Quick Stats Section -->
-  <div style="margin-top: 60px; padding: 32px; background: var(--surface2); border-radius: 12px; border: 1px solid var(--border);">
-    <h2 style="font-size: 18px; margin-bottom: 24px;">Quick Stats</h2>
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Total Stocks</div>
-        <div class="metric-value">250+</div>
+  <!-- MARKET REGIME BANNER -->
+  <div class="regime-banner caution">
+    <div style="flex:1;min-width:280px;">
+      <div class="regime-badge caution"><span class="regime-dot"></span> Caution — Elevated Uncertainty</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">Markets navigating mixed signals — favor quality over momentum</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">VIX elevated, breadth narrowing, earnings revisions mixed. Tech leading but participation is thin. Fed cutting cycle expected but timing uncertain.</div>
+      <div class="what-it-means">
+        <strong>What this means for you:</strong> Not a time to chase high-flying stocks. Focus on companies with strong balance sheets, consistent earnings, and real cash flow. Consider keeping 10–15% cash to buy dips.
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Sectors Covered</div>
-        <div class="metric-value">10+</div>
+    </div>
+    <div class="regime-signals">
+      <div class="regime-signal-item"><div class="regime-signal-label">Trend</div><div class="regime-signal-value" style="color:var(--yellow);">Mixed</div></div>
+      <div class="regime-signal-item"><div class="regime-signal-label">Breadth</div><div class="regime-signal-value" style="color:var(--yellow);">Narrowing</div></div>
+      <div class="regime-signal-item"><div class="regime-signal-label">Credit</div><div class="regime-signal-value" style="color:var(--green);">Stable</div></div>
+      <div class="regime-signal-item"><div class="regime-signal-label">Momentum</div><div class="regime-signal-value" style="color:var(--red);">Fading</div></div>
+      <div class="regime-signal-item"><div class="regime-signal-label">Fed Stance</div><div class="regime-signal-value" style="color:var(--green);">Dovish</div></div>
+      <div class="regime-signal-item"><div class="regime-signal-label">Earnings</div><div class="regime-signal-value" style="color:var(--yellow);">Mixed</div></div>
+    </div>
+  </div>
+
+  <!-- MOVERS + SIGNALS -->
+  <div class="dashboard-grid">
+    <!-- GAINERS -->
+    <div>
+      <div class="section-header">
+        <h2>Top Gainers Today</h2>
+        <a href="/research/screener.html">All Stocks →</a>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Market Cap Range</div>
-        <div class="metric-value">$5B — $3.3T</div>
+      <a href="/research/asset.html?ticker=NVDA" class="mover-row"><span class="mover-ticker">NVDA</span><span class="mover-name">NVIDIA Corp</span><span class="mover-pct up">+6.8%</span></a>
+      <a href="/research/asset.html?ticker=META" class="mover-row"><span class="mover-ticker">META</span><span class="mover-name">Meta Platforms</span><span class="mover-pct up">+4.2%</span></a>
+      <a href="/research/asset.html?ticker=AVGO" class="mover-row"><span class="mover-ticker">AVGO</span><span class="mover-name">Broadcom Inc</span><span class="mover-pct up">+3.7%</span></a>
+      <a href="/research/asset.html?ticker=LLY" class="mover-row"><span class="mover-ticker">LLY</span><span class="mover-name">Eli Lilly</span><span class="mover-pct up">+3.1%</span></a>
+      <a href="/research/asset.html?ticker=AMZN" class="mover-row"><span class="mover-ticker">AMZN</span><span class="mover-name">Amazon.com</span><span class="mover-pct up">+2.9%</span></a>
+      <a href="/research/asset.html?ticker=ORCL" class="mover-row"><span class="mover-ticker">ORCL</span><span class="mover-name">Oracle Corp</span><span class="mover-pct up">+2.4%</span></a>
+    </div>
+
+    <!-- LOSERS -->
+    <div>
+      <div class="section-header">
+        <h2>Top Losers Today</h2>
+        <a href="/research/screener.html">All Stocks →</a>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Data Freshness</div>
-        <div class="metric-value">Real-Time</div>
+      <a href="/research/asset.html?ticker=TSLA" class="mover-row"><span class="mover-ticker">TSLA</span><span class="mover-name">Tesla Inc</span><span class="mover-pct down">-5.3%</span></a>
+      <a href="/research/asset.html?ticker=INTC" class="mover-row"><span class="mover-ticker">INTC</span><span class="mover-name">Intel Corp</span><span class="mover-pct down">-3.8%</span></a>
+      <a href="/research/asset.html?ticker=BA" class="mover-row"><span class="mover-ticker">BA</span><span class="mover-name">Boeing Co</span><span class="mover-pct down">-3.2%</span></a>
+      <a href="/research/asset.html?ticker=DIS" class="mover-row"><span class="mover-ticker">DIS</span><span class="mover-name">Walt Disney</span><span class="mover-pct down">-2.7%</span></a>
+      <a href="/research/asset.html?ticker=CVX" class="mover-row"><span class="mover-ticker">CVX</span><span class="mover-name">Chevron Corp</span><span class="mover-pct down">-2.1%</span></a>
+      <a href="/research/asset.html?ticker=WBA" class="mover-row"><span class="mover-ticker">WBA</span><span class="mover-name">Walgreens</span><span class="mover-pct down">-1.9%</span></a>
+    </div>
+
+    <!-- EDGE SCORE + KEY SIGNALS -->
+    <div>
+      <!-- EDGE SCORE -->
+      <div class="section-header" style="margin-bottom:12px;">
+        <h2>Your Edge Score</h2>
+        <a href="/research/screener.html">Improve →</a>
+      </div>
+      <div class="edge-score-wrap" style="margin-bottom:16px;">
+        <div class="edge-score-ring">
+          <span class="edge-score-number">74</span>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px;">Strong — above 68% of investors</div>
+        <div class="edge-score-bar">
+          <div class="edge-bar-row"><span class="edge-bar-label">Diversification</span><span class="edge-bar-val">82</span></div>
+          <div class="edge-bar-track"><div class="edge-bar-fill" style="width:82%"></div></div>
+          <div class="edge-bar-row"><span class="edge-bar-label">Risk Management</span><span class="edge-bar-val">68</span></div>
+          <div class="edge-bar-track"><div class="edge-bar-fill" style="width:68%;background:var(--yellow);"></div></div>
+          <div class="edge-bar-row"><span class="edge-bar-label">Momentum Alignment</span><span class="edge-bar-val">71</span></div>
+          <div class="edge-bar-track"><div class="edge-bar-fill" style="width:71%"></div></div>
+          <div class="edge-bar-row"><span class="edge-bar-label">Cash Flow Quality</span><span class="edge-bar-val">75</span></div>
+          <div class="edge-bar-track"><div class="edge-bar-fill" style="width:75%"></div></div>
+        </div>
+      </div>
+
+      <!-- KEY SIGNALS -->
+      <div class="section-header" style="margin-bottom:10px;">
+        <h2>Key Signals</h2>
+        <a href="/research/macro.html">Full Macro →</a>
+      </div>
+      <div class="signal-pill">
+        <div class="signal-pill-top"><span class="signal-pill-label">Fed Funds Rate</span><span class="signal-pill-val">4.50%</span></div>
+        <div class="signal-pill-note" style="color:var(--green);">Next cut expected Q2 2026</div>
+      </div>
+      <div class="signal-pill">
+        <div class="signal-pill-top"><span class="signal-pill-label">Inflation (CPI)</span><span class="signal-pill-val" style="color:var(--yellow);">3.2%</span></div>
+        <div class="signal-pill-note" style="color:var(--muted);">Above Fed 2% target</div>
+      </div>
+      <div class="signal-pill">
+        <div class="signal-pill-top"><span class="signal-pill-label">VIX Fear Index</span><span class="signal-pill-val" style="color:var(--yellow);">22.8</span></div>
+        <div class="signal-pill-note" style="color:var(--muted);">Elevated — caution zone (12–18 normal)</div>
+      </div>
+      <div class="signal-pill">
+        <div class="signal-pill-top"><span class="signal-pill-label">Unemployment</span><span class="signal-pill-val" style="color:var(--green);">3.8%</span></div>
+        <div class="signal-pill-note" style="color:var(--green);">Near historically low</div>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
-  <div style="margin-top: 60px; padding: 32px 0; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 12px;">
-    <p>Research Hub — Investment Terminal v1.0</p>
-    <p style="margin-top: 8px;">Built for Apex Research. Data as of March 2026.</p>
+  <!-- WATCHLIST -->
+  <div style="margin-bottom:28px;">
+    <div class="section-header">
+      <h2>My Watchlist</h2>
+      <span style="font-size:12px;color:var(--muted);">Saved to your browser</span>
+    </div>
+    <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div class="watchlist-row watchlist-header">
+        <span>Ticker</span><span>Company</span>
+        <span style="text-align:right;">Price</span>
+        <span style="text-align:right;">Change</span>
+        <span style="text-align:right;">Sector</span>
+        <span></span>
+      </div>
+      <div id="watchlistBody"></div>
+      <div class="watchlist-add-row">
+        <input type="text" id="watchlistInput" placeholder="Add ticker (e.g. AAPL)" maxlength="8" />
+        <button class="primary" onclick="addToWatchlist()">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI ALERTS -->
+  <div style="margin-bottom:28px;">
+    <div class="section-header">
+      <h2>🤖 AI Alerts</h2>
+      <span style="font-size:12px;color:var(--muted);">Powered by market intelligence</span>
+    </div>
+    <div class="ai-alert">
+      <span class="ai-alert-icon">⚡</span>
+      <div class="ai-alert-text"><strong>NVDA earnings in 3 days</strong> — historically averages +8.2% run-up in the week prior. Options market pricing ±9.4% move. Consider trimming if overweight.</div>
+      <span class="ai-alert-tag bullish">Bullish</span>
+    </div>
+    <div class="ai-alert">
+      <span class="ai-alert-icon">🏛️</span>
+      <div class="ai-alert-text"><strong>Fed meeting in 6 days</strong> — markets pricing 68% chance of hold, 32% cut. Elevated VIX suggests uncertainty. Bond yields may spike if hold confirmed.</div>
+      <span class="ai-alert-tag caution">Watch</span>
+    </div>
+    <div class="ai-alert">
+      <span class="ai-alert-icon">₿</span>
+      <div class="ai-alert-text"><strong>BTC dominance rising to 58%</strong> — historically precedes altcoin rotation 3–4 weeks later. Crypto-adjacent equities (COIN, MSTR) showing relative strength.</div>
+      <span class="ai-alert-tag neutral">Neutral</span>
+    </div>
+  </div>
+
+  <!-- RESEARCH TOOLS -->
+  <div style="margin-bottom:28px;">
+    <div class="section-header"><h2>Research Tools</h2></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;">
+      <a href="/research/screener.html" class="hub-card">
+        <div class="hub-icon">📊</div>
+        <div><div class="hub-card-title">Stock Screener</div><div class="hub-card-desc">Filter 250+ stocks by sector, moat &amp; fundamentals</div></div>
+      </a>
+      <a href="/research/macro.html" class="hub-card">
+        <div class="hub-icon">🌐</div>
+        <div><div class="hub-card-title">Macro Dashboard</div><div class="hub-card-desc">Fed, yields, inflation &amp; sector rotation</div></div>
+      </a>
+      <a href="/research/news.html" class="hub-card">
+        <div class="hub-icon">📰</div>
+        <div><div class="hub-card-title">News Hub</div><div class="hub-card-desc">Breaking financial news &amp; market catalysts</div></div>
+      </a>
+      <a href="/research/earnings.html" class="hub-card">
+        <div class="hub-icon">📅</div>
+        <div><div class="hub-card-title">Earnings Calendar</div><div class="hub-card-desc">Upcoming earnings, estimates &amp; beat rates</div></div>
+      </a>
+      <a href="/research/sentiment.html" class="hub-card">
+        <div class="hub-icon">💬</div>
+        <div><div class="hub-card-title">Sentiment</div><div class="hub-card-desc">Fear &amp; greed, analyst ratings, social signals</div></div>
+      </a>
+      <a href="/research/screener.html" class="hub-card">
+        <div class="hub-icon">🏆</div>
+        <div><div class="hub-card-title">Top Picks</div><div class="hub-card-desc">Highest-rated stocks by investment quality score</div></div>
+      </a>
+    </div>
+  </div>
+
+  <div style="padding:20px 0;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;flex-wrap:wrap;gap:8px;">
+    <span>Apex Research Hub v2.0</span>
+    <span>Data as of March 10, 2026 &bull; For educational purposes only. Not financial advice.</span>
   </div>
 
 </main>
 
+<script>
+var WATCHLIST_KEY = 'apex-watchlist';
+var STOCK_DATA = {};
+var DEFAULT_WATCHLIST = ['AAPL','MSFT','NVDA','AMZN','TSLA'];
+
+fetch('/research/data/market.json')
+  .then(function(r){ return r.json(); })
+  .then(function(d){ STOCK_DATA = d.stocks; renderWatchlist(); })
+  .catch(function(){ renderWatchlist(); });
+
+function getWatchlist() {
+  try { var s = localStorage.getItem(WATCHLIST_KEY); return s ? JSON.parse(s) : DEFAULT_WATCHLIST.slice(); }
+  catch(e) { return DEFAULT_WATCHLIST.slice(); }
+}
+function saveWatchlist(list) { localStorage.setItem(WATCHLIST_KEY, JSON.stringify(list)); }
+
+function renderWatchlist() {
+  var list = getWatchlist();
+  var body = document.getElementById('watchlistBody');
+  if (!body) return;
+  if (!list.length) {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;">No tickers yet. Add one below.</div>';
+    return;
+  }
+  body.innerHTML = list.map(function(t) {
+    var d = STOCK_DATA[t.toUpperCase()];
+    if (!d) return '<div class="watchlist-row"><span class="ticker">'+t+'</span><span style="color:var(--muted);font-size:12px;">Unknown ticker</span><span></span><span></span><span></span><button class="wl-remove" onclick="removeFromWatchlist(''+t+'')">×</button></div>';
+    return '<div class="watchlist-row">' +
+      '<span class="ticker">'+t+'</span>' +
+      '<span style="color:var(--muted);font-size:12px;">'+d.name+'</span>' +
+      '<span style="text-align:right;font-weight:600;">'+d.price+'</span>' +
+      '<span style="text-align:right;font-weight:700;color:'+(d.up?'var(--green)':'var(--red)')+';">'+d.change+'</span>' +
+      '<span style="text-align:right;font-size:11px;color:var(--muted);">'+d.sector+'</span>' +
+      '<button class="wl-remove" onclick="removeFromWatchlist(''+t+'')" title="Remove">×</button>' +
+      '</div>';
+  }).join('');
+}
+function addToWatchlist() {
+  var input = document.getElementById('watchlistInput');
+  var t = input.value.trim().toUpperCase();
+  if (!t) return;
+  var list = getWatchlist();
+  if (list.indexOf(t) === -1) { list.push(t); saveWatchlist(list); renderWatchlist(); }
+  input.value = ''; input.focus();
+}
+function removeFromWatchlist(t) {
+  saveWatchlist(getWatchlist().filter(function(x){return x!==t;}));
+  renderWatchlist();
+}
+document.addEventListener('DOMContentLoaded', function() {
+  renderWatchlist();
+  var inp = document.getElementById('watchlistInput');
+  if (inp) inp.addEventListener('keydown', function(e){ if(e.key==='Enter') addToWatchlist(); });
+});
+</script>
+<script src="/research/theme.js"></script>
+<script>
+// Count-up animation for portfolio stats
+document.addEventListener('DOMContentLoaded', function() {
+  var els = document.querySelectorAll('.count-up[data-target]');
+  els.forEach(function(el) {
+    var target = parseFloat(el.getAttribute('data-target'));
+    var prefix = el.getAttribute('data-prefix') || '';
+    var suffix = el.getAttribute('data-suffix') || '';
+    var isComma = el.getAttribute('data-format') === 'comma';
+    var isFloat = target % 1 !== 0;
+    var duration = 1200;
+    var start = performance.now();
+    function frame(now) {
+      var progress = Math.min((now - start) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var val = target * eased;
+      var display;
+      if (isComma) display = Math.round(val).toLocaleString();
+      else if (isFloat) display = val.toFixed(2);
+      else display = Math.round(val).toString();
+      el.textContent = (target > 0 ? '+' : '') + prefix + display + suffix;
+      if (progress < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+});
+</script>
 </body>
 </html>

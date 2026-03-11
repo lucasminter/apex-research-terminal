@@ -5,174 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>News Hub — Research Hub</title>
   <link rel="stylesheet" href="/research/styles.css">
+<script>document.documentElement.setAttribute("data-theme",localStorage.getItem("apex-theme")||"dark");</script>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <div class="logo-icon">📊</div>
-      <span>Research Hub</span>
-    </div>
-    <nav style="display: flex; gap: 8px;">
-      <a href="/research/index.html" class="nav-link">Dashboard</a>
-      <a href="/research/screener.html" class="nav-link">Screener</a>
-      <a href="/research/macro.html" class="nav-link">Macro</a>
-      <a href="/research/news.html" class="nav-link active">News</a>
-    </nav>
-  </header>
+<header data-page="news"></header>
+<script src="/research/components.js"></script>
 
   <main class="container">
     <a href="/research/index.html" style="color: var(--accent); text-decoration: none; margin-bottom: 20px; display: inline-block;">← Back to Dashboard</a>
-    
+
     <h1>📰 News Hub</h1>
     <p style="color: var(--muted); margin-bottom: 30px;">Breaking news, earnings, and market-moving events</p>
 
-    <div style="display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap;">
-      <button class="primary" style="padding: 8px 16px; border: none; background: var(--accent); cursor: pointer; border-radius: 4px; color: white;">All News</button>
-      <button class="primary" style="padding: 8px 16px; border: 1px solid var(--accent); background: transparent; cursor: pointer; border-radius: 4px; color: var(--accent);">Tech</button>
-      <button class="primary" style="padding: 8px 16px; border: 1px solid var(--accent); background: transparent; cursor: pointer; border-radius: 4px; color: var(--accent);">Healthcare</button>
-      <button class="primary" style="padding: 8px 16px; border: 1px solid var(--accent); background: transparent; cursor: pointer; border-radius: 4px; color: var(--accent);">Macro</button>
-      <button class="primary" style="padding: 8px 16px; border: 1px solid var(--accent); background: transparent; cursor: pointer; border-radius: 4px; color: var(--accent);">Earnings</button>
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All News</button>
+      <button class="filter-tab" data-filter="Technology">Tech</button>
+      <button class="filter-tab" data-filter="Healthcare">Healthcare</button>
+      <button class="filter-tab" data-filter="Regulation">Regulation</button>
+      <button class="filter-tab" data-filter="Earnings">Earnings</button>
     </div>
 
-    <!-- Latest News -->
     <div class="section">
       <h2 style="margin-bottom: 24px;">Latest News</h2>
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-
-        <div class="card" style="display: flex; gap: 16px;">
-          <div style="flex-shrink: 0; width: 120px; height: 80px; background: linear-gradient(135deg, var(--accent), #3b82f6); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">⚡</div>
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-              <h3 style="margin: 0; font-size: 16px;">NVIDIA Announces Next-Gen Blackwell Architecture Performance Gains</h3>
-              <span style="color: var(--green); font-size: 12px; white-space: nowrap;">2 hours ago</span>
-            </div>
-            <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px 0; line-height: 1.5;">NVIDIA unveils Blackwell GPU architecture breaking performance records with 30% higher throughput on AI inference tasks. Analysts raise price targets following announcement.</p>
-            <div style="display: flex; gap: 8px;">
-              <span class="tag" style="font-size: 11px;">NVDA</span>
-              <span class="tag" style="font-size: 11px;">AI</span>
-              <span class="tag" style="font-size: 11px;">Technology</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="display: flex; gap: 16px;">
-          <div style="flex-shrink: 0; width: 120px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">💊</div>
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-              <h3 style="margin: 0; font-size: 16px;">Eli Lilly's Mounjaro Obesity Sales Accelerate Beyond Expectations</h3>
-              <span style="color: var(--green); font-size: 12px; white-space: nowrap;">4 hours ago</span>
-            </div>
-            <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px 0; line-height: 1.5;">LLY reports tirzepatide sales surge to $4.2B annually, positioning Mounjaro as fastest-growing pharmaceutical in history. Guidance raised 18% for FY2026.</p>
-            <div style="display: flex; gap: 8px;">
-              <span class="tag" style="font-size: 11px;">LLY</span>
-              <span class="tag" style="font-size: 11px;">Healthcare</span>
-              <span class="tag" style="font-size: 11px;">Pharmaceuticals</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="display: flex; gap: 16px;">
-          <div style="flex-shrink: 0; width: 120px; height: 80px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">☁️</div>
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-              <h3 style="margin: 0; font-size: 16px;">Microsoft Azure Cloud Revenue Grows 28% YoY, Beats Targets</h3>
-              <span style="color: var(--green); font-size: 12px; white-space: nowrap;">6 hours ago</span>
-            </div>
-            <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px 0; line-height: 1.5;">MSFT's cloud division shows accelerating growth as enterprise Copilot adoption gains momentum. Management guides 32% growth for next quarter.</p>
-            <div style="display: flex; gap: 8px;">
-              <span class="tag" style="font-size: 11px;">MSFT</span>
-              <span class="tag" style="font-size: 11px;">Cloud</span>
-              <span class="tag" style="font-size: 11px;">Enterprise</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="display: flex; gap: 16px;">
-          <div style="flex-shrink: 0; width: 120px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">📊</div>
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-              <h3 style="margin: 0; font-size: 16px;">JPMorgan Reports Q1 Performance, Net Interest Margin Stable</h3>
-              <span style="color: var(--green); font-size: 12px; white-space: nowrap;">8 hours ago</span>
-            </div>
-            <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px 0; line-height: 1.5;">JPM delivered strong Q1 earnings with net interest margin at 1.87%, surprising to the upside. Investment banking revenues surge 32% as M&A market heats up.</p>
-            <div style="display: flex; gap: 8px;">
-              <span class="tag" style="font-size: 11px;">JPM</span>
-              <span class="tag" style="font-size: 11px;">Financials</span>
-              <span class="tag" style="font-size: 11px;">Banking</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="display: flex; gap: 16px;">
-          <div style="flex-shrink: 0; width: 120px; height: 80px; background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">⚠️</div>
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-              <h3 style="margin: 0; font-size: 16px;">FTC Advances AI Antitrust Probe Against Major Tech Giants</h3>
-              <span style="color: var(--red); font-size: 12px; white-space: nowrap;">10 hours ago</span>
-            </div>
-            <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px 0; line-height: 1.5;">FTC escalates investigation into AI business practices of MSFT, GOOGL, and AMZN. Potential regulatory headwinds could limit cloud dominance strategies.</p>
-            <div style="display: flex; gap: 8px;">
-              <span class="tag" style="font-size: 11px;">MSFT</span>
-              <span class="tag" style="font-size: 11px;">GOOGL</span>
-              <span class="tag" style="font-size: 11px;">Regulation</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="display: flex; gap: 16px;">
-          <div style="flex-shrink: 0; width: 120px; height: 80px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">🚀</div>
-          <div style="flex: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
-              <h3 style="margin: 0; font-size: 16px;">Tesla Cybertruck Production Ramp Accelerating, Guidance Raised</h3>
-              <span style="color: var(--green); font-size: 12px; white-space: nowrap;">12 hours ago</span>
-            </div>
-            <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px 0; line-height: 1.5;">TSLA increases Cybertruck production forecast to 500K units annually. Supply chain improvements and manufacturing efficiency gains support accelerated timeline.</p>
-            <div style="display: flex; gap: 8px;">
-              <span class="tag" style="font-size: 11px;">TSLA</span>
-              <span class="tag" style="font-size: 11px;">EV</span>
-              <span class="tag" style="font-size: 11px;">Manufacturing</span>
-            </div>
-          </div>
-        </div>
-
+      <div id="newsList" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="padding: 40px; text-align: center; color: var(--muted);">Loading...</div>
       </div>
     </div>
 
-    <!-- Market Commentary -->
     <div class="section" style="margin-top: 40px;">
       <h2 style="margin-bottom: 24px;">Market Commentary</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
-        
-        <div class="card">
-          <h4 style="color: var(--accent); margin-bottom: 12px;">📈 Market Outlook</h4>
-          <p style="font-size: 13px; color: var(--muted); line-height: 1.6;">S&P 500 approaches new all-time highs on easing inflation expectations and strong corporate earnings. Fed policy remains data-dependent heading into March FOMC meeting.</p>
-        </div>
-
-        <div class="card">
-          <h4 style="color: var(--green); margin-bottom: 12px;">✅ Key Positives</h4>
-          <ol style="font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; padding-left: 20px;">
-            <li>AI adoption accelerating across enterprise</li>
-            <li>Earnings growth re-accelerating in 2026</li>
-            <li>Fed likely to pause or cut rates</li>
-          </ol>
-        </div>
-
-        <div class="card">
-          <h4 style="color: var(--red); margin-bottom: 12px;">⚠️ Key Risks</h4>
-          <ol style="font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0; padding-left: 20px;">
-            <li>Valuation compression if growth slows</li>
-            <li>Geopolitical tensions (China/Taiwan)</li>
-            <li>Regulatory headwinds on Big Tech</li>
-          </ol>
-        </div>
-
-      </div>
+      <div id="newsCommentary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;"></div>
     </div>
-
   </main>
 
   <footer style="text-align: center; padding: 20px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--surface); margin-top: 60px;">
     <p>Research Hub v1.0 • Data as of March 6, 2026</p>
   </footer>
+<script src="/research/theme.js"></script>
+<script src="/research/news.js"></script>
 </body>
 </html>
