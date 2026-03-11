@@ -518,6 +518,18 @@
         <div class="hub-icon">🏆</div>
         <div><div class="hub-card-title">Top Picks</div><div class="hub-card-desc">Highest-rated stocks by investment quality score</div></div>
       </a>
+      <a href="/research/portfolio.html" class="hub-card">
+        <div class="hub-icon">💼</div>
+        <div><div class="hub-card-title">Portfolio Tracker</div><div class="hub-card-desc">Track holdings, cost basis, gains &amp; sector allocation</div></div>
+      </a>
+      <a href="/research/strategy.html" class="hub-card">
+        <div class="hub-icon">🏗️</div>
+        <div><div class="hub-card-title">Strategy Builder</div><div class="hub-card-desc">Pre-built investment strategies with allocation plans</div></div>
+      </a>
+      <a href="/research/goals.html" class="hub-card">
+        <div class="hub-icon">🎯</div>
+        <div><div class="hub-card-title">Goals Tracker</div><div class="hub-card-desc">Retirement, emergency fund &amp; major purchase goals</div></div>
+      </a>
     </div>
   </div>
 
@@ -533,9 +545,13 @@ var WATCHLIST_KEY = 'apex-watchlist';
 var STOCK_DATA = {};
 var DEFAULT_WATCHLIST = ['AAPL','MSFT','NVDA','AMZN','TSLA'];
 
-fetch('/research/data/market.json')
+// Load all 57 stocks from stocks.json as the watchlist data source
+fetch('/research/data/stocks.json')
   .then(function(r){ return r.json(); })
-  .then(function(d){ STOCK_DATA = d.stocks; renderWatchlist(); })
+  .then(function(arr){
+    arr.forEach(function(s){ STOCK_DATA[s.ticker] = s; });
+    renderWatchlist();
+  })
   .catch(function(){ renderWatchlist(); });
 
 function getWatchlist() {
@@ -554,14 +570,20 @@ function renderWatchlist() {
   }
   body.innerHTML = list.map(function(t) {
     var d = STOCK_DATA[t.toUpperCase()];
-    if (!d) return '<div class="watchlist-row"><span class="ticker">'+t+'</span><span style="color:var(--muted);font-size:12px;">Unknown ticker</span><span></span><span></span><span></span><button class="wl-remove" onclick="removeFromWatchlist(''+t+'')">×</button></div>';
+    if (!d) return '<div class="watchlist-row"><span class="ticker">'+t+'</span><span style="color:var(--muted);font-size:12px;">Not in database</span><span></span><span></span><span></span><button class="wl-remove" onclick="removeFromWatchlist(\''+t+'\')" title="Remove">×</button></div>';
+    var price = d.price != null ? '$'+d.price.toFixed(2) : '—';
+    var change = d.change != null ? d.change : 0;
+    var changeStr = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+    var changeColor = change >= 0 ? 'var(--green)' : 'var(--red)';
     return '<div class="watchlist-row">' +
+      '<a href="/research/asset.html?ticker='+t+'" style="color:inherit;text-decoration:none;display:contents;">' +
       '<span class="ticker">'+t+'</span>' +
       '<span style="color:var(--muted);font-size:12px;">'+d.name+'</span>' +
-      '<span style="text-align:right;font-weight:600;">'+d.price+'</span>' +
-      '<span style="text-align:right;font-weight:700;color:'+(d.up?'var(--green)':'var(--red)')+';">'+d.change+'</span>' +
+      '<span style="text-align:right;font-weight:600;font-family:\'IBM Plex Mono\',monospace;">'+price+'</span>' +
+      '<span style="text-align:right;font-weight:700;color:'+changeColor+';">'+changeStr+'</span>' +
       '<span style="text-align:right;font-size:11px;color:var(--muted);">'+d.sector+'</span>' +
-      '<button class="wl-remove" onclick="removeFromWatchlist(''+t+'')" title="Remove">×</button>' +
+      '</a>' +
+      '<button class="wl-remove" onclick="removeFromWatchlist(\''+t+'\')" title="Remove">×</button>' +
       '</div>';
   }).join('');
 }

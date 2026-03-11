@@ -4,10 +4,11 @@
    ================================================================ */
 (function () {
   var NAV = [
-    { key: 'index',    label: 'Dashboard', href: '/research/index.html' },
-    { key: 'screener', label: 'Screener',  href: '/research/screener.html' },
-    { key: 'macro',    label: 'Macro',     href: '/research/macro.html' },
-    { key: 'news',     label: 'News',      href: '/research/news.html' },
+    { key: 'index',     label: 'Dashboard', href: '/research/index.html' },
+    { key: 'portfolio', label: 'Portfolio', href: '/research/portfolio.html' },
+    { key: 'screener',  label: 'Screener',  href: '/research/screener.html' },
+    { key: 'macro',     label: 'Macro',     href: '/research/macro.html' },
+    { key: 'news',      label: 'News',      href: '/research/news.html' },
   ];
 
   var header = document.querySelector('header');

@@ -13,7 +13,7 @@
 
 <main class="container">
   <h1>Stock Screener</h1>
-  <p style="color: var(--muted); margin-bottom: 24px;">Search, filter, and rank 250+ stocks across all sectors.</p>
+  <p style="color: var(--muted); margin-bottom: 24px;">Search, filter, and rank stocks across all sectors.</p>
 
   <div class="toolbar">
     <input type="text" id="searchInput" placeholder="Search ticker or company..." style="flex: 1; min-width: 200px;" />
@@ -43,6 +43,7 @@
       <option value="upside">Sort: Upside</option>
       <option value="cap">Sort: Market Cap</option>
       <option value="pe">Sort: Forward P/E</option>
+      <option value="price">Sort: Price</option>
     </select>
     <button class="primary" onclick="resetFilters()">Reset</button>
   </div>

@@ -55,13 +55,22 @@ function renderAsset() {
   const healthColor = s.health >= 85 ? "var(--green)" : s.health >= 75 ? "var(--accent)" : "var(--yellow)";
   const upsideColor = s.upside >= 80 ? "var(--green)" : s.upside >= 70 ? "var(--accent)" : "var(--yellow)";
   const presenceColor = s.presence >= 85 ? "var(--green)" : s.presence >= 70 ? "var(--accent)" : "var(--yellow)";
+  const change = s.change || 0;
+  const changeColor = change >= 0 ? "var(--green)" : "var(--red)";
+  const changeSign = change >= 0 ? "+" : "";
 
   detail.innerHTML = `
     <div class="detail-header">
-      <div class="detail-ticker">${s.ticker}</div>
-      <div>
-        <div class="detail-name">${s.name}</div>
-        <div class="detail-sector">${s.sector}</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div class="detail-ticker">${s.ticker}</div>
+        <div>
+          <div class="detail-name">${s.name}</div>
+          <div class="detail-sector">${s.sector}</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:32px;font-weight:800;font-family:'IBM Plex Mono',monospace;color:var(--text);">$${s.price != null ? s.price.toFixed(2) : '—'}</div>
+        <div style="font-size:15px;font-weight:600;color:${changeColor};">${changeSign}${change.toFixed(2)}% today</div>
       </div>
     </div>
 

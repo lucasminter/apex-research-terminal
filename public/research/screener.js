@@ -7,6 +7,7 @@ async function loadStocks() {
     const response = await fetch("/research/data/stocks.json");
     if (!response.ok) throw new Error("Failed to load stocks");
     allStocks = await response.json();
+    restoreFilters();
     applyFilters();
   } catch (error) {
     console.error("Error loading stocks:", error);
@@ -21,6 +22,27 @@ async function loadStocks() {
 
 function scoreColor(val, good, ok) {
   return val >= good ? 'var(--green)' : val >= ok ? 'var(--accent)' : 'var(--yellow)';
+}
+
+function saveFilters() {
+  sessionStorage.setItem('screener-search', document.getElementById("searchInput").value);
+  sessionStorage.setItem('screener-sector', document.getElementById("sectorFilter").value);
+  sessionStorage.setItem('screener-moat', document.getElementById("moatFilter").value);
+  sessionStorage.setItem('screener-sort', sortBy);
+}
+
+function restoreFilters() {
+  const search = sessionStorage.getItem('screener-search');
+  const sector = sessionStorage.getItem('screener-sector');
+  const moat   = sessionStorage.getItem('screener-moat');
+  const sort   = sessionStorage.getItem('screener-sort');
+  if (search) document.getElementById("searchInput").value = search;
+  if (sector) document.getElementById("sectorFilter").value = sector;
+  if (moat)   document.getElementById("moatFilter").value = moat;
+  if (sort) {
+    sortBy = sort;
+    document.getElementById("sortSelect").value = sort;
+  }
 }
 
 function applyFilters() {
@@ -38,6 +60,7 @@ function applyFilters() {
       (!moat   || stock.moat   === moat);
   });
 
+  saveFilters();
   applySortAndRender();
 }
 
@@ -47,6 +70,7 @@ function applySortAndRender() {
     if (sortBy === 'upside')  return (b.upside  || 0) - (a.upside  || 0);
     if (sortBy === 'cap')     return (b.cap     || 0) - (a.cap     || 0);
     if (sortBy === 'pe')      return (a.fwdPE   || 999) - (b.fwdPE || 999);
+    if (sortBy === 'price')   return (b.price   || 0) - (a.price   || 0);
     return ((b.health || 0) + (b.upside || 0)) - ((a.health || 0) + (a.upside || 0));
   });
   renderStocks();
@@ -66,12 +90,15 @@ function renderStats() {
   filteredStocks.forEach(s => { sectorCounts[s.sector] = (sectorCounts[s.sector] || 0) + 1; });
   const topSector = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
 
+  const gainers = filteredStocks.filter(s => (s.change || 0) > 0).length;
+
   strip.style.display = 'flex';
   strip.innerHTML =
     `<div class="stats-item"><strong>${filteredStocks.length}</strong> stocks</div>` +
     `<div class="stats-item">Avg Health <strong style="color:${scoreColor(avgHealth,85,75)}">${avgHealth}%</strong></div>` +
     `<div class="stats-item">Avg Upside <strong style="color:${scoreColor(avgUpside,80,70)}">${avgUpside}%</strong></div>` +
-    `<div class="stats-item">Top Sector <strong>${topSector}</strong></div>`;
+    `<div class="stats-item">Top Sector <strong>${topSector}</strong></div>` +
+    `<div class="stats-item">Up Today <strong style="color:var(--green);">${gainers}</strong> / <strong>${filteredStocks.length}</strong></div>`;
 }
 
 function renderStocks() {
@@ -90,11 +117,25 @@ function renderStocks() {
   grid.innerHTML = filteredStocks.map(stock => {
     const hc = scoreColor(stock.health, 85, 75);
     const uc = scoreColor(stock.upside, 80, 70);
+    const change = stock.change || 0;
+    const changeColor = change >= 0 ? 'var(--green)' : 'var(--red)';
+    const changeSign = change >= 0 ? '+' : '';
+    const price = stock.price != null ? `$${stock.price.toFixed(2)}` : '—';
+
     return `
       <a href="/research/asset.html?ticker=${encodeURIComponent(stock.ticker)}" class="card">
-        <div class="card-title">${stock.ticker}</div>
-        <div class="card-subtitle">${stock.name}</div>
-        <div class="card-desc">${stock.desc.substring(0, 100)}...</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+          <div>
+            <div class="card-title">${stock.ticker}</div>
+            <div class="card-subtitle">${stock.name}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:16px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text);">${price}</div>
+            <div style="font-size:12px;font-weight:600;color:${changeColor};">${changeSign}${change.toFixed(2)}%</div>
+          </div>
+        </div>
+
+        <div class="card-desc" style="margin-bottom:10px;">${stock.desc.substring(0, 90)}...</div>
 
         <div class="card-meta">
           <div class="card-meta-item">
@@ -106,7 +147,7 @@ function renderStocks() {
             <div class="card-meta-value">$${stock.cap}B</div>
           </div>
           <div class="card-meta-item">
-            <div class="card-meta-label">P/E</div>
+            <div class="card-meta-label">Fwd P/E</div>
             <div class="card-meta-value">${stock.fwdPE}x</div>
           </div>
         </div>
@@ -135,7 +176,11 @@ function renderStocks() {
 
 function updateResultCount() {
   const el = document.getElementById("resultCount");
-  el.textContent = `${filteredStocks.length} result${filteredStocks.length !== 1 ? "s" : ""} found`;
+  const total = allStocks.length;
+  const showing = filteredStocks.length;
+  el.textContent = showing === total
+    ? `${total} stocks`
+    : `${showing} of ${total} stocks`;
 }
 
 function resetFilters() {
@@ -144,6 +189,10 @@ function resetFilters() {
   document.getElementById("moatFilter").value = "";
   document.getElementById("sortSelect").value = "combined";
   sortBy = "combined";
+  sessionStorage.removeItem('screener-search');
+  sessionStorage.removeItem('screener-sector');
+  sessionStorage.removeItem('screener-moat');
+  sessionStorage.removeItem('screener-sort');
   applyFilters();
 }
 
@@ -154,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("moatFilter").addEventListener("change", applyFilters);
   document.getElementById("sortSelect").addEventListener("change", function () {
     sortBy = this.value;
+    saveFilters();
     applySortAndRender();
   });
 });

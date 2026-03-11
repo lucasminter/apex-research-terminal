@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goals Tracker — Apex Research Hub</title>
+  <link rel="stylesheet" href="/research/styles.css" />
+  <script>document.documentElement.setAttribute("data-theme",localStorage.getItem("apex-theme")||"dark");</script>
+  <style>
+    .goal-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+    }
+    .goal-modal {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 28px; width: 100%; max-width: 420px; margin: 16px;
+    }
+    .goal-modal h3 { margin-bottom: 20px; font-size: 16px; }
+    .goal-field { margin-bottom: 14px; }
+    .goal-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+    .goal-field input, .goal-field textarea {
+      width: 100%; padding: 8px 10px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); font-family: inherit; font-size: 13px;
+    }
+    .goal-field input:focus, .goal-field textarea:focus {
+      outline: none; border-color: var(--accent);
+    }
+    .goal-field textarea { resize: vertical; min-height: 60px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+  </style>
+</head>
+<body>
+<header data-page="goals"></header>
+<script src="/research/components.js"></script>
+
+<main class="container">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <a href="/research/index.html" style="color:var(--accent);text-decoration:none;">← Back to Dashboard</a>
+    <button onclick="resetAllGoals()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;">Reset to Defaults</button>
+  </div>
+
+  <h1>🎯 Goals Tracker</h1>
+  <p style="color:var(--muted);margin-bottom:24px;">Your savings goals — click ✏️ on any card to edit with your real numbers. Saved locally in your browser.</p>
+
+  <div id="goalsSummary" class="stats-strip" style="margin-bottom:28px;"></div>
+
+  <div id="goalsGrid" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr));">
+    <div style="padding:40px;text-align:center;color:var(--muted);grid-column:1/-1;">Loading...</div>
+  </div>
+</main>
+
+<!-- Edit Modal -->
+<div id="goalModal" class="goal-modal-overlay">
+  <div class="goal-modal">
+    <h3>✏️ Edit Goal</h3>
+    <input type="hidden" id="editIdx" />
+    <div class="goal-field">
+      <label>Goal Name</label>
+      <input type="text" id="editName" />
+    </div>
+    <div class="goal-field">
+      <label>Target Amount ($)</label>
+      <input type="number" id="editTarget" min="0" step="100" />
+    </div>
+    <div class="goal-field">
+      <label>Current Savings ($)</label>
+      <input type="number" id="editCurrent" min="0" step="100" />
+    </div>
+    <div class="goal-field">
+      <label>Monthly Contribution ($)</label>
+      <input type="number" id="editMonthly" min="0" step="50" />
+    </div>
+    <div class="goal-field">
+      <label>Target Year</label>
+      <input type="number" id="editTargetYear" min="2025" max="2075" />
+    </div>
+    <div class="goal-field">
+      <label>Notes</label>
+      <textarea id="editNotes"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeEdit()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:8px 16px;color:var(--muted);cursor:pointer;">Cancel</button>
+      <button onclick="saveEdit()" style="background:var(--accent);border:none;border-radius:6px;padding:8px 16px;color:#000;font-weight:700;cursor:pointer;">Save</button>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:20px;color:var(--muted);font-size:12px;border-top:1px solid var(--surface);margin-top:60px;">
+  <p>Research Hub v1.0 • Goals saved in your browser</p>
+</footer>
+
+<script src="/research/goals.js"></script>
+<script src="/research/theme.js"></script>
+</body>
+</html>

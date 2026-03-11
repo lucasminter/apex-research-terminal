@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio Tracker — Apex Research Hub</title>
+  <link rel="stylesheet" href="/research/styles.css" />
+  <script>document.documentElement.setAttribute("data-theme",localStorage.getItem("apex-theme")||"dark");</script>
+  <style>
+    .port-modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+    }
+    .port-modal {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 28px; width: 100%; max-width: 380px; margin: 16px;
+    }
+    .port-modal h3 { margin-bottom: 20px; font-size: 16px; }
+    .port-field { margin-bottom: 14px; }
+    .port-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+    .port-field input {
+      width: 100%; padding: 8px 10px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    }
+    .port-field input:focus { outline: none; border-color: var(--accent); }
+    .modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+    .port-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
+
+    .port-table { width: 100%; border-collapse: collapse; }
+    .port-table th {
+      padding: 10px 12px; text-align: right; font-size: 11px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+      background: var(--surface2); border-bottom: 2px solid var(--accent);
+    }
+    .port-table th:first-child { text-align: left; }
+    .port-table td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .port-table tr:hover td { background: var(--accent-soft); }
+    .port-table tr:last-child td { border-bottom: none; }
+
+    .stat-red { border-left-color: var(--red) !important; }
+  </style>
+</head>
+<body>
+<header data-page="portfolio"></header>
+<script src="/research/components.js"></script>
+
+<main class="container">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <a href="/research/index.html" style="color:var(--accent);text-decoration:none;">← Back to Dashboard</a>
+    <div style="display:flex;gap:8px;">
+      <button onclick="clearAll()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;">Clear All</button>
+      <button onclick="openAddForm()" style="background:var(--accent);border:none;border-radius:6px;padding:6px 14px;color:#000;font-size:13px;font-weight:700;cursor:pointer;">+ Add Position</button>
+    </div>
+  </div>
+
+  <h1>💼 Portfolio Tracker</h1>
+  <p style="color:var(--muted);margin-bottom:24px;">Track your holdings, cost basis, and gains. All data stays in your browser — nothing is sent anywhere.</p>
+
+  <!-- Summary strip -->
+  <div id="portSummary" class="portfolio-strip" style="margin-bottom:28px;"></div>
+
+  <!-- Two-column: allocation + table -->
+  <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;margin-bottom:40px;align-items:start;">
+    <div>
+      <h3 style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px;">Sector Allocation</h3>
+      <div id="portAllocation"></div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="port-table">
+        <thead>
+          <tr>
+            <th style="text-align:left;">Position</th>
+            <th>Shares</th>
+            <th>Buy Price</th>
+            <th>Current</th>
+            <th>Value</th>
+            <th>Gain / Loss</th>
+            <th>Today</th>
+            <th>Weight</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="portTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:var(--muted);text-align:center;">
+    Prices are from the Apex database (static sample data). Click any row to open the stock detail page.
+  </p>
+</main>
+
+<!-- Add/Edit Modal -->
+<div id="portModal" class="port-modal-overlay">
+  <div class="port-modal">
+    <h3 id="portFormTitle">Add Position</h3>
+    <input type="hidden" id="portEditIdx" />
+    <div class="port-field">
+      <label>Ticker Symbol</label>
+      <input type="text" id="portTicker" placeholder="e.g. AAPL" maxlength="8" style="text-transform:uppercase;" />
+    </div>
+    <div class="port-field">
+      <label>Shares</label>
+      <input type="number" id="portShares" placeholder="e.g. 10" min="0.001" step="any" />
+    </div>
+    <div class="port-field">
+      <label>Average Buy Price ($)</label>
+      <input type="number" id="portBuyPrice" placeholder="e.g. 185.50" min="0.01" step="any" />
+    </div>
+    <div id="portFormError" class="port-error"></div>
+    <div class="modal-actions">
+      <button onclick="closeModal()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:8px 16px;color:var(--muted);cursor:pointer;">Cancel</button>
+      <button onclick="saveHolding()" style="background:var(--accent);border:none;border-radius:6px;padding:8px 16px;color:#000;font-weight:700;cursor:pointer;">Save</button>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align:center;padding:20px;color:var(--muted);font-size:12px;border-top:1px solid var(--surface);margin-top:40px;">
+  <p>Research Hub v1.0 • Portfolio saved locally in your browser</p>
+</footer>
+
+<script src="/research/portfolio.js"></script>
+<script src="/research/theme.js"></script>
+</body>
+</html>
