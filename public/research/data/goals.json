@@ -1,0 +1,87 @@
+{
+  "summary": {
+    "totalSaved": 246900,
+    "totalTarget": 1625000,
+    "monthlyContributions": 2900,
+    "onTrackCount": 3,
+    "totalGoals": 4
+  },
+  "goals": [
+    {
+      "id": "retirement",
+      "icon": "🏖️",
+      "name": "Retirement Fund",
+      "color": "accent",
+      "target": 1500000,
+      "current": 187400,
+      "monthly": 1200,
+      "targetYear": 2055,
+      "projectedYear": 2054,
+      "status": "on-track",
+      "statusLabel": "On Track",
+      "notes": "Target: $1.5M by age 65. Assumes 8% average annual return in diversified index portfolio.",
+      "milestones": [
+        { "label": "$100K",  "pct": 7,  "reached": true },
+        { "label": "$250K",  "pct": 17, "reached": false },
+        { "label": "$500K",  "pct": 33, "reached": false },
+        { "label": "$1M",    "pct": 67, "reached": false }
+      ]
+    },
+    {
+      "id": "emergency",
+      "icon": "🛡️",
+      "name": "Emergency Fund",
+      "color": "green",
+      "target": 30000,
+      "current": 18500,
+      "monthly": 500,
+      "targetYear": 2026,
+      "projectedYear": 2026,
+      "status": "on-track",
+      "statusLabel": "On Track",
+      "notes": "6 months of living expenses ($5,000/mo). Held in high-yield savings account at 4.8% APY.",
+      "milestones": [
+        { "label": "1 month",  "pct": 17,  "reached": true },
+        { "label": "3 months", "pct": 50,  "reached": true },
+        { "label": "6 months", "pct": 100, "reached": false }
+      ]
+    },
+    {
+      "id": "house",
+      "icon": "🏠",
+      "name": "Home Down Payment",
+      "color": "yellow",
+      "target": 80000,
+      "current": 31200,
+      "monthly": 800,
+      "targetYear": 2027,
+      "projectedYear": 2028,
+      "status": "behind",
+      "statusLabel": "Behind",
+      "notes": "20% down on $400K home. Avoids PMI and reduces monthly mortgage payments.",
+      "milestones": [
+        { "label": "$20K", "pct": 25, "reached": true },
+        { "label": "$40K", "pct": 50, "reached": false },
+        { "label": "$60K", "pct": 75, "reached": false }
+      ]
+    },
+    {
+      "id": "car",
+      "icon": "🚗",
+      "name": "New Vehicle",
+      "color": "orange",
+      "target": 15000,
+      "current": 9800,
+      "monthly": 400,
+      "targetYear": 2026,
+      "projectedYear": 2026,
+      "status": "on-track",
+      "statusLabel": "On Track",
+      "notes": "Cash purchase — no financing, no interest. Target: summer 2026.",
+      "milestones": [
+        { "label": "$5K",  "pct": 33, "reached": true },
+        { "label": "$10K", "pct": 67, "reached": false }
+      ]
+    }
+  ]
+}

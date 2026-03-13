@@ -1,0 +1,117 @@
+{
+  "strategies": [
+    {
+      "id": "growth",
+      "name": "High Growth",
+      "icon": "🚀",
+      "tagline": "Maximize long-term capital appreciation",
+      "risk": "High",
+      "riskColor": "red",
+      "horizon": "10+ yrs",
+      "returnRange": "12–18%",
+      "health": 91,
+      "description": "Concentrated in high-growth technology and consumer discretionary companies. Accepts higher volatility for outsized long-term returns.",
+      "allocation": [
+        { "label": "Technology",      "pct": 40, "color": "accent" },
+        { "label": "Consumer Disc.",  "pct": 20, "color": "green" },
+        { "label": "Healthcare",      "pct": 15, "color": "yellow" },
+        { "label": "Financials",      "pct": 12, "color": "orange" },
+        { "label": "Other",           "pct": 13, "color": "muted" }
+      ],
+      "topHoldings": ["NVDA", "MSFT", "AMZN", "META", "GOOGL"],
+      "tags": ["Growth", "Tech-Heavy", "Long-Term"]
+    },
+    {
+      "id": "dividend",
+      "name": "Dividend Income",
+      "icon": "💰",
+      "tagline": "Steady income through quality dividend payers",
+      "risk": "Low–Moderate",
+      "riskColor": "green",
+      "horizon": "5+ yrs",
+      "returnRange": "6–10%",
+      "health": 84,
+      "description": "Focuses on companies with consistent dividend growth histories and strong free cash flow. Lower volatility with reliable compounding income.",
+      "allocation": [
+        { "label": "Financials",       "pct": 28, "color": "accent" },
+        { "label": "Utilities",        "pct": 22, "color": "green" },
+        { "label": "Consumer Staples", "pct": 20, "color": "yellow" },
+        { "label": "Healthcare",       "pct": 18, "color": "orange" },
+        { "label": "Industrials",      "pct": 12, "color": "muted" }
+      ],
+      "topHoldings": ["JNJ", "KO", "PG", "VZ", "JPM"],
+      "tags": ["Income", "Low Volatility", "Dividend Growth"]
+    },
+    {
+      "id": "value",
+      "name": "Deep Value",
+      "icon": "🎯",
+      "tagline": "Undervalued companies trading below intrinsic value",
+      "risk": "Moderate",
+      "riskColor": "yellow",
+      "horizon": "3–7 yrs",
+      "returnRange": "9–14%",
+      "health": 78,
+      "description": "Identifies fundamentally sound businesses trading at meaningful discounts to fair value. Requires patience for mean reversion to play out.",
+      "allocation": [
+        { "label": "Financials",  "pct": 30, "color": "accent" },
+        { "label": "Energy",      "pct": 20, "color": "green" },
+        { "label": "Industrials", "pct": 18, "color": "yellow" },
+        { "label": "Materials",   "pct": 15, "color": "orange" },
+        { "label": "Healthcare",  "pct": 17, "color": "muted" }
+      ],
+      "topHoldings": ["BRK.B", "BAC", "XOM", "GE", "CVS"],
+      "tags": ["Value", "Contrarian", "Mean Reversion"]
+    },
+    {
+      "id": "defensive",
+      "name": "Defensive",
+      "icon": "🛡️",
+      "tagline": "Capital preservation with modest growth",
+      "risk": "Low",
+      "riskColor": "green",
+      "horizon": "2–5 yrs",
+      "returnRange": "5–8%",
+      "health": 88,
+      "description": "Built to withstand economic downturns. Heavy in recession-resistant sectors with strong balance sheets and predictable cash flows.",
+      "allocation": [
+        { "label": "Consumer Staples", "pct": 30, "color": "accent" },
+        { "label": "Healthcare",       "pct": 25, "color": "green" },
+        { "label": "Utilities",        "pct": 20, "color": "yellow" },
+        { "label": "Real Estate",      "pct": 15, "color": "orange" },
+        { "label": "Cash / Bonds",     "pct": 10, "color": "muted" }
+      ],
+      "topHoldings": ["WMT", "UNH", "NEE", "PLD", "PG"],
+      "tags": ["Defensive", "Low Risk", "Capital Preservation"]
+    },
+    {
+      "id": "balanced",
+      "name": "Balanced Core",
+      "icon": "⚖️",
+      "tagline": "Diversified across sectors and risk profiles",
+      "risk": "Moderate",
+      "riskColor": "yellow",
+      "horizon": "5+ yrs",
+      "returnRange": "8–12%",
+      "health": 86,
+      "description": "Well-diversified portfolio spanning all major sectors. Blends growth and income for consistent risk-adjusted returns over a full market cycle.",
+      "allocation": [
+        { "label": "Technology",  "pct": 25, "color": "accent" },
+        { "label": "Healthcare",  "pct": 20, "color": "green" },
+        { "label": "Financials",  "pct": 18, "color": "yellow" },
+        { "label": "Consumer",    "pct": 20, "color": "orange" },
+        { "label": "Other",       "pct": 17, "color": "muted" }
+      ],
+      "topHoldings": ["AAPL", "UNH", "JPM", "AMZN", "MSFT"],
+      "tags": ["Balanced", "Diversified", "Core Holdings"]
+    }
+  ],
+  "rules": [
+    { "icon": "📏", "title": "Position Sizing",  "body": "No single holding exceeds 10% of portfolio. Top 5 holdings capped at 40% combined." },
+    { "icon": "🔄", "title": "Rebalancing",      "body": "Rebalance when any allocation drifts more than 5% from target. Review quarterly." },
+    { "icon": "🛑", "title": "Stop Loss",        "body": "Exit positions down more than 25% from cost basis unless the original thesis remains fully intact." },
+    { "icon": "📊", "title": "Quality Filter",   "body": "Minimum Health Score of 70 before entering any new position via the Screener." },
+    { "icon": "📅", "title": "Earnings Review",  "body": "Re-evaluate every holding within 48 hours of its earnings release. Update thesis or exit." },
+    { "icon": "💧", "title": "Liquidity Rule",   "body": "Keep minimum 5% cash reserve. Never invest money needed within 12 months." }
+  ]
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Strategy Builder — Apex Research Hub</title>
+  <link rel="stylesheet" href="/research/styles.css" />
+  <script>document.documentElement.setAttribute("data-theme",localStorage.getItem("apex-theme")||"dark");</script>
+  <style>
+    .strategy-card {
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .strategy-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+    .strategy-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+      background: var(--surface2);
+    }
+  </style>
+</head>
+<body>
+<header data-page="strategy"></header>
+<script src="/research/components.js"></script>
+
+<main class="container">
+  <a href="/research/index.html" style="color:var(--accent);text-decoration:none;margin-bottom:20px;display:inline-block;">← Back to Dashboard</a>
+
+  <h1>🏗️ Strategy Builder</h1>
+  <p style="color:var(--muted);margin-bottom:30px;">Choose a pre-built investment strategy or use them as a starting point for your own approach.</p>
+
+  <div id="strategyGrid" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr));margin-bottom:48px;">
+    <div style="padding:40px;text-align:center;color:var(--muted);grid-column:1/-1;">Loading...</div>
+  </div>
+
+  <div class="section">
+    <h2 style="margin-bottom:8px;">📋 Universal Strategy Rules</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:24px;">These rules apply regardless of which strategy you follow.</p>
+    <div id="strategyRules" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;"></div>
+  </div>
+</main>
+
+<footer style="text-align:center;padding:20px;color:var(--muted);font-size:12px;border-top:1px solid var(--surface);margin-top:60px;">
+  <p>Research Hub v1.0 • Data as of March 11, 2026</p>
+</footer>
+
+<script src="/research/strategy.js"></script>
+<script src="/research/theme.js"></script>
+</body>
+</html>

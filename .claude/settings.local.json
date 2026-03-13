@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const d=require\\(''./public/research/data/stocks.json''\\); console.log\\(d.length,''stocks''\\); console.log\\(''Fields:'',Object.keys\\(d[0]\\)\\)\")"
+    ]
+  }
+}
