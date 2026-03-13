@@ -633,5 +633,14 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<script>
+// Signal to Whop's desktop iframe that the app has finished loading.
+// Without this, Whop shows an infinite loading spinner on desktop web.
+window.addEventListener('DOMContentLoaded', function() {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'whop:ready' }, '*');
+  }
+});
+</script>
 </body>
 </html>
