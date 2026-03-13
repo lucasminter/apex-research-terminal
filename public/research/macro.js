@@ -65,4 +65,46 @@ function renderRotation(signals) {
     </div>`).join('');
 }
 
-document.addEventListener('DOMContentLoaded', loadMacro);
+// ─── MACRO REGIME DETECTION ───────────────────────────────────────────────────
+const REGIME_LABELS = {
+  1: { name: 'Stagflation',       arrow: '↓ Growth · ↑ Inflation', color: 'red',    picks: 'Commodities · Energy · Gold' },
+  2: { name: 'Inflation Bust',    arrow: '↓ Growth · ↓ Inflation', color: 'yellow', picks: 'TIPS · Energy · Short Duration' },
+  3: { name: 'Goldilocks',        arrow: '↑ Growth · ↓ Inflation', color: 'green',  picks: 'Equities · Credit · Real Estate' },
+  4: { name: 'Deflationary Bust', arrow: '↓ Growth · ↓ Inflation', color: 'muted',  picks: 'Long Bonds · Cash · Gold' },
+};
+
+async function loadMacroRegime() {
+  const el = document.getElementById('regimeCard');
+  if (!el) return;
+  try {
+    const d = await fetch('/api/macro-regime').then(r => r.json());
+    const r = REGIME_LABELS[d.regime] || REGIME_LABELS[3];
+    const cpi = d.indicators.cpiYoY != null ? `<span>CPI YoY: <strong>${d.indicators.cpiYoY.toFixed(1)}%</strong></span>` : '';
+    const gdp = d.indicators.gdpGrowth != null ? `<span>GDP QoQ: <strong>${d.indicators.gdpGrowth.toFixed(1)}%</strong></span>` : '';
+    const headlines = d.indicators.topHeadlines.length
+      ? `<div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px;">
+           <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;">Relevant Headlines</div>
+           ${d.indicators.topHeadlines.map(h => `<div style="font-size:11px;color:var(--muted);margin-bottom:4px;line-height:1.5">• ${h}</div>`).join('')}
+         </div>` : '';
+    el.innerHTML = `
+      <div style="border-left:3px solid var(--${r.color});padding-left:12px;margin-bottom:14px;">
+        <div style="font-size:18px;font-weight:700;color:var(--${r.color});margin-bottom:2px;">Q${d.regime} — ${r.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px;">${r.arrow}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text);">Favoured: <span style="color:var(--accent)">${r.picks}</span></div>
+      </div>
+      <div style="display:flex;gap:16px;font-size:11px;color:var(--muted);flex-wrap:wrap;margin-bottom:8px;">
+        ${cpi}${gdp}
+        <span>Confidence: <strong style="color:var(--${r.color})">${d.confidence}%</strong></span>
+        <span>Growth: <strong>${d.growthScore >= 0 ? '+' : ''}${d.growthScore.toFixed(2)}</strong></span>
+        <span>Inflation: <strong>${d.inflationScore >= 0 ? '+' : ''}${d.inflationScore.toFixed(2)}</strong></span>
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-style:italic;">
+        Updated ${new Date(d.updatedAt).toLocaleString()} · Cached 1hr · FRED + RSS
+      </div>
+      ${headlines}`;
+  } catch {
+    el.innerHTML = '<div style="color:var(--muted);font-size:12px;">⚠ Regime detection offline</div>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { loadMacro(); loadMacroRegime(); });

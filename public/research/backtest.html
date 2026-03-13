@@ -313,7 +313,10 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
 
       <!-- Macro Regime -->
       <div>
-        <div class="sec-label">Macro Regime</div>
+        <div class="sec-header">
+          <span class="sec-label" style="margin-bottom:0">Macro Regime</span>
+          <span id="regimeBadge" style="font-size:9px;color:var(--muted);font-family:'IBM Plex Mono',monospace">⟳ detecting…</span>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
           <div class="regime-q" id="rq-1" onclick="setRegime(1)">
             <div class="regime-q-title">Q1 — Stagflation</div>
@@ -1166,6 +1169,24 @@ buildTemplateButtons();
 
 document.getElementById('showSP').addEventListener('change',e=>{document.getElementById('cbSP').checked=e.target.checked;if(lastResult)renderCurrentChart()});
 document.getElementById('show6040').addEventListener('change',e=>{document.getElementById('cb6040').checked=e.target.checked;if(lastResult)renderCurrentChart()});
+
+// ─── AUTO MACRO REGIME ────────────────────────────────────────────────────────
+(function detectMacroRegime(){
+  const badge=document.getElementById('regimeBadge');
+  fetch('/api/macro-regime')
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.error&&d.confidence===0){badge.textContent='⚠ offline';return;}
+      setRegime(d.regime);
+      const cpi=d.indicators.cpiYoY!=null?`CPI ${d.indicators.cpiYoY.toFixed(1)}%`:'';
+      const gdp=d.indicators.gdpGrowth!=null?`GDP ${d.indicators.gdpGrowth.toFixed(1)}%`:'';
+      const parts=[cpi,gdp].filter(Boolean).join(' · ');
+      badge.style.color='var(--accent)';
+      badge.textContent=`LIVE ${d.confidence}%${parts?' · '+parts:''}`;
+      badge.title=d.indicators.topHeadlines.join('\n')||'No headlines';
+    })
+    .catch(()=>{badge.textContent='⚠ offline'});
+})();
 </script>
 
 <script src="/research/theme.js"></script>
