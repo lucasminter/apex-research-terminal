@@ -3,7 +3,16 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async headers() {
     return [
-      // Static research assets — middleware handles /experiences/* headers
+      // Override Next.js default X-Frame-Options for all routes so the app
+      // can be embedded in Whop's desktop iframe.
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'ALLOWALL' },
+          { key: 'Content-Security-Policy', value: "frame-ancestors *" },
+        ],
+      },
+      // Static research assets
       {
         source: '/research/:path*',
         headers: [
