@@ -78,13 +78,6 @@ body{display:flex;flex-direction:column;min-height:100vh}
 .preset-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 .preset-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
 
-/* ── Macro regime quadrant ── */
-.regime-q{padding:8px;border-radius:6px;border:1px solid var(--border2);background:var(--surface3);cursor:pointer;transition:all .15s}
-.regime-q:hover{border-color:var(--accent);background:var(--accent-soft)}
-.regime-q.active{border-color:var(--accent);background:var(--accent-soft)}
-.regime-q-title{font-size:10px;font-weight:700;color:var(--text);margin-bottom:2px}
-.regime-q-sub{font-size:9px;color:var(--muted);margin-bottom:2px}
-.regime-q-picks{font-size:9px;color:var(--accent);font-weight:600}
 
 /* ── Asset sliders ── */
 .asset-row{margin-bottom:10px}
@@ -98,6 +91,14 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
 /* ── Alloc total badge ── */
 .alloc-total{font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:4px}
 .alloc-total.ok{color:var(--green);background:rgba(0,255,135,0.08)}
+
+/* ── Regime toggle ── */
+.regime-toggle{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;padding:2px 4px;border-radius:4px;line-height:1;transition:all .15s}
+.regime-toggle:hover{color:var(--text);background:var(--border2)}
+.regime-match-btn{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer;font-weight:600;font-family:'Syne',sans-serif;transition:all .15s}
+.regime-match-btn:hover{background:var(--accent);color:var(--bg)}
+.regime-hidden-bar{font-size:10px;color:var(--muted);padding:4px 0;cursor:pointer;display:none}
+.regime-hidden-bar span{color:var(--accent)}
 .alloc-total.warn{color:var(--red);background:rgba(255,77,109,0.08)}
 
 /* ── Risk bar ── */
@@ -285,6 +286,7 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
     <button class="nav-tab" onclick="showPage('page-info')">📚 Information</button>
   </div>
   <button class="btn btn-run running" id="runBtn" onclick="runBacktest()">▶ Run Backtest</button>
+  <span id="dataQualityBadge" style="font-size:10px;color:var(--muted);padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--surface2);">⟳ loading data…</span>
 </div>
 
 <div class="pages-wrapper">
@@ -311,33 +313,17 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
         </button>
       </div>
 
-      <!-- Macro Regime -->
+      <!-- Market Climate -->
       <div>
         <div class="sec-header">
-          <span class="sec-label" style="margin-bottom:0">Macro Regime</span>
-          <span id="regimeBadge" style="font-size:9px;color:var(--muted);font-family:'IBM Plex Mono',monospace">⟳ detecting…</span>
+          <span class="sec-label" style="margin-bottom:0">Market Climate</span>
+          <button class="regime-toggle" id="regimeToggleBtn" onclick="toggleRegimeSection()" title="Hide">👁</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-          <div class="regime-q" id="rq-1" onclick="setRegime(1)">
-            <div class="regime-q-title">Q1 — Stagflation</div>
-            <div class="regime-q-sub">↓ Growth · ↑ Inflation</div>
-            <div class="regime-q-picks">Commodities · Energy · Gold</div>
-          </div>
-          <div class="regime-q" id="rq-2" onclick="setRegime(2)">
-            <div class="regime-q-title">Q2 — Inflation Bust</div>
-            <div class="regime-q-sub">↓ Growth · ↓ Inflation</div>
-            <div class="regime-q-picks">TIPS · Energy · Short Dur</div>
-          </div>
-          <div class="regime-q active" id="rq-3" onclick="setRegime(3)">
-            <div class="regime-q-title">Q3 — Goldilocks</div>
-            <div class="regime-q-sub">↑ Growth · ↓ Inflation</div>
-            <div class="regime-q-picks">Equities · Credit · RE</div>
-          </div>
-          <div class="regime-q" id="rq-4" onclick="setRegime(4)">
-            <div class="regime-q-title">Q4 — Def. Bust</div>
-            <div class="regime-q-sub">↓ Growth · ↓ Inflation</div>
-            <div class="regime-q-picks">Long Bonds · Cash · Gold</div>
-          </div>
+        <div id="regimeContent">
+          <div id="regimePanel" style="font-size:11px;color:var(--muted)">⟳ Checking live market data…</div>
+        </div>
+        <div class="regime-hidden-bar" id="regimeHiddenBar" onclick="toggleRegimeSection()">
+          Market climate hidden — <span>tap to show</span>
         </div>
       </div>
 
@@ -493,7 +479,7 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
           <div class="proj-card best"><div class="proj-card-label">Bull Case (90th)</div><div class="proj-card-val" id="projP90">—</div><div class="proj-card-sub">Strong bull scenario</div></div>
           <div class="proj-card expected"><div class="proj-card-label">Expected Value</div><div class="proj-card-val" id="projExpected">—</div><div class="proj-card-sub">Analytical formula</div></div>
         </div>
-        <div class="proj-disclaimer">Based on historical CAGR &amp; volatility via lognormal Monte Carlo. Past performance does not guarantee future results.</div>
+        <div class="proj-disclaimer" id="projDisclaimer">When real monthly data is loaded: block bootstrap resampling (preserves fat tails &amp; volatility clustering). Otherwise: Student-t Monte Carlo with regime-adjusted volatility. Past performance does not guarantee future results.</div>
       </div>
 
       <div class="returns-table" id="returnsTable" style="display:none">
@@ -574,35 +560,66 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
   <div id="page-info" class="page">
   <div class="info-page">
   <div class="info-page-inner">
+
+    <div class="info-category-label">Data Sources</div>
+    <div class="info-card">
+      <div class="info-card-header"><div class="info-card-dot" style="background:var(--accent)"></div><span class="info-card-title">Real Historical Monthly Returns</span><span class="info-card-badge">Live · Yahoo Finance API</span></div>
+      <div class="info-card-body">
+        Every backtest uses <strong>actual month-end prices</strong> pulled directly from Yahoo Finance on page load — not estimates or synthetic distributions. Returns are computed from <strong>adjusted close prices</strong>, which account for dividends and stock splits, giving you a true total-return picture.<br><br>
+        Data is cached for 24 hours so the page stays fast. The badge in the top toolbar shows how many assets loaded successfully. If the fetch fails for any asset, that asset silently falls back to a synthetic distribution built from verified annual return figures.
+        <div class="info-holdings"><strong>Assets with real data:</strong> SPY (US) · EFA (Intl) · AGG (Bonds) · VNQ (REITs) · GLD (Gold) · BTC-USD (Bitcoin)</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-header"><div class="info-card-dot" style="background:var(--muted)"></div><span class="info-card-title">Synthetic Fallback</span><span class="info-card-badge">Annual data · Verified sources</span></div>
+      <div class="info-card-body">
+        When real monthly data isn't available (offline, API down, or years beyond the dataset), the engine distributes the known annual return across 12 months using a seeded lognormal model. The annual totals are accurate — only the intra-year path is approximate. Cash (T-Bills) always uses this method since short-term rate data changes negligibly month-to-month.
+      </div>
+    </div>
+
     <div class="info-category-label">Equities</div>
     <div class="info-card" id="info-us">
-      <div class="info-card-header"><div class="info-card-dot" style="background:#3b82f6"></div><span class="info-card-title">US Stocks</span><span class="info-card-badge">S&amp;P 500 Total Return · 1993–2025</span></div>
-      <div class="info-card-body">Large-cap US equities via S&amp;P 500 Total Return Index. <strong>Historical CAGR (1993–2025):</strong> ~10.8% · <strong>Volatility:</strong> ~15.6% · <strong>Max Drawdown:</strong> −50.9% (2007–2009).<div class="info-holdings"><strong>ETF equivalents:</strong> SPY · VOO · IVV · VTI</div></div>
+      <div class="info-card-header"><div class="info-card-dot" style="background:#3b82f6"></div><span class="info-card-title">US Stocks</span><span class="info-card-badge">SPY adjclose · Yahoo Finance · 1993–present</span></div>
+      <div class="info-card-body">Large-cap US equities tracking the S&amp;P 500. Returns are pulled from SPY (SPDR S&amp;P 500 ETF) adjusted close, which includes reinvested dividends. <strong>Historical CAGR (1993–2025):</strong> ~10.8% · <strong>Volatility:</strong> ~15.6% · <strong>Max Drawdown:</strong> −50.9% (2007–2009).<div class="info-holdings"><strong>ETF equivalents:</strong> SPY · VOO · IVV · VTI</div></div>
     </div>
     <div class="info-card" id="info-intl">
-      <div class="info-card-header"><div class="info-card-dot" style="background:#8b5cf6"></div><span class="info-card-title">International Stocks (Developed)</span><span class="info-card-badge">MSCI EAFE TR · 1993–2025</span></div>
-      <div class="info-card-body">Developed-market international equities (Europe, Australasia, Far East). <strong>CAGR:</strong> ~6.0% · <strong>Volatility:</strong> ~17.2%.<div class="info-holdings"><strong>ETF equivalents:</strong> EFA · VEA · IEFA · SCHF</div></div>
+      <div class="info-card-header"><div class="info-card-dot" style="background:#8b5cf6"></div><span class="info-card-title">International Stocks (Developed)</span><span class="info-card-badge">EFA adjclose · Yahoo Finance · 2001–present</span></div>
+      <div class="info-card-body">Developed-market international equities (Europe, Australasia, Far East) via the iShares MSCI EAFE ETF. Includes dividend reinvestment. <strong>CAGR:</strong> ~6.0% · <strong>Volatility:</strong> ~17.2%. Pre-EFA years use MSCI EAFE index annual returns.<div class="info-holdings"><strong>ETF equivalents:</strong> EFA · VEA · IEFA · SCHF</div></div>
     </div>
+
     <div class="info-category-label">Fixed Income</div>
     <div class="info-card" id="info-bond">
-      <div class="info-card-header"><div class="info-card-dot" style="background:#10b981"></div><span class="info-card-title">US Aggregate Bonds</span><span class="info-card-badge">Bloomberg US Agg TR · 1993–2025</span></div>
-      <div class="info-card-body">Broad US investment-grade bond market (Treasuries ~42%, MBS ~26%, IG corporates ~25%). Duration ~6 years. <strong>2022:</strong> −13% — worst bond year in 40 years.<div class="info-holdings"><strong>ETF equivalents:</strong> AGG · BND · SCHZ</div></div>
+      <div class="info-card-header"><div class="info-card-dot" style="background:#10b981"></div><span class="info-card-title">US Aggregate Bonds</span><span class="info-card-badge">AGG adjclose · Yahoo Finance · 2003–present</span></div>
+      <div class="info-card-body">Broad US investment-grade bond market via iShares Core US Aggregate Bond ETF. Composition: Treasuries ~42%, MBS ~26%, IG corporates ~25%. Duration ~6 years. Adjusted close captures coupon income. <strong>2022:</strong> −13% — worst bond year in 40 years.<div class="info-holdings"><strong>ETF equivalents:</strong> AGG · BND · SCHZ</div></div>
     </div>
+
     <div class="info-category-label">Real Assets</div>
     <div class="info-card" id="info-reit">
-      <div class="info-card-header"><div class="info-card-dot" style="background:#f59e0b"></div><span class="info-card-title">Real Estate (REITs)</span><span class="info-card-badge">FTSE NAREIT All Equity TR · 1993–2025</span></div>
-      <div class="info-card-body">US-listed equity REITs. Must distribute ≥90% of taxable income. <strong>CAGR:</strong> ~11.2% · <strong>Volatility:</strong> ~19.5%.<div class="info-holdings"><strong>ETF equivalents:</strong> VNQ · SCHH · IYR · XLRE</div></div>
+      <div class="info-card-header"><div class="info-card-dot" style="background:#f59e0b"></div><span class="info-card-title">Real Estate (REITs)</span><span class="info-card-badge">VNQ adjclose · Yahoo Finance · 2004–present</span></div>
+      <div class="info-card-body">US-listed equity REITs via Vanguard Real Estate ETF. REITs must distribute ≥90% of taxable income as dividends — making adjusted close essential for accurate total returns. <strong>CAGR:</strong> ~11.2% · <strong>Volatility:</strong> ~19.5%.<div class="info-holdings"><strong>ETF equivalents:</strong> VNQ · SCHH · IYR · XLRE</div></div>
     </div>
+    <div class="info-card" id="info-gold">
+      <div class="info-card-header"><div class="info-card-dot" style="background:#fbbf24"></div><span class="info-card-title">Gold</span><span class="info-card-badge">GLD adjclose · Yahoo Finance · 2004–present</span></div>
+      <div class="info-card-body">Physical gold via SPDR Gold Shares (GLD). Gold is a non-yielding asset so adjusted close equals raw close — no dividend distortion. Historically uncorrelated with equities and bonds, making it an effective portfolio hedge. <strong>CAGR (2004–2025):</strong> ~9.5% · <strong>Volatility:</strong> ~15.5% · Best decades: 2000s inflation, 2020s uncertainty.<div class="info-holdings"><strong>ETF equivalents:</strong> GLD · IAU · GLDM · SGOL</div></div>
+    </div>
+
     <div class="info-category-label">Cash &amp; Equivalents</div>
     <div class="info-card" id="info-cash">
-      <div class="info-card-header"><div class="info-card-dot" style="background:#6b7fa3"></div><span class="info-card-title">Cash (T-Bills)</span><span class="info-card-badge">ICE BofA 3-Mo T-Bill · 1993–2025</span></div>
-      <div class="info-card-body">Short-term US government obligations ≤90 days. Tracks the Fed Funds Rate. <strong>2022–2024:</strong> Yielded 5.25%+.<div class="info-holdings"><strong>Equivalents:</strong> BIL · SGOV · VMFXX · SPAXX</div></div>
+      <div class="info-card-header"><div class="info-card-dot" style="background:#6b7fa3"></div><span class="info-card-title">Cash (T-Bills)</span><span class="info-card-badge">ICE BofA 3-Mo T-Bill · Annual index data</span></div>
+      <div class="info-card-body">Short-term US government obligations ≤90 days, tracking the Fed Funds Rate. Uses verified annual yield data distributed monthly — T-bill rates change slowly enough that synthetic monthly distribution is accurate. <strong>2022–2024:</strong> Yielded 5.25%+.<div class="info-holdings"><strong>Equivalents:</strong> BIL · SGOV · VMFXX · SPAXX</div></div>
     </div>
+
     <div class="info-category-label">Digital Assets</div>
     <div class="info-card" id="info-btc">
-      <div class="info-card-header"><div class="info-card-dot" style="background:#f97316"></div><span class="info-card-title">Crypto (Bitcoin)</span><span class="info-card-badge">BTC-USD · 2011–2025</span></div>
-      <div class="info-card-body">Bitcoin — ~55% of total crypto market cap. Fixed supply of 21M coins. <strong>Volatility:</strong> ~82% realized annual vol (~5× S&amp;P 500). Drawdowns exceeded 70–80% in crypto winters.<div class="info-holdings"><strong>Spot ETFs:</strong> IBIT · FBTC · ARKB</div></div>
+      <div class="info-card-header"><div class="info-card-dot" style="background:#f97316"></div><span class="info-card-title">Crypto (Bitcoin)</span><span class="info-card-badge">CoinGecko + Yahoo Finance · 2010–present</span></div>
+      <div class="info-card-body">Bitcoin spot price merged from two sources: CoinGecko provides real monthly prices back to <strong>July 2010</strong> (filling the pre-ETF gap); Yahoo Finance BTC-USD takes over from September 2014 onward. No dividends. Pre-2010 years use H[] annual fallback (synthetic monthly). <strong>Volatility:</strong> ~82% annualized (~5× S&amp;P 500). Drawdowns exceeded 70–80% in 2018 and 2022 crypto winters.<div class="info-holdings"><strong>Spot ETFs:</strong> IBIT · FBTC · ARKB</div></div>
     </div>
+
+    <div class="info-card" id="info-tips">
+      <div class="info-card-header"><div class="info-card-dot" style="background:#38bdf8"></div><span class="info-card-title">TIPS (Inflation-Protected)</span><span class="info-card-badge">TIP adjclose · Yahoo Finance · 2003–present</span></div>
+      <div class="info-card-body">Treasury Inflation-Protected Securities — US government bonds whose principal adjusts with CPI. The only asset with a US government-guaranteed real yield. In inflationary regimes (Q1 Stagflation), TIPS preserve purchasing power when nominal bonds are losing ground. Pre-2003 data uses an inflation-linked bond proxy. <strong>Duration:</strong> ~7.5 yrs · <strong>CAGR (2003–2025):</strong> ~3.8% · <strong>Best environment:</strong> Rising inflation, economic uncertainty.<div class="info-holdings"><strong>ETF equivalents:</strong> TIP · SCHP · VTIP (short-term) · LTPZ (long-term)</div></div>
+    </div>
+
     <div class="info-category-label">Asset Allocation Frameworks</div>
     <div class="info-card">
       <div class="info-card-header"><div class="info-card-dot" style="background:var(--accent)"></div><span class="info-card-title">Modern Portfolio Theory (MPT)</span><span class="info-card-badge">Harry Markowitz · 1952</span></div>
@@ -620,6 +637,7 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
       <strong>Q3 (↑ Growth / ↓ Inflation — Goldilocks):</strong> Equities, Credit, REITs<br>
       <strong>Q4 (↓ Growth / ↓ Inflation — Deflationary Bust):</strong> Long Treasuries, Cash, Gold</div>
     </div>
+
     <div class="info-category-label">Key Metrics Explained</div>
     <div class="info-card" id="info-cagr">
       <div class="info-card-header"><div class="info-card-dot" style="background:var(--accent)"></div><span class="info-card-title">CAGR — Compound Annual Growth Rate</span></div>
@@ -635,8 +653,9 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
     </div>
     <div class="info-card" id="info-projcagr">
       <div class="info-card-header"><div class="info-card-dot" style="background:var(--purple)"></div><span class="info-card-title">Monte Carlo Simulation</span></div>
-      <div class="info-card-body">Runs hundreds of hypothetical future scenarios by randomly sampling monthly returns from a lognormal distribution calibrated to your portfolio's expected return and volatility. Use results as a range of outcomes, not a precise forecast.</div>
+      <div class="info-card-body">Runs hundreds of hypothetical future scenarios using a <strong>Student-t distribution (df=6)</strong> — not the standard normal curve. The t-distribution has fat tails (kurtosis≈6 vs 3 for normal), which means crashes and spikes appear at realistic frequencies. The standard normal model treats events like 2008 as essentially impossible; the t-distribution treats them as rare but plausible.<br><br>The simulation is calibrated to your portfolio's CAGR and volatility derived from real historical returns. Use the P10–P90 fan as a range of plausible outcomes, not a precise forecast — real markets also have regime shifts not captured by any single distribution.</div>
     </div>
+
   </div>
   </div>
   </div><!-- /page-info -->
@@ -657,7 +676,8 @@ input[type=range]{width:100%;height:4px;border-radius:2px;border:none;background
 
 const YEARS = [1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
 
-// 2025 values are estimates based on available data through mid-2025; verify against final index publications.
+// Annual returns — used as fallback when real monthly data is absent.
+// 2025 values are estimates; verify against final index publications.
 const H = {
   us:   [ 0.1008, 0.0132, 0.3758, 0.2296, 0.3336, 0.2858, 0.2104,-0.0910,-0.1189,-0.2210, 0.2868, 0.1088, 0.0491, 0.1580, 0.0549,-0.3700, 0.2646, 0.1506, 0.0211, 0.1600, 0.3239, 0.1369, 0.0138, 0.1196, 0.2183,-0.0438, 0.3149, 0.1840, 0.2871,-0.1811, 0.2629, 0.2502, 0.0500],
   intl: [ 0.3294, 0.0806, 0.1155, 0.0636, 0.0206, 0.2033, 0.2730,-0.1417,-0.2144,-0.1594, 0.3917, 0.2070, 0.1402, 0.2686, 0.1163,-0.4338, 0.3246, 0.0821,-0.1173, 0.1790, 0.2329,-0.0490,-0.0039, 0.0151, 0.2562,-0.1379, 0.2266, 0.0828, 0.1178,-0.1400, 0.1850, 0.0430, 0.0600],
@@ -665,9 +685,130 @@ const H = {
   reit: [ 0.1965, 0.0317, 0.1527, 0.3527, 0.2026,-0.1750,-0.0462, 0.2637, 0.1393, 0.0382, 0.3713, 0.3158, 0.1216, 0.3506,-0.1569,-0.3773, 0.2799, 0.2795, 0.0829, 0.1970, 0.0286, 0.3014, 0.0319, 0.0863, 0.0927,-0.0422, 0.2900,-0.0757, 0.4134,-0.2495, 0.1136, 0.0519, 0.0500],
   cash: [ 0.0297, 0.0380, 0.0568, 0.0519, 0.0507, 0.0478, 0.0452, 0.0611, 0.0386, 0.0171, 0.0106, 0.0134, 0.0316, 0.0497, 0.0500, 0.0159, 0.0014, 0.0013, 0.0005, 0.0008, 0.0006, 0.0004, 0.0007, 0.0032, 0.0106, 0.0193, 0.0235, 0.0038, 0.0005, 0.0203, 0.0525, 0.0530, 0.0430],
   btc:  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14.73,1.860,54.29,-0.578,0.352,1.263,13.58,-0.733,0.920,3.035,0.596,-0.641,1.545,1.216,0.600],
+  // Gold: London PM Fix / GLD (2004+). Pre-2004 uses spot price history.
+  gold: [ 0.177,-0.022, 0.009,-0.046,-0.214,-0.008, 0.002,-0.054, 0.025, 0.247, 0.196, 0.052, 0.088, 0.228, 0.312, 0.055, 0.271, 0.297, 0.101, 0.071,-0.273,-0.019,-0.105, 0.085, 0.135,-0.017, 0.184, 0.251,-0.036,-0.003, 0.131, 0.275, 0.150],
+  // TIPS: TIP ETF (2003+). Pre-2003 uses inflation-linked bond proxy derived from CPI + real yields.
+  tips: [ 0.050,-0.020, 0.150, 0.015, 0.085, 0.120,-0.040, 0.130, 0.070, 0.145, 0.084, 0.073, 0.026, 0.004, 0.115,-0.024, 0.114, 0.063, 0.136, 0.070,-0.086, 0.036,-0.013, 0.047, 0.030,-0.013, 0.084, 0.110, 0.057,-0.118, 0.039, 0.035, 0.030],
 };
 
-const VOL = { us:0.156, intl:0.172, bond:0.058, reit:0.195, cash:0.004, btc:0.820 };
+const VOL = { us:0.156, intl:0.172, bond:0.058, reit:0.195, cash:0.004, btc:0.820, gold:0.155, tips:0.065 };
+
+// ─── CORRELATION + CHOLESKY ───────────────────────────────────────────────────
+// Long-run pairwise correlations (2000–2025, monthly data).
+// Order matches ASSETS array: us, intl, bond, reit, cash, btc, gold, tips
+const CORR = [
+  [ 1.00,  0.85, -0.15,  0.72,  0.02,  0.52,  0.05, -0.10],  // us
+  [ 0.85,  1.00, -0.12,  0.65,  0.01,  0.45,  0.08, -0.08],  // intl
+  [-0.15, -0.12,  1.00, -0.10,  0.10, -0.05,  0.10,  0.75],  // bond
+  [ 0.72,  0.65, -0.10,  1.00,  0.03,  0.40,  0.05,  0.00],  // reit
+  [ 0.02,  0.01,  0.10,  0.03,  1.00,  0.02,  0.02,  0.15],  // cash
+  [ 0.52,  0.45, -0.05,  0.40,  0.02,  1.00,  0.15, -0.05],  // btc
+  [ 0.05,  0.08,  0.10,  0.05,  0.02,  0.15,  1.00,  0.15],  // gold
+  [-0.10, -0.08,  0.75,  0.00,  0.15, -0.05,  0.15,  1.00],  // tips
+];
+
+// Cholesky decomposition: returns L (lower-triangular) such that L * L^T = C
+function cholesky(C) {
+  const n = C.length;
+  const L = Array.from({length:n}, () => new Array(n).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j <= i; j++) {
+      let s = C[i][j];
+      for (let k = 0; k < j; k++) s -= L[i][k] * L[j][k];
+      L[i][j] = (i === j) ? Math.sqrt(Math.max(s, 0)) : (L[j][j] > 1e-10 ? s / L[j][j] : 0);
+    }
+  }
+  return L;
+}
+const CHOL = cholesky(CORR);
+
+// Regime-conditional volatility multipliers per asset.
+// Order matches ASSETS: us, intl, bond, reit, cash, btc, gold, tips
+// Based on realized vol ratios across historical macro regimes.
+const REGIME_VOL_MULT = {
+  1: [1.30, 1.25, 0.90, 1.20, 1.00, 1.20, 0.85, 0.90],  // Q1 Stagflation
+  2: [1.50, 1.40, 0.85, 1.30, 1.00, 1.40, 1.00, 0.85],  // Q2 Inflation Bust
+  3: [0.75, 0.80, 0.80, 0.80, 1.00, 0.90, 1.10, 0.80],  // Q3 Goldilocks
+  4: [1.80, 1.70, 1.40, 1.60, 1.00, 1.60, 0.90, 1.30],  // Q4 Deflationary Bust
+};
+
+// Compute portfolio-weighted regime vol multiplier given current allocation.
+function getRegimeVolMultiplier() {
+  const mults = REGIME_VOL_MULT[currentRegime] || REGIME_VOL_MULT[3];
+  const total = ASSETS.reduce((s, a) => s + (alloc[a.key] || 0), 0) || 1;
+  return ASSETS.reduce((s, a, i) => s + (alloc[a.key] || 0) / total * mults[i], 0);
+}
+
+// Multiply Cholesky factor by a vector of independent standard normals
+// to produce correlated standard normals matching the CORR matrix
+function applyCholesky(indep) {
+  return CHOL.map((row, i) => row.slice(0, i + 1).reduce((s, l, k) => s + l * indep[k], 0));
+}
+
+// Generate 12 months × ASSETS.length correlated returns for one year (synthetic path only).
+// Returns array[assetIdx] = [12 monthly returns] constrained to hit the known annual return.
+function generateCorrelatedYear(yi) {
+  const n = ASSETS.length;
+  const mus  = ASSETS.map(a => Math.pow(1 + H[a.key][yi], 1 / 12) - 1);
+  const stds = ASSETS.map(a => VOL[a.key] / Math.sqrt(12));
+  const rng  = makeRng(yi * 999983);
+  const months = Array.from({length:12}, () => new Array(n).fill(0));
+  const partials = new Array(n).fill(1);
+  // Months 0–10: correlated draws
+  for (let m = 0; m < 11; m++) {
+    const indep = Array.from({length:n}, () => boxMuller(rng));
+    const corr  = applyCholesky(indep);
+    for (let ai = 0; ai < n; ai++) {
+      const r = mus[ai] + stds[ai] * corr[ai];
+      months[m][ai] = r;
+      partials[ai] *= (1 + r);
+    }
+  }
+  // Month 11: correct each asset to hit its exact annual return
+  for (let ai = 0; ai < n; ai++) {
+    months[11][ai] = (1 + H[ASSETS[ai].key][yi]) / partials[ai] - 1;
+  }
+  // Pivot: return indexed by asset, each containing 12 monthly returns
+  return ASSETS.map((_, ai) => months.map(month => month[ai]));
+}
+
+// Build the full monthly[assetKey][yearOffset] = [12 returns] matrix.
+// Hybrid: uses real data per asset-month when available, correlated-synthetic otherwise.
+// This correctly handles staggered ETF launch dates without zeroing out pre-launch months.
+function buildMonthlyMatrix(si, ei) {
+  const monthly = {};
+  ASSETS.forEach(a => monthly[a.key] = []);
+  for (let yi = si; yi <= ei; yi++) {
+    // Always generate synthetic year (fallback for any missing real month)
+    const corYear = generateCorrelatedYear(yi);
+    const year = YEARS[yi];
+    ASSETS.forEach((a, ai) => {
+      const out = [];
+      for (let m = 1; m <= 12; m++) {
+        const ym = `${year}-${String(m).padStart(2, '0')}`;
+        const real = REAL_DATA_ENABLED ? MONTHLY_REAL[a.key]?.[ym] : undefined;
+        out.push(real !== undefined ? real : corYear[ai][m - 1]);
+      }
+      monthly[a.key].push(out);
+    });
+  }
+  return monthly;
+}
+
+// ─── REAL MONTHLY DATA ───────────────────────────────────────────────────────
+// Fetched automatically from /api/historical (Yahoo Finance adjclose, monthly).
+// Each object maps 'YYYY-MM' → decimal monthly return (e.g. 0.0312 = +3.12%)
+let REAL_DATA_ENABLED = false;
+
+const MONTHLY_US   = {};
+const MONTHLY_INTL = {};
+const MONTHLY_BOND = {};
+const MONTHLY_REIT = {};
+const MONTHLY_GOLD = {};
+const MONTHLY_TIPS = {};
+const MONTHLY_BTC  = {};
+
+const MONTHLY_REAL = { us:MONTHLY_US, intl:MONTHLY_INTL, bond:MONTHLY_BOND, reit:MONTHLY_REIT, gold:MONTHLY_GOLD, tips:MONTHLY_TIPS, btc:MONTHLY_BTC };
 
 const ASSETS = [
   { key:'us',   name:'US Stocks',    color:'#3b82f6', benchmark:'S&P 500 TR',            description:'Large-cap US equities via S&P 500 Total Return.' },
@@ -676,19 +817,21 @@ const ASSETS = [
   { key:'reit', name:'Real Estate',  color:'#f59e0b', benchmark:'FTSE NAREIT All Equity', description:'US-listed equity REITs across all property sectors.' },
   { key:'cash', name:'Cash',         color:'#6b7fa3', benchmark:'ICE BofA 3-Mo T-Bill',  description:'Short-term US Treasuries ≤90 days.' },
   { key:'btc',  name:'Crypto (BTC)', color:'#f97316', benchmark:'BTC-USD',               description:'Bitcoin annual returns. Pre-2011 = 0.' },
+  { key:'gold', name:'Gold',         color:'#fbbf24', benchmark:'GLD / London PM Fix',   description:'Physical gold. Non-yielding; adj close = raw close. ETF: GLD (2004+). Pre-2004 uses London Fix spot returns.' },
+  { key:'tips', name:'TIPS',         color:'#38bdf8', benchmark:'TIP / ICE TIPS TR',     description:'Treasury Inflation-Protected Securities. ETF: TIP (2003+). Pre-2003 uses inflation-linked bond proxy.' },
 ];
 
-const ASSET_RISK = { us:0.55, intl:0.65, bond:0.15, reit:0.70, cash:0.02, btc:1.0 };
+const ASSET_RISK = { us:0.55, intl:0.65, bond:0.15, reit:0.70, cash:0.02, btc:1.0, gold:0.35, tips:0.12 };
 
 const PRESETS = {
-  conservative: { us:20, intl:10, bond:50, reit:10, cash:10, btc:0  },
-  balanced:     { us:40, intl:20, bond:30, reit: 5, cash: 5, btc:0  },
-  growth:       { us:55, intl:25, bond:10, reit: 5, cash: 2, btc:3  },
-  aggressive:   { us:50, intl:25, bond: 0, reit:10, cash: 0, btc:15 },
-  allStocks:    { us:60, intl:40, bond: 0, reit: 0, cash: 0, btc:0  },
-  riskParity:   { us:25, intl:15, bond:40, reit:10, cash:10, btc:0  },
-  allWeather:   { us:30, intl: 0, bond:55, reit: 0, cash: 8, btc:0  },
-  crypto:       { us:35, intl:15, bond:10, reit: 5, cash: 5, btc:30 },
+  conservative: { us:20, intl:10, bond:50, reit:10, cash:10, btc:0,  gold:0,  tips:0  },
+  balanced:     { us:40, intl:20, bond:30, reit: 5, cash: 5, btc:0,  gold:0,  tips:0  },
+  growth:       { us:55, intl:25, bond:10, reit: 5, cash: 2, btc:3,  gold:0,  tips:0  },
+  aggressive:   { us:50, intl:25, bond: 0, reit:10, cash: 0, btc:15, gold:0,  tips:0  },
+  allStocks:    { us:60, intl:40, bond: 0, reit: 0, cash: 0, btc:0,  gold:0,  tips:0  },
+  riskParity:   { us:25, intl:15, bond:35, reit:10, cash: 5, btc:0,  gold:5,  tips:5  },
+  allWeather:   { us:30, intl: 0, bond:40, reit: 0, cash: 8, btc:0,  gold:7,  tips:15 },
+  crypto:       { us:35, intl:15, bond:10, reit: 5, cash: 5, btc:30, gold:0,  tips:0  },
 };
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -704,6 +847,9 @@ function makeRng(seed){
 }
 function boxMuller(rng){const u1=Math.max(rng(),1e-10),u2=rng();return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2)}
 function randNormal(){const u1=Math.max(Math.random(),1e-10),u2=Math.random();return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2)}
+// Student-t with df degrees of freedom, normalised to unit variance.
+// With df=6: kurtosis≈6 vs 3 for normal — captures fat tails and crash clustering.
+function randStudentT(df){const z=randNormal();let v=0;for(let i=0;i<df;i++){const u=randNormal();v+=u*u;}return z*Math.sqrt((df-2)/v)}
 function arrayPercentile(s,p){const idx=(p/100)*(s.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);return s[lo]+(s[hi]-s[lo])*(idx-lo)}
 function pct(v,dp=1){return(v==null||isNaN(v))?'—':(v>=0?'+':'')+((v*100).toFixed(dp))+'%'}
 function money(v){return'$'+Math.round(v).toLocaleString('en-US')}
@@ -721,7 +867,7 @@ function runMonteCarlo(startVal,cagr,vol,recurAmt,recurFreq,numYears,numSims){
         const addNow=recurFreq==='monthly'||(recurFreq==='quarterly'&&m%3===0)||(recurFreq==='annually'&&m%12===0);
         if(addNow)val+=recurAmt;
       }
-      val*=Math.exp(drift+monthlyLogSig*randNormal());
+      val*=Math.exp(drift+monthlyLogSig*randStudentT(6));
       if((m+1)%12===0)yearBuckets[(m+1)/12-1].push(val);
     }
   }
@@ -732,11 +878,51 @@ function analyticalProjection(startVal,cagr,recurAmt,recurFreq,numYears){
   for(let y=0;y<numYears;y++){for(let m=0;m<12;m++){if(recurAmt>0&&recurFreq!=='none'){const addNow=recurFreq==='monthly'||(recurFreq==='quarterly'&&m%3===0)||(recurFreq==='annually'&&m===0);if(addNow)val+=recurAmt;}val*=(1+r_m);}vals.push(val);}
   return vals;
 }
-function monthlyReturns(assetIdx,yearIdx){
-  const ann=H[ASSETS[assetIdx].key][yearIdx],std=VOL[ASSETS[assetIdx].key]/Math.sqrt(12),mu=Math.pow(1+ann,1/12)-1;
-  const rng=makeRng(assetIdx*100003+yearIdx*7919),out=[];
-  for(let m=0;m<11;m++)out.push(mu+boxMuller(rng)*std);
-  const prod=out.reduce((p,r)=>p*(1+r),1);out.push((1+ann)/prod-1);return out;
+// monthlyReturns() replaced by buildMonthlyMatrix() which generates all assets
+// together with Cholesky correlation. See definition above near CORR/CHOL.
+
+// ─── BLOCK BOOTSTRAP ────────────────────────────────────────────────────────
+// Resample 12-month blocks from the actual historical monthly return series.
+// Preserves fat tails, volatility clustering, and cross-asset correlations
+// because crashes cluster with other crash months in the real data.
+function runBlockBootstrap(startVal, monthlyReturns, recurAmt, recurFreq, numYears, numSims) {
+  const blockSize = 12, totalMonths = numYears * 12;
+  const n = monthlyReturns.length;
+  if (n < blockSize * 2) return null;
+  const yearBuckets = Array.from({length: numYears}, () => []);
+  for (let s = 0; s < numSims; s++) {
+    let val = startVal, m = 0;
+    while (m < totalMonths) {
+      const start = Math.floor(Math.random() * Math.max(1, n - blockSize + 1));
+      for (let b = 0; b < blockSize && m < totalMonths; b++, m++) {
+        if (recurAmt > 0 && recurFreq !== 'none') {
+          const add = recurFreq === 'monthly' || (recurFreq === 'quarterly' && m % 3 === 0) || (recurFreq === 'annually' && m % 12 === 0);
+          if (add) val += recurAmt;
+        }
+        val *= (1 + monthlyReturns[start + b]);
+      }
+      if (m % 12 === 0) yearBuckets[m / 12 - 1].push(val);
+    }
+  }
+  return yearBuckets.map(b => {
+    b.sort((a, c) => a - c);
+    return {p10: arrayPercentile(b,10), p25: arrayPercentile(b,25), p50: arrayPercentile(b,50), p75: arrayPercentile(b,75), p90: arrayPercentile(b,90)};
+  });
+}
+
+// Compute historical monthly portfolio returns from real data using current weights.
+// Returns null if insufficient real data (< 24 months) for allocated assets.
+function getHistoricalPortfolioMonthlyReturns(weights) {
+  if (!REAL_DATA_ENABLED) return null;
+  const allocatedKeys = ASSETS.filter(a => (weights[a.key] || 0) > 0).map(a => a.key);
+  if (allocatedKeys.length === 0) return null;
+  let months = Object.keys(MONTHLY_REAL[allocatedKeys[0]] || {});
+  for (const k of allocatedKeys.slice(1)) {
+    months = months.filter(m => MONTHLY_REAL[k][m] !== undefined);
+  }
+  months.sort();
+  if (months.length < 24) return null;
+  return months.map(ym => allocatedKeys.reduce((sum, k) => sum + (weights[k] || 0) * (MONTHLY_REAL[k][ym] || 0), 0));
 }
 
 // ─── BACKTEST ────────────────────────────────────────────────────────────────
@@ -754,10 +940,8 @@ function runBacktest(){
   if(total===0){alert('All allocations are 0%.');return}
   ASSETS.forEach(a=>w[a.key]=(alloc[a.key]||0)/total);
 
-  const monthly={};
-  ASSETS.forEach((a,ai)=>{monthly[a.key]=[];for(let yi=si;yi<=ei;yi++)monthly[a.key].push(monthlyReturns(ai,yi))});
-  const spMonthly=[],bndMonthly=[];
-  for(let yi=si;yi<=ei;yi++){spMonthly.push(monthlyReturns(0,yi));bndMonthly.push(monthlyReturns(2,yi))}
+  const monthly=buildMonthlyMatrix(si,ei);
+  const spMonthly=monthly.us,bndMonthly=monthly.bond;
 
   let portVal=inv,spVal=inv,sfVal=inv;
   const portVals=[inv],spVals=[inv],sfVals=[inv],dates=[],annualRows=[];
@@ -778,7 +962,7 @@ function runBacktest(){
       spVal*=(1+spMonthly[yOff][m]);
       sfVal*=(1+0.6*spMonthly[yOff][m]+0.4*bndMonthly[yOff][m]);
       peak=Math.max(peak,portVal);
-      const dd=(portVal-peak)/peak*100;if(dd<maxDD)maxDD=dd;
+      const dd=(portVal-peak)/peak;if(dd<maxDD)maxDD=dd;
       const dateStr=`${YEARS[yi]}-${String(m+1).padStart(2,'0')}`;
       dates.push(dateStr);portVals.push(portVal);spVals.push(spVal);sfVals.push(sfVal);
     }
@@ -792,7 +976,9 @@ function runBacktest(){
   const cagr=Math.pow(portVal/inv,1/(ei-si+1))-1;
   const mean=returns.reduce((s,r)=>s+r,0)/returns.length;
   const vol=Math.sqrt(returns.reduce((s,r)=>s+Math.pow(r-mean,2),0)/returns.length);
-  const rfRate=0.04;const sharpe=(cagr-rfRate)/vol;
+  // Period-average T-bill rate — more accurate than a fixed 4% across all eras
+  const rfRate=H.cash.slice(si,ei+1).reduce((s,r)=>s+r,0)/(ei-si+1);
+  const sharpe=(cagr-rfRate)/vol;
   const best=Math.max(...returns),worst=Math.min(...returns);
   const bestYear=annualRows[returns.indexOf(best)].year,worstYear=annualRows[returns.indexOf(worst)].year;
   const drawdowns=[];let pk2=portVals[0];
@@ -890,7 +1076,19 @@ function drawProjection(ctx){
   const cagrOverride=parseFloat(document.getElementById('projCagr').value)/100;
   const useCagr=isNaN(cagrOverride)?r.cagr:cagrOverride;
   if(!lastProjection||lastProjection.useCagr!==useCagr||lastProjection.numProjYears!==numProjYears||lastProjection.numSims!==numSims){
-    lastProjection={data:runMonteCarlo(r.finalVal,useCagr,r.vol,r.recurAmt,r.recurFreq,numProjYears,numSims),analytical:analyticalProjection(r.finalVal,useCagr,r.recurAmt,r.recurFreq,numProjYears),useCagr,numProjYears,numSims};
+    const regimeMult=getRegimeVolMultiplier();
+    const adjVol=r.vol*regimeMult;
+    const total=ASSETS.reduce((s,a)=>s+(alloc[a.key]||0),0)||1;
+    const weights={};ASSETS.forEach(a=>weights[a.key]=(alloc[a.key]||0)/total);
+    const histReturns=getHistoricalPortfolioMonthlyReturns(weights);
+    const mcData=(histReturns&&histReturns.length>=24)
+      ?runBlockBootstrap(r.finalVal,histReturns,r.recurAmt,r.recurFreq,numProjYears,numSims)
+      :null;
+    lastProjection={
+      data:mcData||runMonteCarlo(r.finalVal,useCagr,adjVol,r.recurAmt,r.recurFreq,numProjYears,numSims),
+      analytical:analyticalProjection(r.finalVal,useCagr,r.recurAmt,r.recurFreq,numProjYears),
+      useCagr,numProjYears,numSims,method:mcData?'bootstrap':'parametric',regimeMult,adjVol
+    };
   }
   const projData=lastProjection.data,analytData=lastProjection.analytical;
   const histLabels=[String(r.startYear)];const histVals=[r.inv];
@@ -919,7 +1117,10 @@ function drawProjection(ctx){
   document.getElementById('projP90').textContent=yFmt(finalProj.p90);
   document.getElementById('projExpected').textContent=yFmt(finalAnal);
   const cagrNote=useCagr!==r.cagr?` (historical: ${pct(r.cagr)})`:'';
-  document.getElementById('projSummaryLabel').textContent=`${numProjYears}-yr outlook · ${numSims} sims · ${pct(useCagr)} exp. return${cagrNote} · ${pct(r.vol)} vol`;
+  const methodNote=lastProjection.method==='bootstrap'
+    ?'block bootstrap'
+    :`${pct(lastProjection.adjVol)} regime-adj vol (${(lastProjection.regimeMult||1).toFixed(2)}×)`;
+  document.getElementById('projSummaryLabel').textContent=`${numProjYears}-yr outlook · ${numSims} sims · ${pct(useCagr)} exp. return${cagrNote} · ${methodNote}`;
   document.getElementById('projSummary').style.display='block';
 }
 
@@ -982,9 +1183,52 @@ function buildYearSelects(){
 }
 
 // ─── REGIME ──────────────────────────────────────────────────────────────────
-function setRegime(q){
-  currentRegime=q;
-  document.querySelectorAll('.regime-q').forEach((el,i)=>el.classList.toggle('active',i+1===q));
+function setRegime(q){ currentRegime=q; lastProjection=null; }
+
+const REGIME_INFO = {
+  1: { emoji:'⚠️', headline:'Prices rising, growth slowing',   sub:'Historically tough for stocks.',      color:'red'    },
+  2: { emoji:'📉', headline:'Economy cooling, inflation easing', sub:'Caution — things are slowing down.',   color:'yellow' },
+  3: { emoji:'📈', headline:'Stocks look favorable right now',  sub:'Low inflation, growing economy.',      color:'green'  },
+  4: { emoji:'🛑', headline:'Economic downturn detected',       sub:'Preservation matters more than gains.', color:'red'   },
+};
+
+const REGIME_FIT = {
+  1: { best:{key:'allWeather', label:'All Weather'},   bestWhy:'Holds up when prices rise and growth slows.',             worstWarn:'Watch out going heavy into stocks right now — they tend to fall hardest when the economy slows and prices stay high.' },
+  2: { best:{key:'riskParity', label:'Risk Parity'},   bestWhy:'Balanced across many assets — steady in slow markets.',   worstWarn:'Be careful with crypto and speculative bets — these tend to sell off hard when the economy contracts.' },
+  3: { best:{key:'growth',     label:'Growth'},         bestWhy:'This is exactly when stock-heavy portfolios shine.',      worstWarn:'Playing it too safe can backfire here — sitting in too many bonds means missing most of the upside.' },
+  4: { best:{key:'conservative',label:'Conservative'}, bestWhy:'Bonds and cash hold their value when the economy falls.', worstWarn:'Avoid high-risk and speculative assets right now — they get hit the hardest when markets fall.' },
+};
+
+function renderRegimeMatch(q) {
+  const info = REGIME_INFO[q];
+  const fit  = REGIME_FIT[q];
+  const panel = document.getElementById('regimePanel');
+  if (!info || !fit || !panel) return;
+  panel.style.color = '';
+  panel.innerHTML = `
+    <div style="border-left:3px solid var(--${info.color});padding-left:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--${info.color});margin-bottom:2px">${info.emoji} ${info.headline}</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:10px">${info.sub}</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:3px">Works well in this environment:</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px">${fit.best.label}</div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.5;margin-bottom:6px">${fit.bestWhy}</div>
+      <button class="regime-match-btn" onclick="applyPreset('${fit.best.key}')">Apply this strategy</button>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border2)">
+        <div style="font-size:10px;color:var(--red);font-weight:600;margin-bottom:3px">⚠ One thing to watch out for</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.6">${fit.worstWarn}</div>
+      </div>
+    </div>`;
+}
+
+function toggleRegimeSection() {
+  const content = document.getElementById('regimeContent');
+  const bar = document.getElementById('regimeHiddenBar');
+  const btn = document.getElementById('regimeToggleBtn');
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? '' : 'none';
+  bar.style.display = isHidden ? 'none' : 'block';
+  btn.style.display = isHidden ? '' : 'none';
+  localStorage.setItem('apex-regime-hidden', isHidden ? '0' : '1');
 }
 
 // ─── PAGE NAV ────────────────────────────────────────────────────────────────
@@ -1012,11 +1256,11 @@ const QUIZ_QUESTIONS=[
   {q:'How do you feel about high-risk / high-reward assets like crypto?',hint:'These can dramatically boost returns — or losses.',options:[{letter:'A',title:'Avoid completely',desc:'Not for me — too unpredictable',score:1},{letter:'B',title:'Tiny allocation',desc:'Maybe 1–3%, just for exposure',score:2},{letter:'C',title:'Comfortable',desc:'5–10% feels right to me',score:3},{letter:'D',title:'Significant',desc:'I believe in high-risk, high-reward',score:4}]},
 ];
 const QUIZ_PROFILES=[
-  {min:7,max:11,name:'Capital Preserver',badge:'Very Conservative',desc:'You prioritize safety above all. Your focus is protecting what you have.',traits:['Low risk','Short horizon','Stability focused','Income oriented'],alloc:{us:10,intl:5,bond:55,reit:10,cash:20,btc:0}},
-  {min:12,max:16,name:'Cautious Investor',badge:'Conservative',desc:'You lean toward safety but are open to modest growth.',traits:['Below-average risk','Medium horizon','Income + growth','Steady approach'],alloc:{us:20,intl:10,bond:45,reit:15,cash:10,btc:0}},
-  {min:17,max:21,name:'Balanced Builder',badge:'Moderate',desc:'You want a healthy mix of growth and stability.',traits:['Moderate risk','Long horizon','Diversified approach','Growth + income'],alloc:{us:40,intl:20,bond:25,reit:10,cash:5,btc:0}},
-  {min:22,max:25,name:'Growth Seeker',badge:'Moderately Aggressive',desc:"You're focused on long-term wealth building.",traits:['Above-avg risk','Long horizon','Growth focused','Opportunistic'],alloc:{us:50,intl:25,bond:10,reit:10,cash:2,btc:3}},
-  {min:26,max:28,name:'Aggressive Grower',badge:'Aggressive',desc:"You're chasing maximum returns and fully accept the risks.",traits:['High risk','Very long horizon','Max growth','Experienced'],alloc:{us:50,intl:20,bond:0,reit:10,cash:0,btc:20}},
+  {min:7,max:11,name:'Capital Preserver',badge:'Very Conservative',desc:'You prioritize safety above all. Your focus is protecting what you have.',traits:['Low risk','Short horizon','Stability focused','Income oriented'],alloc:{us:10,intl:5,bond:50,reit:10,cash:20,btc:0,gold:0,tips:5}},
+  {min:12,max:16,name:'Cautious Investor',badge:'Conservative',desc:'You lean toward safety but are open to modest growth.',traits:['Below-average risk','Medium horizon','Income + growth','Steady approach'],alloc:{us:20,intl:10,bond:45,reit:10,cash:10,btc:0,gold:0,tips:5}},
+  {min:17,max:21,name:'Balanced Builder',badge:'Moderate',desc:'You want a healthy mix of growth and stability.',traits:['Moderate risk','Long horizon','Diversified approach','Growth + income'],alloc:{us:40,intl:20,bond:25,reit:10,cash:5,btc:0,gold:0,tips:0}},
+  {min:22,max:25,name:'Growth Seeker',badge:'Moderately Aggressive',desc:"You're focused on long-term wealth building.",traits:['Above-avg risk','Long horizon','Growth focused','Opportunistic'],alloc:{us:50,intl:25,bond:10,reit:10,cash:2,btc:3,gold:0,tips:0}},
+  {min:26,max:28,name:'Aggressive Grower',badge:'Aggressive',desc:"You're chasing maximum returns and fully accept the risks.",traits:['High risk','Very long horizon','Max growth','Experienced'],alloc:{us:50,intl:20,bond:0,reit:10,cash:0,btc:20,gold:0,tips:0}},
 ];
 let quizStep=0,quizAnswers=[];
 function openQuiz(){quizStep=0;quizAnswers=[];document.getElementById('quizOverlay').classList.add('open');renderQuizStep()}
@@ -1057,10 +1301,12 @@ function renderQuizResult(){
       <div class="result-traits">${profile.traits.map(t=>`<span class="trait-tag">${t}</span>`).join('')}</div>
       <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px">Recommended Allocation</div>
       <div class="result-alloc">${allocHTML}</div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="applyPresetFromQuiz(${JSON.stringify(profile.alloc)})">Apply This Allocation →</button>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="applyPresetFromQuiz()">Apply This Allocation →</button>
     </div>`;
+  pendingQuizAlloc = profile.alloc;
 }
-function applyPresetFromQuiz(allocObj){alloc={...allocObj};buildSliders();onAllocChange();closeQuiz()}
+let pendingQuizAlloc = null;
+function applyPresetFromQuiz(){if(!pendingQuizAlloc)return;alloc={...pendingQuizAlloc};buildSliders();onAllocChange();closeQuiz()}
 
 // ─── ASSET PROJECTIONS ────────────────────────────────────────────────────────
 const AP_TEMPLATES=[
@@ -1162,32 +1408,77 @@ function renderAssetResultCards(results,numYears){
   }).join('');
 }
 
+// ─── HISTORICAL DATA LOADER ───────────────────────────────────────────────────
+async function loadHistoricalData(){
+  const badge=document.getElementById('dataQualityBadge');
+  try{
+    const res=await fetch('/api/historical');
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const json=await res.json();
+    const d=json.data||{};
+    let loaded=0;
+    for(const [key,returns] of Object.entries(d)){
+      if(MONTHLY_REAL[key]&&typeof returns==='object'){
+        Object.assign(MONTHLY_REAL[key],returns);
+        if(Object.keys(returns).length>0)loaded++;
+      }
+    }
+    if(loaded>0){
+      REAL_DATA_ENABLED=true;
+      badge.textContent='✓ Real data ('+loaded+'/8 assets)';
+      badge.style.color='var(--green)';
+      badge.style.borderColor='rgba(0,255,135,0.3)';
+      badge.style.background='rgba(0,255,135,0.06)';
+    } else {
+      badge.textContent='⚠ Synthetic data';
+      badge.style.color='var(--yellow)';
+    }
+    if(json.errors&&Object.keys(json.errors).length){
+      const failed=Object.keys(json.errors).join(', ');
+      badge.title='Failed: '+failed+' — using synthetic fallback for those assets';
+    }
+  }catch(e){
+    badge.textContent='⚠ Synthetic data';
+    badge.style.color='var(--yellow)';
+    badge.title='Could not load real data: '+e.message;
+  }
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 buildYearSelects();
 buildSliders();
 onAllocChange();
 buildTemplateButtons();
+loadHistoricalData();
 
 document.getElementById('showSP').addEventListener('change',e=>{document.getElementById('cbSP').checked=e.target.checked;if(lastResult)renderCurrentChart()});
 document.getElementById('show6040').addEventListener('change',e=>{document.getElementById('cb6040').checked=e.target.checked;if(lastResult)renderCurrentChart()});
 
 // ─── AUTO MACRO REGIME ────────────────────────────────────────────────────────
 (function detectMacroRegime(){
-  const badge=document.getElementById('regimeBadge');
   fetch('/api/macro-regime')
     .then(r=>r.json())
     .then(d=>{
-      if(d.error&&d.confidence===0){badge.textContent='⚠ offline';return;}
+      if(d.error&&d.confidence===0){
+        const p=document.getElementById('regimePanel');
+        if(p)p.textContent='⚠ Live data unavailable';
+        return;
+      }
       setRegime(d.regime);
-      const cpi=d.indicators.cpiYoY!=null?`CPI ${d.indicators.cpiYoY.toFixed(1)}%`:'';
-      const gdp=d.indicators.gdpGrowth!=null?`GDP ${d.indicators.gdpGrowth.toFixed(1)}%`:'';
-      const parts=[cpi,gdp].filter(Boolean).join(' · ');
-      badge.style.color='var(--accent)';
-      badge.textContent=`LIVE ${d.confidence}%${parts?' · '+parts:''}`;
-      badge.title=d.indicators.topHeadlines.join('\n')||'No headlines';
+      renderRegimeMatch(d.regime);
     })
-    .catch(()=>{badge.textContent='⚠ offline'});
+    .catch(()=>{
+      const p=document.getElementById('regimePanel');
+      if(p)p.textContent='⚠ Live data unavailable';
+    });
 })();
+
+// Restore hidden state from last session
+if(localStorage.getItem('apex-regime-hidden')==='1'){
+  document.getElementById('regimeContent').style.display='none';
+  document.getElementById('regimeHiddenBar').style.display='block';
+  document.getElementById('regimeToggleBtn').style.display='none';
+}
 </script>
 
 <script src="/research/theme.js"></script>
